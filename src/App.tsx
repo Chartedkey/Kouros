@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { UpdateBanner } from './components/Updates';
 import { Header, type Tab } from './components/Header';
 import { Logo } from './components/Logo';
 import { Lock } from './pages/Lock';
@@ -46,6 +47,7 @@ export default function App() {
     <div className="app">
       <div className="wrap">
         <Header tab={tab} onTab={setTab} />
+        <UpdateBanner />
         {status.dbError && (
           <div className="note-err" role="alert">
             {status.dbError}

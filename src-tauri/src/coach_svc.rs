@@ -677,7 +677,9 @@ pub fn week(conn: &mut Connection) -> Result<Value, String> {
     let fiber_t = ftg("fiber");
 
     // Supplements adherence (daily ones).
-    let adherence: Option<f64> = {
+    let adherence: Option<f64> = if !meds_svc::enabled(conn) {
+        None
+    } else {
         let mut st = conn
             .prepare("SELECT m.id, (SELECT count(DISTINCT l.date) FROM med_log l WHERE l.med_id = m.id AND l.date BETWEEN ?1 AND ?2) FROM meds m WHERE m.archived = 0 AND m.schedule = 'daily'")
             .map_err(err)?;

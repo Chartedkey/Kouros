@@ -2,7 +2,8 @@
 //! (photo recognition, product cards without micros). Real data is never touched.
 //!
 //! Order: 1) the same product from your own history with full data (nutrients per kcal);
-//! 2) a built-in reference table (per 100 g, approximate values after USDA FoodData Central,
+//! 2) Russian dishes (`food_dishes.rs`, 0.19: recipes computed from the table below), then
+//! a built-in reference table (per 100 g, approximate values after USDA FoodData Central,
 //! public domain), matched by words in the name; dishes with several matched parts are split by
 //! fitting their shares to the entry's own protein / carbs / fat. Supplements are skipped.
 
@@ -341,19 +342,36 @@ fn find_word(text: &str, k: &str) -> Option<usize> {
     })
 }
 
-fn match_ref(name: &str) -> Vec<(&'static str, char, &'static [f64; 14])> {
-    let mut text = name.to_string();
+/// Parts of an entry: for every product name, a Russian dish first (one dish = the whole name),
+/// else the reference ingredients found in it. At most 4 parts in all.
+fn match_ref(names: &[String]) -> Vec<(&'static str, char, &'static [f64; 14])> {
     let mut out = Vec::new();
-    for (keys, cat, v) in REF {
-        for k in keys.iter() {
-            if let Some(pos) = find_word(&text, k) {
+    // «ё» and «е» are written both ways in product names.
+    let norm = |t: &str| t.replace('ё', "е");
+    'names: for name in names {
+        let name = norm(name);
+        for (keys, cat, v) in crate::food_dishes::DISHES {
+            if let Some(k) = keys.iter().find(|k| find_word(&name, &norm(k)).is_some()) {
                 out.push((*k, *cat, v));
-                text.replace_range(pos..pos + k.len(), &"_".repeat(k.len()));
-                break;
+                if out.len() >= 4 {
+                    break 'names;
+                }
+                continue 'names;
             }
         }
-        if out.len() >= 4 {
-            break;
+        let mut text = name.clone();
+        for (keys, cat, v) in REF {
+            for k in keys.iter() {
+                let kn = norm(k);
+                if let Some(pos) = find_word(&text, &kn) {
+                    out.push((*k, *cat, v));
+                    text.replace_range(pos..pos + kn.len(), &"_".repeat(kn.len()));
+                    break;
+                }
+            }
+            if out.len() >= 4 {
+                break 'names;
+            }
         }
     }
     out
@@ -423,7 +441,7 @@ pub fn entries(conn: &Connection, from: &str, tz: i64) -> Vec<(String, EntryEst)
             out.push((d, est));
             continue;
         }
-        let parts = match_ref(&names.join(" "));
+        let parts = match_ref(&names);
         if !parts.is_empty() {
             let rows: Vec<&[f64; 14]> = parts.iter().map(|p| p.2).collect();
             let w = fit(&rows, e);

@@ -8,6 +8,7 @@ import { DataSourcesCard } from '../components/DataSources';
 import { WorkoutSourcesCard } from '../components/Workouts';
 import { setZoom, useZoom, ZOOM_MAX, ZOOM_MIN } from '../lib/zoom';
 import { paceFromThreshold, zonesFromMax } from './TrainingParts';
+import { UpdatesSection } from '../components/Updates';
 
 type Sub = 'sync' | 'prof' | 'view' | 'data' | 'about';
 
@@ -598,10 +599,12 @@ function AboutTab({ status }: { status: Status }) {
     ['1. Каркас: база, папка данных, ключи, вход', true],
     ['2. Strava, freddy, импорт и экспорт файлов', true],
     ['3. Движок расчётов', true],
-    ['4. Вкладки на реальных данных', false],
-    ['5. Тренер Claude', false],
-    ['6. Гибкий план', false],
-    ['7. Анализы, добавки, меню, автообновление', false],
+    ['4. Вкладки на реальных данных', true],
+    ['5. Тренер и Claude', true],
+    ['6. План тренировок', true],
+    ['7. Автообновление, добавки', true],
+    ['8. Анализы, меню и покупки', false],
+    ['9. Финальная шлифовка', false],
   ];
   return (
     <div className="grid">
@@ -613,10 +616,11 @@ function AboutTab({ status }: { status: Status }) {
           <div className="list-row"><span className="muted">Данные</span><span style={{ fontWeight: 700 }}>только на этом компьютере</span></div>
         </div>
         <span className="muted small" style={{ lineHeight: 1.55 }}>
-          Kouros не отправляет данные никуда, кроме Strava, freddy и Anthropic — и только когда ты их подключишь.
-          Никакой аналитики и трекеров.
+          Твои данные уходят только в Strava и freddy — и только когда ты их подключишь. Ещё Kouros обращается к GitHub (есть ли новая версия),
+          к карте OpenStreetMap, если она включена, и к открытым справочникам лекарств — без каких-либо твоих данных. Никакой аналитики и трекеров.
         </span>
       </section>
+      <UpdatesSection />
       <section className="card" aria-label="План разработки">
         <span className="label">План разработки</span>
         <ul className="soon-list">
@@ -637,6 +641,12 @@ function ViewTab() {
   const [msg, setMsg] = useState<string | null>(null);
   const load = () => api.mapCacheInfo().then(setMap).catch((e) => setMsg(errText(e)));
   useEffect(() => { load(); }, []);
+  const [medsOn, setMedsOn] = useState<boolean | null>(null);
+  useEffect(() => { api.medsEnabled().then(setMedsOn).catch(() => {}); }, []);
+  async function toggleMeds() {
+    if (medsOn == null) return;
+    try { await api.medsEnabledSet(!medsOn); setMedsOn(!medsOn); } catch (e) { setMsg(errText(e)); }
+  }
   async function toggle() {
     if (!map) return;
     try { await api.mapSetEnabled(!map.enabled); load(); } catch (e) { setMsg(errText(e)); }
@@ -653,6 +663,17 @@ function ViewTab() {
           {[0.8, 0.9, 1, 1.1].map((z) => <button key={z} type="button" className="pill" aria-pressed={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)}>{Math.round(z * 100)}%</button>)}
         </div>
         <span className="muted tiny" style={{ lineHeight: 1.5 }}>Быстро: Ctrl + колесо мыши, Ctrl и «+» / «−», Ctrl + 0 — вернуть 100%. Масштаб запоминается на этом компьютере.</span>
+      </section>
+      <section className="card" aria-label="Разделы">
+        <div className="between">
+          <span className="label">Витамины и лекарства</span>
+          {medsOn != null && <button type="button" role="switch" aria-checked={medsOn} aria-label="Показывать витамины и лекарства" className="switch" onClick={toggleMeds}><span /></button>}
+        </div>
+        <span className="muted tiny" style={{ lineHeight: 1.5 }}>
+          {medsOn === false
+            ? 'Раздел скрыт: добавки не считаются в питании, тренер и план их не учитывают. Всё, что ты вносил, сохранено — включи, и оно вернётся.'
+            : 'Раздел в «Здоровье», карточка на «Сегодня», витамины из добавок в «Питании», подсказки тренера по лекарствам. Можно скрыть, если не пользуешься.'}
+        </span>
       </section>
       <section className="card" aria-label="Карта маршрутов">
         <div className="between">

@@ -12,6 +12,12 @@ fn err<E: std::fmt::Display>(e: E) -> String {
     e.to_string()
 }
 
+/// The athlete can hide the whole section (0.19, settings `meds_enabled` = "0"): then nothing from
+/// it counts anywhere — nutrition, limits, coach, plan. The data stays and comes back when shown.
+pub fn enabled(conn: &Connection) -> bool {
+    crate::db::get_setting(conn, "meds_enabled").as_deref() != Some("0")
+}
+
 /// Tolerable upper intake levels for an adult (from all sources, unless noted), approx. EFSA/NASEM.
 /// Metric → (limit, note).
 pub const UL: [(&str, f64, &str); 13] = [
@@ -166,6 +172,9 @@ fn log(conn: &Connection, from: &str) -> BTreeMap<(String, i64), f64> {
 
 /// Nutrients from marked supplements per day: date → metric → amount.
 pub fn supp_by_day(conn: &Connection, from: &str) -> BTreeMap<String, BTreeMap<String, f64>> {
+    if !enabled(conn) {
+        return BTreeMap::new();
+    }
     let meds = list(conn).unwrap_or_default();
     let by_id: BTreeMap<i64, &Value> = meds.iter().filter_map(|m| m["id"].as_i64().map(|i| (i, m))).collect();
     let mut out: BTreeMap<String, BTreeMap<String, f64>> = BTreeMap::new();
@@ -204,6 +213,9 @@ pub fn food_add(conn: &Connection, metric: &str) -> BTreeMap<String, f64> {
 
 /// What was taken on one day (for the Health day card).
 pub fn taken_on(conn: &Connection, date: &str) -> Vec<Value> {
+    if !enabled(conn) {
+        return Vec::new();
+    }
     let meds = list(conn).unwrap_or_default();
     let lg = log(conn, date);
     meds.iter()
@@ -218,6 +230,9 @@ pub fn taken_on(conn: &Connection, date: &str) -> Vec<Value> {
 /// The section: list with today's marks, 14-day marks, totals today and 7-day UL check.
 /// `food7` = average daily intake from food over the last 7 days, by metric (for the UL check).
 pub fn summary(conn: &Connection, today: &str, food7: &BTreeMap<String, f64>) -> Result<Value, String> {
+    if !enabled(conn) {
+        return Ok(json!({"enabled": false, "items": [], "today": [], "supp7": {}, "warnings": [], "timing": [], "notes": [], "unknown": []}));
+    }
     let meds = list(conn)?;
     let from14 = add_days(today, -13);
     let lg = log(conn, &from14);
@@ -286,7 +301,7 @@ pub fn summary(conn: &Connection, today: &str, food7: &BTreeMap<String, f64>) ->
             o
         })
         .collect();
-    Ok(json!({"items": items, "today": today_tot, "supp7": supp7, "warnings": warnings,
+    Ok(json!({"enabled": true, "items": items, "today": today_tot, "supp7": supp7, "warnings": warnings,
               "timing": timing(conn, today, &meds), "notes": med_notes(conn, today, &meds), "unknown": unknown}))
 }
 
@@ -433,6 +448,9 @@ fn in_use(m: &Value, mk: &[Mark], date: &str, back: i64) -> bool {
 
 /// Last day a fluoroquinolone still matters for tendons (last intake or course end + 14 days).
 pub fn fq_until(conn: &Connection, today: &str) -> Option<(String, String)> {
+    if !enabled(conn) {
+        return None;
+    }
     let meds = list(conn).ok()?;
     let mk = marks(conn, &add_days(today, -30));
     let mut best: Option<(String, String)> = None;

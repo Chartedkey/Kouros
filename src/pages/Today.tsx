@@ -404,7 +404,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
       <DupCards max={1} />
       {body && body.pending[0] && <CheckinCard key={body.pending[0].id} a={body.pending[0]} areas={body.areas} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}
       {body && <MorningPain b={body} today={s.today} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}
-      {meds && (meds.items.some((m) => m.active) || (meds.notes?.length ?? 0) > 0) && (
+      {meds && meds.enabled !== false && (meds.items.some((m) => m.active) || (meds.notes?.length ?? 0) > 0) && (
         <section className="card" aria-label="Витамины и лекарства сегодня">
           <div className="between"><span className="label">Витамины и лекарства сегодня</span>{onMeds && <button type="button" className="linkbtn small" onClick={onMeds}>Все →</button>}</div>
           {meds.items.filter((m) => m.active && m.schedule !== 'asneeded').map((m) => <MedRow key={m.id} m={m} compact onChanged={() => api.medsSummary().then(setMeds).catch(() => {})} />)}

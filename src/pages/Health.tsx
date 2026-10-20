@@ -46,6 +46,9 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
   }, []);
   useEffect(load, [load]);
   useDataChanged(load);
+  const [medsOn, setMedsOn] = useState(true);
+  useEffect(() => { api.medsEnabled().then(setMedsOn).catch(() => {}); }, []);
+  useEffect(() => { if (!medsOn && sub === 'meds') setSub('overview'); }, [medsOn, sub]);
 
   const empty = ov && ov.stats.rows === 0;
   return (
@@ -57,7 +60,7 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
         </div>
       </div>
       <nav className="subtabs" aria-label="Разделы здоровья">
-        {([['overview', 'Обзор'], ['history', 'История'], ['meds', 'Витамины и лекарства']] as [Sub, string][]).map(([id, n]) => (
+        {([['overview', 'Обзор'], ['history', 'История'], ...(medsOn ? [['meds', 'Витамины и лекарства']] : [])] as [Sub, string][]).map(([id, n]) => (
           <button key={id} type="button" aria-pressed={sub === id} onClick={() => setSub(id)}>{n}</button>
         ))}
       </nav>
@@ -74,7 +77,7 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
       {!empty && !h && !err && <div className="muted">Считаю…</div>}
       {!empty && h && sub === 'overview' && <Overview h={h} reload={load} />}
       {!empty && h && sub === 'history' && <History h={h} ov={ov} onOpen={onOpenWorkout} day={day} onDayUsed={onDayUsed} />}
-      {sub === 'meds' && <Meds />}
+      {sub === 'meds' && medsOn && <Meds />}
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Данные Apple Watch и весов через Apple Health. Не является медицинской диагностикой.</p>
     </>
   );

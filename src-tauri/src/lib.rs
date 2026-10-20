@@ -18,6 +18,7 @@ mod nutrition_svc;
 mod psych_svc;
 mod stress_svc;
 mod food_est;
+mod food_dishes;
 mod norms;
 mod muscle_svc;
 mod meds_svc;
@@ -700,6 +701,18 @@ async fn drug_registry_update(st: State<'_, AppState>) -> Result<usize, String> 
 }
 
 #[tauri::command]
+fn meds_enabled(st: State<'_, AppState>) -> Result<bool, String> {
+    with_db(&st, |c| Ok(meds_svc::enabled(c)))
+}
+
+#[tauri::command]
+fn meds_enabled_set(on: bool, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| db::set_setting(c, "meds_enabled", if on { "1" } else { "0" }))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "meds");
+    Ok(())
+}
+
+#[tauri::command]
 fn supp_online_set(on: bool, st: State<'_, AppState>) -> Result<(), String> {
     with_db(&st, |c| db::set_setting(c, "supp_online", if on { "1" } else { "0" }))
 }
@@ -899,6 +912,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(AppState::default())
         .register_asynchronous_uri_scheme_protocol("kmap", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
@@ -977,6 +992,8 @@ pub fn run() {
             drug_registry_info,
             drug_registry_update,
             supp_online_set,
+            meds_enabled,
+            meds_enabled_set,
             coach_state,
             coach_profile_save,
             coach_notes_save,

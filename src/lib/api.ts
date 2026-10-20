@@ -310,6 +310,8 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'drug_registry_info': return { builtin: 14000, builtinVersion: 'Перечень_(октябрь_2026).xls', builtinSource: 'grls.rosminzdrav.ru', local: 0, localVersion: null, online: true } satisfies DrugRegistry;
     case 'drug_registry_update': return 14200;
     case 'supp_online_set': return null;
+    case 'meds_enabled': return true;
+    case 'meds_enabled_set': return null;
     case 'med_save': return 3;
     case 'med_delete': case 'med_take': return null;
     case 'psych_summary': return {
@@ -689,7 +691,7 @@ export type MedTiming = { code: string; title: string; text: string; days: numbe
 export type MedsSummary = {
   items: Med[]; today: [string, number][]; supp7: Record<string, number>;
   warnings: { key: string; avg: number; supp: number; limit: number; note: string }[];
-  timing?: MedTiming[]; notes?: MedNote[]; unknown?: string[];
+  timing?: MedTiming[]; notes?: MedNote[]; unknown?: string[]; enabled?: boolean;
 };
 export type CatalogKind = 'vitamin' | 'protein' | 'isotonic' | 'amino' | 'other';
 export type CatalogBrands = { version: string | null; brands: { key: string; name: string; count: number; kinds: Record<CatalogKind, number> }[] };
@@ -854,6 +856,8 @@ export const api = {
   drugRegistryInfo: () => call<DrugRegistry>('drug_registry_info'),
   drugRegistryUpdate: () => call<number>('drug_registry_update'),
   suppOnlineSet: (on: boolean) => call<null>('supp_online_set', { on }),
+  medsEnabled: () => call<boolean>('meds_enabled'),
+  medsEnabledSet: (on: boolean) => call<null>('meds_enabled_set', { on }),
   surveySave: (kind: SurveyKind, answers: number[], date?: string) => call<{ score: number; extra: unknown }>('survey_save', { kind, answers, date: date ?? null }),
   surveyDelete: (kind: SurveyKind, date: string) => call<null>('survey_delete', { kind, date }),
   healthSettingSet: (key: 'sleep_schedule' | 'habits_custom' | 'lab_vo2' | 'sleep_tonight' | 'nutrient_norms', value: unknown) => call<null>('health_setting_set', { key, value }),
