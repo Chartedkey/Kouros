@@ -1,0 +1,2304 @@
+[
+ {
+  "id": "maxler:creatine-monohydrate",
+  "b": "maxler",
+  "n": "Creatine Monohydrate",
+  "s": "3.6 g",
+  "f": "",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    1.0,
+    "ккал"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.16,
+    "г"
+   ],
+   [
+    "creatine",
+    "Creatine Monohydrate",
+    3000.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:plant-protein",
+  "b": "maxler",
+  "n": "Plant Protein",
+  "s": "3 Scoops (28 g)",
+  "f": "порошок",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    95.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    1.2,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibers",
+    1.0,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    23.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    120.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:bcaa-powder-new",
+  "b": "maxler",
+  "n": "BCAA powder NEW",
+  "s": "1 Scoop (7 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    19.0,
+    "ккал"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.3,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    4.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:whey-protein",
+  "b": "maxler",
+  "n": "Whey Protein",
+  "s": "2 scoops (33 g)",
+  "f": "порошок",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    118.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    1.5,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    6.9,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibers",
+    1.0,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    20.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    200.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:kre-alkalyn",
+  "b": "maxler",
+  "n": "Kre-Alkalyn®",
+  "s": "2 Capsules",
+  "f": "",
+  "t": "amino",
+  "c": [
+   [
+    "",
+    "(Buffered Creatine) ",
+    750.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:micellar-casein",
+  "b": "maxler",
+  "n": "Micellar Casein",
+  "s": "2 scoops (30 g)",
+  "f": "порошок",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    107.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    0.6,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    1.9,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibers",
+    0.6,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    24.2,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:multivitamin",
+  "b": "maxler",
+  "n": "Multivitamin",
+  "s": "1 effervescent tablet",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    9.0,
+    "ккал"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.8,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    272.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    2000.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Vitamin E",
+    300.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Vitamin B5",
+    150.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    35.0,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2",
+    35.0,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    27.5,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_a_total",
+    "Vitamin A",
+    10000.0,
+    "мкг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Vitamin B7",
+    1250.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_d_total",
+    "Vitamin D3",
+    125.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    62.5,
+    "мкг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:keto-collagen",
+  "b": "maxler",
+  "n": "Keto Collagen",
+  "s": "16 g",
+  "f": "",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    78.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    3.9,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    1.4,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibers",
+    0.2,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    10.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    120.0,
+    "мг"
+   ],
+   [
+    "",
+    "MCT Oil Powder",
+    5.6,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:flex-joint",
+  "b": "maxler",
+  "n": "Flex Joint",
+  "s": "1 scoop (12 g)",
+  "f": "порошок",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    20.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    0.01,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.7,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibers",
+    0.05,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    4.6,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "",
+    "Hydrolyzed Collagen (as Peptan® B 2000 LD)",
+    4630.0,
+    "мг"
+   ],
+   [
+    "",
+    "Methylsulfonylmethane (MSM)",
+    2000.0,
+    "мг"
+   ],
+   [
+    "",
+    "Glucosamine Sulfate",
+    1500.0,
+    "мг"
+   ],
+   [
+    "",
+    "Chondroitin Sulfate",
+    1200.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C (as Ascorbic Acid)",
+    1000.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:oat-whey-protein",
+  "b": "maxler",
+  "n": "Oat Whey",
+  "s": "50 g",
+  "f": "",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    178.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    3.6,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    17.0,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fiber",
+    3.8,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    18.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:ultra-whey-lactose-free",
+  "b": "maxler",
+  "n": "Ultra Whey Lactose Free",
+  "s": "30 g",
+  "f": "",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    114.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    1.5,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrate",
+    2.0,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibre",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    24.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    120.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:vitamin-d3-600iu",
+  "b": "maxler",
+  "n": "Vitamin D3 600IU",
+  "s": "1 capsule",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    1.61,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.14,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.01,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.05,
+    "г"
+   ],
+   [
+    "dietary_vitamin_d_total",
+    "Vitamin D3",
+    15.0,
+    "мкг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:d3-k2-vitamins",
+  "b": "maxler",
+  "n": "D3+K2 Vitamins",
+  "s": "1 capsule",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    4.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.8,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.08,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.2,
+    "г"
+   ],
+   [
+    "dietary_vitamin_k_total",
+    "Vit. K2 (as MK-7, dissolved in MCT oil)",
+    30.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_d_total",
+    "Vit. D3 (as cholecalciferol)",
+    15.0,
+    "мкг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:relax-anti-stress",
+  "b": "maxler",
+  "n": "Relax & Anti-Stress",
+  "s": "1 capsule",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "",
+    "Crocus extract (Crocus sativus L.)",
+    290.0,
+    "мг"
+   ],
+   [
+    "dietary_magnesium_total",
+    "Magnesium bisglycinate",
+    37.5,
+    "мг"
+   ],
+   [
+    "",
+    "N-Acetyl-L-Tyrosine",
+    25.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Vitamin B5 (as calcium D-pantothenate)",
+    7.51,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6 (as pyridoxine hydrochloride)",
+    3.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_d_total",
+    "Vitamin D3 (as cholecalciferol)",
+    0.5,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12 (as cyanocobalamin)",
+    0.19,
+    "мкг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:l-citrulline-malate-powder",
+  "b": "maxler",
+  "n": "L-Citrulline Malate Powder",
+  "s": "1 scoop (5 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    4.4,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fiber",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    4.0,
+    "мг"
+   ],
+   [
+    "",
+    "L-Citrulline DL-Malate 2:1",
+    5.0,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:100-pure-glutamine",
+  "b": "maxler",
+  "n": "100% Pure Glutamine",
+  "s": "1 scoop (5 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    20.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    5.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    4.0,
+    "мг"
+   ],
+   [
+    "",
+    "L-Glutamine",
+    5.0,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:acetyl-l-carnitine",
+  "b": "maxler",
+  "n": "Acetyl L-Carnitine",
+  "s": "1 capsule",
+  "f": "",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    1.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.01,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fiber",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.2,
+    "г"
+   ],
+   [
+    "",
+    "Acetyl L-Carnitine",
+    500.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:arginine-aakg",
+  "b": "maxler",
+  "n": "Arginine AAKG",
+  "s": "1 scoop (5 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    19.6,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    4.7,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "",
+    "L-Arginine, L-Arginine Alpha-Ketoglutarate",
+    5.0,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:vitamin-e",
+  "b": "maxler",
+  "n": "Natural vitamin E",
+  "s": "1 capsule",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    1.7,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.03,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Natural vitamin E (as D-alpha-tocopherol concentrate)",
+    150.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:creatine-caps-1000",
+  "b": "maxler",
+  "n": "Creatine Caps 1000",
+  "s": "3 capsules",
+  "f": "",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    1.5,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    0.02,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.3,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "creatine",
+    "Creatine Monohydrate",
+    2640.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:b-complex",
+  "b": "maxler",
+  "n": "B complex",
+  "s": "1 effervescent tablet",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    8.0,
+    "ккал"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.9,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    300.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Vitamin B5",
+    150.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    35.0,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2",
+    35.0,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    27.5,
+    "мг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Vitamin B7",
+    1250.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    62.5,
+    "мкг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:beta-alanine-powder",
+  "b": "maxler",
+  "n": "Beta-Alanine powder",
+  "s": "1/2 scoop (5 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    12.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "",
+    "Beta-alanine",
+    5.0,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:amino-magic-fuel",
+  "b": "maxler",
+  "n": "Amino Magic Fuel",
+  "s": "45 ml",
+  "f": "",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    111.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    6.5,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    20.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    4.0,
+    "мг"
+   ],
+   [
+    "dietary_niacin_total",
+    "niacin",
+    35.6,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Pantothenic acid",
+    13.3,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2",
+    3.1,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    3.1,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    2.4,
+    "мг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Biotin",
+    111.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    5.6,
+    "мкг"
+   ],
+   [
+    "",
+    "Inositol",
+    100.0,
+    "мг"
+   ],
+   [
+    "",
+    "L-carnitine",
+    25.0,
+    "мг"
+   ],
+   [
+    "choline",
+    "Choline",
+    25.0,
+    "мг"
+   ],
+   [
+    "",
+    "Para-aminobenzoic acid",
+    2.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:vegan-omega",
+  "b": "maxler",
+  "n": "Vegan Omega",
+  "s": "1 capsule",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    11.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.8,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.8,
+    "г"
+   ],
+   [
+    "",
+    "Organic flaxseed oil (cold-pressed)",
+    800.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega-3 (alpha-linolenic acid)",
+    400.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega-6 (linoleic acid)",
+    88.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega-9 (oleic acid)",
+    88.0,
+    "мг"
+   ],
+   [
+    "",
+    "Organic evening primrose oil (cold-pressed)",
+    200.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega-6 (linoleic acid)",
+    136.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega-6 (gamma-linolenic acid)",
+    18.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega-9 (oleic acid)",
+    10.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Natural vitamin E (D-alpha-tocopherol concentrate)",
+    10.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:vitamin-drink-concentrate",
+  "b": "maxler",
+  "n": "Vitamin Drink Concentrate",
+  "s": "9 ml",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    4.5,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    56.0,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    6.6,
+    "мг"
+   ],
+   [
+    "dietary_niacin_total",
+    "niacin",
+    96.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    8.4,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    15.0,
+    "мкг"
+   ],
+   [
+    "dietary_magnesium_total",
+    "magnesium",
+    320.0,
+    "мг"
+   ],
+   [
+    "",
+    "L-carnitine",
+    28.8,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:marine-collagen-plus",
+  "b": "maxler",
+  "n": "Marine Collagen Plus",
+  "s": "5.15 g",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    19.0,
+    "ккал"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    5.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    16.0,
+    "мг"
+   ],
+   [
+    "",
+    "1 200 mg",
+    60.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:mega-gainer",
+  "b": "maxler",
+  "n": "Mega Gainer",
+  "s": "3 scoops (75 g)",
+  "f": "порошок",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    273.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.2,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    59.4,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    7.5,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    160.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    80.0,
+    "мг"
+   ],
+   [
+    "dietary_niacin_total",
+    "niacin",
+    16.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Vitamin E",
+    12.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Pantothenic acid",
+    6.9,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2",
+    2.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    1.4,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    1.1,
+    "мг"
+   ],
+   [
+    "dietary_folate_total",
+    "Folic acid",
+    200.0,
+    "мкг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Biotin",
+    63.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    3.1,
+    "мкг"
+   ],
+   [
+    "dietary_calcium_total",
+    "calcium",
+    553.0,
+    "мг"
+   ],
+   [
+    "dietary_magnesium_total",
+    "magnesium",
+    132.0,
+    "мг"
+   ],
+   [
+    "dietary_iron_total",
+    "iron",
+    6.7,
+    "мг"
+   ],
+   [
+    "dietary_zinc_total",
+    "zinc",
+    6.6,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:l-carnitine-caps-750",
+  "b": "maxler",
+  "n": "L-Carnitine Caps 750",
+  "s": "1 capsule",
+  "f": "",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    1.2,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "",
+    "L-Carnitine",
+    750.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:guarana-2000-shots",
+  "b": "maxler",
+  "n": "Guarana 2000 Shots",
+  "s": "25 ml",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    15.5,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    3.5,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    4.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    320.0,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    4.4,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    5.6,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Pantothenic acid",
+    24.0,
+    "мг"
+   ],
+   [
+    "",
+    "Guarana extract",
+    2000.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:balance-for-women",
+  "b": "maxler",
+  "n": "Balance for Women",
+  "s": "3 capsules",
+  "f": "",
+  "t": "vitamin",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    7.2,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.6,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    120.0,
+    "мг"
+   ],
+   [
+    "",
+    "Omega 3-6-9 (linseed oil)",
+    575.0,
+    "мг"
+   ],
+   [
+    "",
+    "Soy isoflavones",
+    34.0,
+    "мг"
+   ],
+   [
+    "",
+    "Hyaluronic acid",
+    17.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C (from L-ascorbic acid)",
+    26.7,
+    "мг"
+   ],
+   [
+    "dietary_niacin_total",
+    "Vitamin B3 (from nicotinamide)",
+    16.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Natural vitamin E (from D-alpha-tocopherol concentrate)",
+    12.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Vitamin B5 (from calcium pantothenate)",
+    5.0,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2 (from riboflavin)",
+    1.4,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6 (from pyridoxine hydrochloride)",
+    1.4,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1 (from thiamine mononitrate)",
+    1.1,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_a_total",
+    "Vitamin A (from retinyl palmitate)",
+    800.0,
+    "мкг"
+   ],
+   [
+    "dietary_folate_total",
+    "Folic acid",
+    200.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_k_total",
+    "Vitamin K1 (from phytomenadione)",
+    88.0,
+    "мкг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Biotin",
+    150.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_d_total",
+    "Vitamin D3 (from cholecalciferol)",
+    5.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12 (from cyanocobalamin)",
+    2.5,
+    "мкг"
+   ],
+   [
+    "dietary_magnesium_total",
+    "Magnesium (from magnesium oxide)",
+    58.0,
+    "мг"
+   ],
+   [
+    "dietary_zinc_total",
+    "Zinc (from zinc oxide)",
+    8.0,
+    "мг"
+   ],
+   [
+    "dietary_copper_total",
+    "Copper (from anhydrous copper sulfate)",
+    1.0,
+    "мг"
+   ],
+   [
+    "dietary_manganese_total",
+    "Manganese (from manganese sulfate monohydrate)",
+    1.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:creatine-monohydrate-unflavored",
+  "b": "maxler",
+  "n": "Creatine 100% Monohydrate",
+  "s": "1 scoop (6 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    0.1,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "creatine",
+    "Creatine Monohydrate",
+    6000.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:collagen-hydrolysate",
+  "b": "maxler",
+  "n": "Collagen hydrolysate",
+  "s": "10 g",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    38.1,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:black-kick",
+  "b": "maxler",
+  "n": "Black Kick",
+  "s": "1 scoop (30 g)",
+  "f": "порошок",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    105.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    25.3,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.2,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    4.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    80.0,
+    "мг"
+   ],
+   [
+    "dietary_niacin_total",
+    "niacin",
+    16.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Vitamin E",
+    12.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Pantothenic acid",
+    6.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    1.4,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2",
+    1.4,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    1.1,
+    "мг"
+   ],
+   [
+    "dietary_folate_total",
+    "Folic acid",
+    200.0,
+    "мкг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Biotin",
+    50.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    2.5,
+    "мкг"
+   ],
+   [
+    "dietary_calcium_total",
+    "calcium",
+    402.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:bcaa-powder",
+  "b": "maxler",
+  "n": "BCAA powder",
+  "s": "1 scoop (7 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    27.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.03,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.3,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fiber",
+    0.01,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    6.0,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:marine-collagen-skin-care",
+  "b": "maxler",
+  "n": "Marine Collagen Skin Care",
+  "s": "25 ml",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    23.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.2,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    5.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    40.0,
+    "мг"
+   ],
+   [
+    "",
+    "Hydrolyzed Marine Collagen",
+    5000.0,
+    "мг"
+   ],
+   [
+    "",
+    "Hyaluronic Acid",
+    50.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    160.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:ultra-whey",
+  "b": "maxler",
+  "n": "Ultra Whey",
+  "s": "30 g",
+  "f": "",
+  "t": "protein",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    118.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fat",
+    1.9,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    2.3,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fibers",
+    0.2,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "Protein",
+    24.0,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    80.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:max-motion",
+  "b": "maxler",
+  "n": "Max Motion",
+  "s": "1 scoop (20 g)",
+  "f": "порошок",
+  "t": "isotonic",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    71.6,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Fats",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    15.9,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_sodium_total",
+    "Натрий (из соли)",
+    16.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    160.0,
+    "мг"
+   ],
+   [
+    "dietary_niacin_total",
+    "niacin",
+    32.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Vitamin E",
+    24.0,
+    "мг"
+   ],
+   [
+    "dietary_pantothenic_acid_total",
+    "Pantothenic acid",
+    12.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_b6_total",
+    "Vitamin B6",
+    2.8,
+    "мг"
+   ],
+   [
+    "dietary_riboflavin_total",
+    "Vitamin B2",
+    2.8,
+    "мг"
+   ],
+   [
+    "dietary_thiamin_total",
+    "Vitamin B1",
+    2.2,
+    "мг"
+   ],
+   [
+    "dietary_folate_total",
+    "Folic acid",
+    400.0,
+    "мкг"
+   ],
+   [
+    "dietary_biotin_total",
+    "Biotin",
+    100.0,
+    "мкг"
+   ],
+   [
+    "dietary_vitamin_b12_total",
+    "Vitamin B12",
+    5.0,
+    "мкг"
+   ],
+   [
+    "dietary_calcium_total",
+    "calcium",
+    806.0,
+    "мг"
+   ],
+   [
+    "dietary_phosphorus_total",
+    "phosphorus",
+    384.0,
+    "мг"
+   ],
+   [
+    "dietary_magnesium_total",
+    "magnesium",
+    300.0,
+    "мг"
+   ],
+   [
+    "dietary_potassium_total",
+    "potassium",
+    538.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:bcaa-glutamine",
+  "b": "maxler",
+  "n": "BCAA+Glutamine",
+  "s": "1 scoop (10 g)",
+  "f": "порошок",
+  "t": "amino",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    3.0,
+    "ккал"
+   ],
+   [
+    "dietary_carbohydrates_total",
+    "Carbohydrates",
+    0.38,
+    "г"
+   ],
+   [
+    "dietary_fiber_total",
+    "Fiber",
+    0.1,
+    "г"
+   ],
+   [
+    "dietary_protein_total",
+    "protein",
+    7.7,
+    "г"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:omega-3-gold",
+  "b": "maxler",
+  "n": "Omega-3 Gold",
+  "s": "1 capsule",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_energy_total",
+    "Энергия",
+    10.0,
+    "ккал"
+   ],
+   [
+    "dietary_fat_total_total",
+    "Total fat",
+    1.0,
+    "г"
+   ],
+   [
+    "",
+    "Omega-3 fatty acids total",
+    300.0,
+    "мг"
+   ],
+   [
+    "epa",
+    "EPA (eicosapentaenoic acid)",
+    180.0,
+    "мг"
+   ],
+   [
+    "dha",
+    "DHA (docosahexaenoic acid)",
+    120.0,
+    "мг"
+   ],
+   [
+    "dietary_vitamin_e_total",
+    "Vitamin E (as D-alpha-tocopherol)",
+    3.0,
+    "мг"
+   ]
+  ]
+ },
+ {
+  "id": "maxler:glucosamine-chondroitin-msm-max",
+  "b": "maxler",
+  "n": "Glucosamine Chondroitin MSM Max",
+  "s": "1 tablet",
+  "f": "",
+  "t": "other",
+  "c": [
+   [
+    "dietary_vitamin_c_total",
+    "Vitamin C",
+    133.0,
+    "мг"
+   ],
+   [
+    "dietary_manganese_total",
+    "manganese",
+    5.0,
+    "мг"
+   ],
+   [
+    "",
+    "Bromelain",
+    17.0,
+    "мг"
+   ],
+   [
+    "",
+    "Glucosamine sulfate",
+    840.0,
+    "мг"
+   ],
+   [
+    "",
+    "Chondroitin sulfate",
+    250.0,
+    "мг"
+   ],
+   [
+    "",
+    "MSM (as methylsulfonylmethane)",
+    200.0,
+    "мг"
+   ]
+  ]
+ }
+]

@@ -1,0 +1,189 @@
+skip 404 https://www.maxler.com/products/golden-creatine-caps-copy
+skip 404 https://www.maxler.com/products/shaker-essence-maxler
+skip 404 https://www.maxler.com/products/zma-max
+skip 404 https://www.maxler.com/products/iron-plus-gummuies-for-kids
+skip 404 https://www.maxler.com/products/magnesium-gummies-for-kids
+skip 404 https://www.maxler.com/products/maxler-vision-gummies
+skip 404 https://www.maxler.com/products/water-bottle-shakemix
+skip 404 https://www.maxler.com/products/aminomax
+skip 404 https://www.maxler.com/products/akg-tabs
+skip 404 https://www.maxler.com/products/bcaa_plus_glutamine
+skip 404 https://www.maxler.com/products/flex-joint-us
+skip 404 https://www.maxler.com/products/shaker-pro
+skip 404 https://www.maxler.com/products/shaker-essence
+skip 404 https://www.maxler.com/products/golden-creatine-caps
+skip 404 https://www.maxler.com/products/vitamin-c-gummies-for-kids
+skip 404 https://www.maxler.com/products/new-multivitamin-gummies
+skip 404 https://www.maxler.com/products/golden-7-protein-blend
+skip 404 https://www.maxler.com/products/bcaa-8400
+skip 404 https://www.maxler.com/products/hair-nails-skin
+skip 404 https://www.maxler.com/products/100-golden-glutamine
+skip 404 https://www.maxler.com/products/vitamin-c-gummies-500-mg
+skip 404 https://www.maxler.com/products/d3k2-gummies
+skip 404 https://www.maxler.com/products/multivitamin-gummies-sugar-free
+skip 404 https://www.maxler.com/products/calcium-d3-gummies
+skip 404 https://www.maxler.com/products/l-citrulline-malate-750-mg
+skip 404 https://www.maxler.com/products/daily-max-women
+skip 404 https://www.maxler.com/products/daily-max-men
+skip 404 https://www.maxler.com/products/chromium-picolinate
+skip 404 https://www.maxler.com/products/chelated-magnesium
+skip 404 https://www.maxler.com/products/zinc-picolinate-50mg
+skip 404 https://www.maxler.com/products/vitamin-d3-1200iu
+skip 404 https://www.maxler.com/products/calcium-citrate-d3
+skip 404 https://www.maxler.com/products/calcium-magnesium-zincd3
+skip 404 https://www.maxler.com/products/magnesium-b6-1
+skip 404 https://www.maxler.com/products/daily-max
+skip 404 https://www.maxler.com/products/sleep-gummies-with-melatonin
+skip 404 https://www.maxler.com/products/trans-resveratrol
+skip 404 https://www.maxler.com/products/organic-ginkgo-biloba
+skip 404 https://www.maxler.com/products/organic-spirulina
+skip 404 https://www.maxler.com/products/gaba-500mg
+skip 404 https://www.maxler.com/products/l-tyrosine-500mg
+skip 404 https://www.maxler.com/products/arginine-1000-max
+skip 404 https://www.maxler.com/products/collagen-type-1-and-3
+skip 404 https://www.maxler.com/products/hyaluronic-acid-complex-optimsm
+skip 404 https://www.maxler.com/products/alpha-lipoic-acid
+skip 404 https://www.maxler.com/products/maca-750
+skip 404 https://www.maxler.com/products/dmae-250
+skip 404 https://www.maxler.com/products/liquid-iodine-drops
+skip 404 https://www.maxler.com/products/b-complex-us
+skip 404 https://www.maxler.com/products/glucosamine-chondroitin-msm
+skip 404 https://www.maxler.com/products/folic-acid-bioactive-folate
+skip 404 https://www.maxler.com/products/organic-echinacea-extract
+skip 404 https://www.maxler.com/products/d3-k2-vitamin-complex-drops
+skip 404 https://www.maxler.com/products/liquid-melatonin
+skip 404 https://www.maxler.com/products/biotin
+skip 404 https://www.maxler.com/products/vitamin-d3-5000iu-drops
+skip 404 https://www.maxler.com/products/zinc-picolinate-25mg
+skip 404 https://www.maxler.com/products/5-htp
+skip 404 https://www.maxler.com/products/beauty-collagen
+skip 404 https://www.maxler.com/products/caffeine-200
+skip 404 https://www.maxler.com/products/electrolyte-powder
+skip 404 https://www.maxler.com/products/iron-25-mg
+skip 404 https://www.maxler.com/products/liver-support
+skip 404 https://www.maxler.com/products/turmeric-curcumin-with-bioperine
+skip 404 https://www.maxler.com/products/vitawomen
+skip 404 https://www.maxler.com/products/vitamen
+skip 404 https://www.maxler.com/products/taurine-1000mg
+skip 404 https://www.maxler.com/products/coenzyme-q10-capsules
+skip 404 https://www.maxler.com/products/100-golden-creatine
+skip 404 https://www.maxler.com/products/special-mass
+skip 404 https://www.maxler.com/products/lysine-500mg
+skip 404 https://www.maxler.com/products/zinc-picolinate-copper
+skip 404 https://www.maxler.com/products/melatonin
+skip 404 https://www.maxler.com/products/selenium
+skip 404 https://www.maxler.com/products/100-golden-citrulline-malate
+skip 404 https://www.maxler.com/products/100-golden-bcaa
+skip 404 https://www.maxler.com/products/100-golden-whey
+skip 404 https://www.maxler.com/products/juicy-isolate
+skip 404 https://www.maxler.com/products/nrg-max
+retry 0 https://www.maxler.com/products/liquid-chlorophyll HTTP Error 429: Too Many Requests
+retry 1 https://www.maxler.com/products/liquid-chlorophyll HTTP Error 429: Too Many Requests
+skip 404 https://www.maxler.com/products/liquid-chlorophyll
+  maxler implausible (dropped): Magnesium Glycinate Liquid Shots [['dietary_magnesium_total', 'Magnesium', 1500.0, 'мг']]
+  maxler implausible (dropped): Balance for Men [['dietary_magnesium_total', 'magnesium', 1500.0, 'мг']]
+  maxler implausible (dropped): Magnesium Glycinate Liquid [['dietary_magnesium_total', 'magnesium', 1500.0, 'мг']]
+  maxler implausible (dropped): Vitamin C Sodium Ascorbate [['dietary_vitamin_c_total', 'Vitamin C (as sodium ascorbate)', 100000.0, 'мг']]
+  maxler implausible (dropped): Vitamin C + Zinc [['dietary_vitamin_c_total', 'Vitamin C', 12500.0, 'мг'], ['dietary_zinc_total', 'zinc', 250.0, 'мг']]
+  maxler implausible (dropped): Marine Collagen + Hyaluronic Acid Complex [['dietary_vitamin_c_total', 'Vitamin C', 6153.0, 'мг']]
+  maxler implausible (dropped): Magnesium B6 [['dietary_magnesium_total', 'magnesium', 3125.0, 'мг']]
+  maxler implausible (dropped): Hyaluronic acid with vitamin C [['dietary_magnesium_total', 'magnesium', 3125.0, 'мг']]
+  maxler implausible (dropped): Iron Plus [['dietary_iron_total', 'iron', 350.0, 'мг']]
+  maxler implausible (dropped): Max Motion effervescent tablets [['dietary_calcium_total', 'calcium', 2025.0, 'мг']]
+Maxler products 142 with composition 50
+  maxler without composition: MAXLER Performance Stack 
+  maxler without composition: Creatine Gummies no facts
+  maxler without composition: Shaker Essence MAXLER no facts
+  maxler without composition: ZMA MAX no facts
+  maxler without composition: Iron Plus Gummies for Kids no facts
+  maxler without composition: Magnesium Gummies for Kids no facts
+  maxler without composition: Vision Gummies no facts
+  maxler without composition: Water Bottle Shake&Mix no facts
+  maxler without composition: Amino MaX no facts
+  maxler without composition: AKG Tabs no facts
+  maxler without composition: BCAA plus Glutamine no facts
+  maxler without composition: Flex Joint no facts
+  maxler without composition: Shaker PRO no facts
+  maxler without composition: Shaker Essence no facts
+  maxler without composition: Magnesium Glycinate Liquid Shots implausible
+  maxler without composition: Golden Creatine Caps no facts
+  maxler without composition: Vitamin C Gummies For Kids no facts
+  maxler without composition: Multivitamin Gummies no facts
+  maxler without composition: Golden 7 Protein Blend no facts
+  maxler without composition: Balance for Men implausible
+  maxler without composition: Magnesium Glycinate Liquid implausible
+  maxler without composition: Vitamin C Sodium Ascorbate implausible
+  maxler without composition: Vitamin C + Zinc implausible
+  maxler without composition: Marine Collagen + Hyaluronic Acid Complex implausible
+  maxler without composition: Magnesium B6 implausible
+  maxler without composition: Hyaluronic acid with vitamin C implausible
+  maxler without composition: Iron Plus implausible
+  maxler without composition: Max Motion effervescent tablets implausible
+  maxler without composition: BCAA 8400 no facts
+  maxler without composition: Hair Nails Skin Vitamins no facts
+  maxler without composition: 100% Golden Glutamine no facts
+  maxler without composition: Vitamin C Gummies 500 mg no facts
+  maxler without composition: D3+K2 Gummies no facts
+  maxler without composition: Multivitamin Gummies Sugar Free no facts
+  maxler without composition: Calcium D3 Gummies no facts
+  maxler without composition: L-Citrulline Malate 750 mg no facts
+  maxler without composition: Daily Max Women no facts
+  maxler without composition: Daily Max Men no facts
+  maxler without composition: Chromium Picolinate no facts
+  maxler without composition: Chelated Magnesium no facts
+  maxler without composition: Zinc Picolinate 50mg no facts
+  maxler without composition: Vitamin D3 1200IU no facts
+  maxler without composition: Calcium Citrate + D3 no facts
+  maxler without composition: Calcium Magnesium Zinc+D3 no facts
+  maxler without composition: Magnesium B6 no facts
+  maxler without composition: Daily Max no facts
+  maxler without composition: Sleep Gummies with Melatonin no facts
+  maxler without composition: Trans-Resveratrol no facts
+  maxler without composition: Organic Ginkgo Biloba no facts
+  maxler without composition: Organic Spirulina no facts
+  maxler without composition: GABA 500mg no facts
+  maxler without composition: L-Tyrosine 500mg no facts
+  maxler without composition: Arginine 1000 Max no facts
+  maxler without composition: Collagen Type 1 and 3 no facts
+  maxler without composition: Hyaluronic Acid Complex + OptiMSM no facts
+  maxler without composition: Alpha Lipoic Acid no facts
+  maxler without composition: MACA 750 no facts
+  maxler without composition: DMAE 250 no facts
+  maxler without composition: Liquid Iodine Drops no facts
+  maxler without composition: B-Complex no facts
+  maxler without composition: Glucosamine Chondroitin MSM no facts
+  maxler without composition: Folic Acid Bioactive Folate no facts
+  maxler without composition: Organic Echinacea Extract no facts
+  maxler without composition: D3+K2 Vitamin Complex Drops no facts
+  maxler without composition: Liquid Melatonin no facts
+  maxler without composition: Biotin no facts
+  maxler without composition: Vitamin D3 5000IU Drops no facts
+  maxler without composition: Zinc Picolinate 25mg no facts
+  maxler without composition: 5-HTP no facts
+  maxler without composition: Beauty Collagen no facts
+  maxler without composition: Caffeine 200 no facts
+  maxler without composition: Electrolyte Powder no facts
+  maxler without composition: Iron 25mg no facts
+  maxler without composition: Liver Support no facts
+  maxler without composition: Turmeric Curcumin with Bioperine no facts
+  maxler without composition: VitaWomen no facts
+  maxler without composition: VitaMen no facts
+  maxler without composition: Taurine 1000mg no facts
+  maxler without composition: Coenzyme Q10 no facts
+  maxler without composition: 100% Golden Creatine no facts
+  maxler without composition: Special Mass no facts
+  maxler without composition: Lysine 500mg no facts
+  maxler without composition: Zinc Picolinate + Copper no facts
+  maxler without composition: Melatonin no facts
+  maxler without composition: Selenium no facts
+  maxler without composition: 100% Golden Citrulline Malate no facts
+  maxler without composition: 100% Golden BCAA no facts
+  maxler without composition: 100% Golden Whey no facts
+  maxler without composition: Juicy Isolate no facts
+  maxler without composition: NRG Max no facts
+  maxler without composition: Liquid Chlorophyll no facts
+DSLD NOW labels kept 1384 on market 970
+DSLD Solgar labels kept 629 on market 396
+wrote catalog.json.gz 715480 bytes
+GRLS rows 6734 from Перечень_(октябрь_2026).xls
+wrote drugs.json.gz 751005 bytes

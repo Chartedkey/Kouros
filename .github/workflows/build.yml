@@ -1,0 +1,70 @@
+name: Сборка для Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # OpenSSL for SQLCipher is compiled from source and needs NASM on Windows.
+      - uses: ilammy/setup-nasm@v1
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Установка зависимостей
+        run: npm install
+
+      - name: Описание версии из CHANGELOG.md
+        id: notes
+        shell: bash
+        run: |
+          v=$(node -p "require('./package.json').version")
+          body=$(awk -v v="## $v" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md)
+          [ -z "$body" ] && body="Установщик для Windows — файл Kouros_…_x64-setup.exe в разделе Assets ниже."
+          {
+            echo "body<<KOUROS_EOF"
+            echo "$body"
+            echo ""
+            echo "**Установка:** скачай \`Kouros_${v}_x64-setup.exe\` ниже и поставь поверх старой версии — данные сохранятся."
+            echo "KOUROS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Сборка установщика и релиз
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'Kouros v__VERSION__'
+          releaseBody: ${{ steps.notes.outputs.body }}
+          releaseDraft: false
+          prerelease: true
+          args: --bundles nsis
+
+      - name: Установщик как артефакт сборки
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kouros-windows-setup
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: warn

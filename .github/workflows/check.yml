@@ -1,0 +1,37 @@
+name: Проверка кода
+
+on:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: ilammy/setup-nasm@v1
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+      - name: Установка зависимостей
+        run: npm install
+      - name: Проверка интерфейса
+        run: npx tsc --noEmit
+      - name: Сборка интерфейса
+        run: npx vite build
+      - name: Проверка Rust
+        working-directory: src-tauri
+        env:
+          CARGO_TERM_COLOR: never
+        run: |
+          cargo check --message-format=short 2>&1 | Tee-Object -FilePath ..\cargo.txt
+          $code = $LASTEXITCODE
+          # Errors become annotations so they can be read without the full log.
+          Select-String -Path ..\cargo.txt -Pattern '(^|: )error' | Select-Object -First 40 | ForEach-Object { Write-Output "::error::$($_.Line)" }
+          exit $code
