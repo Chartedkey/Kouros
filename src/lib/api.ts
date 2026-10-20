@@ -140,6 +140,30 @@ function demoDetail(id: string): ActivityDetail {
   };
 }
 
+/** Fictional lab results for the browser demo. */
+function demoLabs(): LabsSummary {
+  const t = (key: string, name: string, group: string, unit: string, series: [string, number][], lo: number | null, hi: number | null, note: LabNote | null): LabTest => {
+    const v = series[series.length - 1][1];
+    const status = lo != null && v < lo ? 'low' : hi != null && v > hi ? 'high' : 'ok';
+    return { key, known: true, name, printed: name, group, unit, count: series.length, series, note,
+      latest: { date: series[series.length - 1][0], value: v, text: String(v), lo, hi, ref: lo != null && hi != null ? `${lo}-${hi}` : hi != null ? `<${hi}` : '', status, comment: '' } };
+  };
+  const d: LabNote = { level: 'info', title: 'Витамин D 27,5 нг/мл — недостаточно (20–30).', text: 'Целевой уровень 30–60 нг/мл. Осенью и зимой солнца мало — обсуди с врачом профилактическую дозу.', todo: 'Это не диагноз — обсуди результат с врачом.' };
+  const ck: LabNote = { level: 'info', title: 'КФК 310 Ед/л — выше нормы.', text: 'КФК выходит из мышц после нагрузки. За 3 дня до сдачи была нагрузка 240 (самая длинная тренировка 95 мин). Перед следующей сдачей — 2–3 дня без тяжёлых и длинных тренировок.', todo: 'Это не диагноз — обсуди результат с врачом.' };
+  return {
+    reports: [{ id: 2, date: '2026-10-14', lab: 'Пример', file: null, source: 'pdf', count: 5 }, { id: 1, date: '2026-04-02', lab: 'Пример', file: null, source: 'claude', count: 4 }],
+    groups: ['Железо', 'Кровь', 'Витамины', 'Мышцы и печень', 'Воспаление'],
+    findings: [{ ...d, key: 'vitd', date: '2026-10-14' }, { ...ck, key: 'ck', date: '2026-10-14' }],
+    tests: [
+      t('ferritin', 'Ферритин', 'Железо', 'мкг/л', [['2026-04-02', 34], ['2026-10-14', 41]], 30, 400, null),
+      t('hgb', 'Гемоглобин', 'Кровь', 'г/л', [['2026-04-02', 148], ['2026-10-14', 151]], 130, 170, null),
+      t('vitd', 'Витамин D (25-OH)', 'Витамины', 'нг/мл', [['2026-04-02', 21], ['2026-10-14', 27.5]], 30, 100, d),
+      t('ck', 'Креатинкиназа (КФК)', 'Мышцы и печень', 'Ед/л', [['2026-04-02', 180], ['2026-10-14', 310]], null, 190, ck),
+      t('crp', 'С-реактивный белок', 'Воспаление', 'мг/л', [['2026-04-02', 0.8], ['2026-10-14', 0.6]], null, 5, null),
+    ],
+  };
+}
+
 function demoNutrition(): NutritionSummary {
   const days: NutDay[] = Array.from({ length: 90 }, (_, k) => {
     const d = new Date(Date.UTC(2026, 6, 20) + k * 86400000).toISOString().slice(0, 10);
@@ -155,6 +179,15 @@ function demoNutrition(): NutritionSummary {
     days,
     quality: { fullDays: 13, fiber: 14.6, fiberWithEst: 22.3, sugar: 40, sugarPct: 5, protein: 199, proteinPerKg: 1.8, fatPct: 35, satFat: 38, vegDays: 7, top: [['Греческий йогурт', 9], ['Гречка', 6], ['Куриная грудка', 5], ['Яблоки', 4]] },
     window: { first: '08:10', last: '21:30', afterMidnight: 0, days: 16, hours: 10.5, parts: [0, 32, 68], byDay: days.slice(-16).reverse().map((d, i) => [d.date, 540 + (i % 4) * 30, 1180 + (i % 5) * 20, '08:00', '21:20'] as [string, number, number, string, string]) },
+    deficits: { days: 21, need: 14, items: [
+      { key: 'dietary_magnesium_total', name: 'Магний', unit: 'мг', pct: 52, avg: 218, food: 218, supp: 0, rda: 420, level: 'warn',
+        text: 'Магний: в среднем 52% нормы за 21 дн. с полными записями (218 из 420 мг), добавок не отмечено.', advice: 'Если отдельно не принимаешь — может стоить сдать анализ: магний в крови (показывает дефицит не всегда).',
+        test: 'магний в крови (показывает дефицит не всегда)', signs: 'судороги и подёргивания мышц, плохой сон, раздражительность', foods: 'гречка, овсянка, орехи, семечки, бобовые, тёмный шоколад', lab: null },
+      { key: 'dietary_vitamin_d_total', name: 'Витамин D', unit: 'мкг', pct: 22, avg: 3.3, food: 3.3, supp: 0, rda: 15, level: 'bad',
+        text: 'Витамин D: в среднем 22% нормы за 21 дн. с полными записями (3,3 из 15 мкг), добавок не отмечено.', advice: 'Анализ от 14 окт тоже ниже нормы — обсуди с врачом.',
+        test: 'витамин D (25-OH)', signs: 'частые простуды, боль в мышцах и костях, медленное восстановление, стрессовые переломы', foods: 'из еды витамина D всегда мало — основной источник солнце; жирная рыба, печень трески, яйца, грибы',
+        lab: { date: '2026-10-14', value: 27.5, unit: 'нг/мл', status: 'low' } },
+    ] },
     micro: [['Витамин C', 120], ['Витамин D', 22], ['Магний', 74], ['Калий', 81], ['Железо', 160], ['Кальций', 65], ['B12', 210], ['Цинк', 115]].map(([n, p]) => ({ key: String(n), name: String(n), unit: 'мг', rda: 100, avg: Number(p), pct: Number(p), days: 7, avgEst: Number(p) < 100 ? Number(p) + 18 : null, pctEst: Number(p) < 100 ? Number(p) + 18 : null })),
     estimate: { entries7: 84, estimated7: 31, unknown7: ['домашний пирог'] },
   };
@@ -311,6 +344,15 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'drug_registry_update': return 14200;
     case 'supp_online_set': return null;
     case 'meds_enabled': return true;
+    case 'labs_summary': return demoLabs();
+    case 'labs_parse': case 'labs_parse_text': return {
+      date: '2026-10-14', lab: 'Пример', file: null, source: args?.path ? 'pdf' : 'claude', rows: [
+        { name: 'Ферритин', valueText: '41', value: 41, cmp: '', flag: '', unit: 'мкг/л', refText: '30-400', lo: 30, hi: 400, section: 'Железо', comment: '', key: 'ferritin', keyName: 'Ферритин' },
+        { name: '25-OH витамин D', valueText: '27.5', value: 27.5, cmp: '', flag: '-', unit: 'нг/мл', refText: '30-100', lo: 30, hi: 100, section: 'Витамины', comment: '', key: 'vitd', keyName: 'Витамин D (25-OH)' },
+        { name: 'Креатинкиназа (КФК)', valueText: '310', value: 310, cmp: '', flag: '+', unit: 'Ед/л', refText: '<190', lo: null, hi: 190, section: 'Биохимия', comment: '', key: 'ck', keyName: 'Креатинкиназа (КФК)' },
+      ] } satisfies LabPreview;
+    case 'labs_save': return 2;
+    case 'labs_delete': case 'labs_open': case 'deficit_snooze': return null;
     case 'meds_enabled_set': return null;
     case 'med_save': return 3;
     case 'med_delete': case 'med_take': return null;
@@ -667,7 +709,21 @@ export type NutritionSummary = {
   micro: { key: string; name: string; unit: string; rda: number; avg: number | null; pct: number | null; days: number; avgEst?: number | null; pctEst?: number | null; covered?: number; noData?: boolean; dropped?: number; supp7?: number | null; fromSupp?: number | null; pctAll?: number | null }[];
   norms?: { country: string; list: { code: string; name: string; source: string }[] };
   estimate?: { entries7: number; estimated7: number; unknown7: string[] };
+  deficits?: Deficits;
 };
+export type DeficitItem = { key: string; name: string; unit: string; pct: number; avg: number; food: number; supp: number; rda: number; level: 'bad' | 'warn' | 'info';
+  text: string; advice: string; test: string; signs: string; foods: string; lab: { date: string; value: number | null; unit: string; status: string } | null };
+export type Deficits = { days: number; need: number; items: DeficitItem[] };
+// ---------- labs (0.20) ----------
+export type LabRow = { name: string; valueText: string; value: number | null; cmp: string; flag: string; unit: string; refText: string; lo: number | null; hi: number | null;
+  section: string; comment: string; key: string | null; keyName: string; skip?: boolean };
+export type LabPreview = { date: string | null; lab: string; file: string | null; source: 'pdf' | 'claude' | 'manual'; rows: LabRow[] };
+export type LabNote = { level: 'bad' | 'warn' | 'info'; title: string; text: string; todo: string };
+export type LabTest = { key: string; known: boolean; name: string; printed: string; group: string; unit: string; count: number;
+  latest: { date: string; value: number | null; text: string; lo: number | null; hi: number | null; ref: string; status: 'low' | 'high' | 'ok' | ''; comment: string };
+  series: [string, number][]; note: LabNote | null };
+export type LabReport = { id: number; date: string; lab: string | null; file: string | null; source: string | null; count: number };
+export type LabsSummary = { reports: LabReport[]; tests: LabTest[]; findings: (LabNote & { key: string; date: string })[]; groups: string[] };
 export type Meal = { time: string; ts: number; label: string; names: string[]; kcal: number; protein: number; carbs: number; fat: number };
 export type NutritionDay = { date: string; meals: Meal[]; kcal: number | null; protein: number | null; carbs: number | null; fat: number | null; fiber: number | null; fiberEst?: number | null; estimated?: { entries: number; estimated: number; unknown: string[] } | null;
   items?: { time: string; name: string; kcal: number; kind: 'yazio' | 'history' | 'reference' | 'unknown' | 'supplement'; parts: string[]; fiber: number; potassium: number; magnesium: number; iron: number }[]; sugar: number | null; waterMl: number | null; latePct: number | null };
@@ -857,6 +913,13 @@ export const api = {
   drugRegistryUpdate: () => call<number>('drug_registry_update'),
   suppOnlineSet: (on: boolean) => call<null>('supp_online_set', { on }),
   medsEnabled: () => call<boolean>('meds_enabled'),
+  labsParse: (path: string) => call<LabPreview>('labs_parse', { path }),
+  labsParseText: (text: string) => call<LabPreview>('labs_parse_text', { text }),
+  labsSave: (report: LabPreview) => call<number>('labs_save', { report }),
+  labsSummary: () => call<LabsSummary>('labs_summary'),
+  labsDelete: (id: number) => call<null>('labs_delete', { id }),
+  labsOpen: (id: number) => call<null>('labs_open', { id }),
+  deficitSnooze: (key: string) => call<null>('deficit_snooze', { key }),
   medsEnabledSet: (on: boolean) => call<null>('meds_enabled_set', { on }),
   surveySave: (kind: SurveyKind, answers: number[], date?: string) => call<{ score: number; extra: unknown }>('survey_save', { kind, answers, date: date ?? null }),
   surveyDelete: (kind: SurveyKind, date: string) => call<null>('survey_delete', { kind, date }),

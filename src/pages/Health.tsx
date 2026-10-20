@@ -1,11 +1,12 @@
 import { StressCard, stressColor } from '../components/Stress';
 import { Meds } from './Meds';
+import { Labs } from './Labs';
 import { Vital, pointsOf, fmtPts } from '../components/Readiness';
 import { Fragment, useCallback, useEffect, useMemo, useState, type PointerEvent as RPointerEvent, type ReactNode } from 'react';
 import { api, errText, fmtDur, fmtKm, plural, sportOf, type Band, type HealthDay, type HealthNight, type HealthOverview, type HealthSummary, type Pt, type ReadinessDay, type StressDay } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 
-type Sub = 'overview' | 'history' | 'meds';
+type Sub = 'overview' | 'history' | 'labs' | 'meds';
 
 const n0 = (x: number | null | undefined) => (x == null ? '—' : Math.round(x).toLocaleString('ru-RU'));
 const n1 = (x: number | null | undefined) => (x == null ? '—' : x.toFixed(1).replace('.', ','));
@@ -60,7 +61,7 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
         </div>
       </div>
       <nav className="subtabs" aria-label="Разделы здоровья">
-        {([['overview', 'Обзор'], ['history', 'История'], ...(medsOn ? [['meds', 'Витамины и лекарства']] : [])] as [Sub, string][]).map(([id, n]) => (
+        {([['overview', 'Обзор'], ['history', 'История'], ['labs', 'Анализы'], ...(medsOn ? [['meds', 'Витамины и лекарства']] : [])] as [Sub, string][]).map(([id, n]) => (
           <button key={id} type="button" aria-pressed={sub === id} onClick={() => setSub(id)}>{n}</button>
         ))}
       </nav>
@@ -74,9 +75,10 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
           <button type="button" className="btn" onClick={onSettings}>Открыть настройки</button>
         </section>
       )}
-      {!empty && !h && !err && <div className="muted">Считаю…</div>}
+      {!empty && !h && !err && sub !== 'labs' && sub !== 'meds' && <div className="muted">Считаю…</div>}
       {!empty && h && sub === 'overview' && <Overview h={h} reload={load} />}
       {!empty && h && sub === 'history' && <History h={h} ov={ov} onOpen={onOpenWorkout} day={day} onDayUsed={onDayUsed} />}
+      {sub === 'labs' && <Labs />}
       {sub === 'meds' && medsOn && <Meds />}
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Данные Apple Watch и весов через Apple Health. Не является медицинской диагностикой.</p>
     </>

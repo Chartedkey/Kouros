@@ -22,6 +22,7 @@ mod food_dishes;
 mod norms;
 mod muscle_svc;
 mod meds_svc;
+mod labs_svc;
 mod drugs;
 mod catalog_svc;
 mod coach_svc;
@@ -701,6 +702,55 @@ async fn drug_registry_update(st: State<'_, AppState>) -> Result<usize, String> 
 }
 
 #[tauri::command]
+fn deficit_snooze(key: String, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| nutrition_svc::deficit_snooze(c, &key))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "nutrition");
+    Ok(())
+}
+
+#[tauri::command]
+fn labs_parse(path: String) -> Result<serde_json::Value, String> {
+    labs_svc::parse_pdf(&path)
+}
+
+#[tauri::command]
+fn labs_parse_text(text: String) -> Result<serde_json::Value, String> {
+    labs_svc::parse_text(&text)
+}
+
+#[tauri::command]
+fn labs_save(report: serde_json::Value, app: AppHandle, st: State<'_, AppState>) -> Result<i64, String> {
+    let files = root(&st)?.join("files");
+    let id = with_db_mut(&st, |c| labs_svc::save(c, &files, &report))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "labs");
+    Ok(id)
+}
+
+#[tauri::command]
+fn labs_summary(st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| {
+        let p = engine_svc::profile(c);
+        labs_svc::summary(c, &engine_svc::today(&p))
+    })
+}
+
+#[tauri::command]
+fn labs_delete(id: i64, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    let files = root(&st)?.join("files");
+    with_db(&st, |c| labs_svc::delete(c, &files, id))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "labs");
+    Ok(())
+}
+
+#[tauri::command]
+fn labs_open(id: i64, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    let files = root(&st)?.join("files");
+    let f: Option<String> = with_db(&st, |c| Ok(c.query_row("SELECT file FROM lab_reports WHERE id = ?1", [id], |r| r.get(0)).ok().flatten()))?;
+    let f = f.ok_or("У этого отчёта нет файла")?;
+    app.opener().open_path(files.join(f).to_string_lossy().to_string(), None::<&str>).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn meds_enabled(st: State<'_, AppState>) -> Result<bool, String> {
     with_db(&st, |c| Ok(meds_svc::enabled(c)))
 }
@@ -993,6 +1043,13 @@ pub fn run() {
             drug_registry_update,
             supp_online_set,
             meds_enabled,
+            labs_parse,
+            deficit_snooze,
+            labs_parse_text,
+            labs_save,
+            labs_summary,
+            labs_delete,
+            labs_open,
             meds_enabled_set,
             coach_state,
             coach_profile_save,

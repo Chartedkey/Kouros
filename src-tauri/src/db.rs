@@ -342,6 +342,36 @@ const MIGRATIONS: &[&str] = &[
     );
     CREATE INDEX drug_registry_trade ON drug_registry (trade);
     "#,
+    // v17: lab results — reports (PDF read on this computer or Claude's [АНАЛИЗ] lines) and rows
+    r#"
+    CREATE TABLE lab_reports (
+        id         INTEGER PRIMARY KEY,
+        date       TEXT NOT NULL,
+        lab        TEXT,
+        file       TEXT,
+        source     TEXT,
+        created_at INTEGER,
+        note       TEXT
+    );
+    CREATE TABLE lab_results (
+        id         INTEGER PRIMARY KEY,
+        report_id  INTEGER NOT NULL REFERENCES lab_reports (id) ON DELETE CASCADE,
+        date       TEXT NOT NULL,
+        key        TEXT,
+        name       TEXT NOT NULL,
+        value      REAL,
+        value_text TEXT,
+        cmp        TEXT,
+        flag       TEXT,
+        unit       TEXT,
+        lo         REAL,
+        hi         REAL,
+        ref_text   TEXT,
+        section    TEXT,
+        comment    TEXT
+    );
+    CREATE INDEX lab_results_key ON lab_results (key, date);
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {

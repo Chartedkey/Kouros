@@ -22,7 +22,7 @@ export default function App() {
   const [workout, setWorkout] = useState<string | null>(null);
   const openWorkout = (id: string) => { setWorkout(id); setTab('training'); };
   const [healthDay, setHealthDay] = useState<string | null>(null);
-  const [healthSub, setHealthSub] = useState<'meds' | null>(null);
+  const [healthSub, setHealthSub] = useState<'meds' | 'labs' | null>(null);
   const [setSub, setSetSub] = useState<'prof' | null>(null);
   const clearWorkout = useCallback(() => setWorkout(null), []);
 
@@ -62,7 +62,7 @@ export default function App() {
         ) : tab === 'psychology' ? (
           <Psychology onOpenWorkout={openWorkout} />
         ) : tab === 'nutrition' ? (
-          <Nutrition onHealth={() => setTab('health')} />
+          <Nutrition onHealth={() => setTab('health')} onLabs={() => { setHealthSub('labs'); setTab('health'); }} />
         ) : tab === 'coach' ? (
           <Coach />
         ) : tab === 'today' ? (

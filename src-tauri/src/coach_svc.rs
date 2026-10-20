@@ -547,6 +547,13 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
         secs.push(sc);
     }
 
+    // Fresh lab results (0.20): out-of-range findings of samples from the last 14 days.
+    for f in crate::labs_svc::findings(conn, &today, 14).iter().filter(|f| f["level"] != "info").take(2) {
+        let t = f["title"].as_str().unwrap_or("").to_string();
+        facts.push(format!("Анализы: {t}"));
+        secs.push(sec("lab", "Анализы", if f["level"] == "bad" { "bad" } else { "warn" }, t).why(f["text"].as_str().unwrap_or("").to_string()).todo(f["todo"].as_str().unwrap_or("").to_string()));
+    }
+
     // Pain, return to run, recovery tools (0.16).
     for (_, name, level, runs, _) in crate::body_svc::active(conn) {
         facts.push(format!("Боль: {name} {level}/10"));
@@ -737,6 +744,15 @@ pub fn week(conn: &mut Connection) -> Result<Value, String> {
         }
     }
 
+    // Possible deficits and lab notes (0.20).
+    for d in n["deficits"]["items"].as_array().cloned().unwrap_or_default().iter().filter(|d| d["level"] != "info").take(3) {
+        let key = d["key"].as_str().unwrap_or("").replace("dietary_", "").replace("_total", "");
+        recs.push((format!("deficit_{key}"), format!("{} {} В еду: {}.", d["text"].as_str().unwrap_or(""), d["advice"].as_str().unwrap_or(""), d["foods"].as_str().unwrap_or("")).replace("  ", " ")));
+    }
+    for f in crate::labs_svc::findings(conn, &today, 30).iter().filter(|f| f["level"] != "info").take(3) {
+        recs.push((format!("lab_{}", f["key"].as_str().unwrap_or("")), format!("Анализы: {} {}", f["title"].as_str().unwrap_or(""), f["todo"].as_str().unwrap_or(""))));
+    }
+
     // What changed since the previous analysis.
     let prev = last_of(conn, "week");
     let mut follow: Vec<Value> = Vec::new();
@@ -833,6 +849,12 @@ pub fn claude_rules(conn: &Connection) -> String {
 Этикетка добавки: если спортсмен присылает фото банки и просит состав, ответь одной строкой строго в таком виде (количество — на одну порцию, как на этикетке):\n\
 [ДОБАВКА] Maxler Vitamen | порция: 2 таблетки | Витамин D3 25 мкг; Витамин C 250 мг; Цинк 15 мг; Магний 100 мг\n\
 Компоненты — через «;», у каждого число и единица (мг, мкг, г, МЕ, ккал). Kouros сам разберёт строку и покажет состав для проверки.\n\n\
+Анализы: если спортсмен присылает бланк анализов (скан или фото), перепиши результаты по строке на показатель строго в таком виде, первой строкой — дата сдачи и лаборатория:\n\
+[АНАЛИЗЫ] 14.10.2026, KDL\n\
+[АНАЛИЗ] Ферритин | 45 | мкг/л | 30-400\n\
+[АНАЛИЗ] Витамин D (25-OH) | 24,5 | нг/мл | 30-100\n\
+Название, результат как в бланке (с «<» или «>», если есть), единицы, норма лаборатории — через «|». Kouros сам разберёт строки и покажет их для проверки. \
+Когда разбираешь анализы, связывай их с нагрузкой и питанием из сводки (КФК, АСТ и креатинин растут после тяжёлых тренировок накануне), без диагнозов — «обрати внимание» и «обсуди с врачом».\n\n\
 Лекарства: в сводке могут быть группы, важные для спорта (НПВП, фторхинолоны, бета-блокаторы и другие). Подсказывай «обрати внимание» и «обсуди с врачом», без диагнозов и без изменения доз. \
 Корреляции «личного эффекта» — не доказательство."
 }
@@ -931,6 +953,20 @@ pub fn package(conn: &mut Connection, report_id: Option<i64>, question: Option<&
             out.push(String::new());
             out.push("Витамины и лекарства:".into());
             out.extend(ml.into_iter().map(|f| format!("- {f}")));
+        }
+    }
+    let labs = crate::labs_svc::lines(conn, &today_s);
+    if !labs.is_empty() {
+        out.push(String::new());
+        out.push("Анализы (последний результат каждого показателя; отклонения и всё из последней сдачи):".into());
+        out.extend(labs.into_iter().map(|f| format!("- {f}")));
+    }
+    if let Ok(nv) = nutrition_svc::summary(conn) {
+        let df: Vec<String> = nv["deficits"]["items"].as_array().map(|a| a.iter().filter_map(|d| Some(format!("{} {}", d["text"].as_str()?, d["advice"].as_str().unwrap_or("")))).collect()).unwrap_or_default();
+        if !df.is_empty() {
+            out.push(String::new());
+            out.push("Возможная нехватка в питании (28 дней, еда + оценка + добавки):".into());
+            out.extend(df.into_iter().map(|f| format!("- {f}")));
         }
     }
     let body = crate::body_svc::lines(conn);

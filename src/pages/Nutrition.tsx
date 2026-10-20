@@ -20,7 +20,7 @@ function Bar({ v, max, color }: { v: number; max: number; color: string }) {
   );
 }
 
-export function Nutrition({ onHealth }: { onHealth: () => void }) {
+export function Nutrition({ onHealth, onLabs }: { onHealth: () => void; onLabs?: () => void }) {
   const [sub, setSub] = useState<Sub>('overview');
   const [n, setN] = useState<NutritionSummary | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export function Nutrition({ onHealth }: { onHealth: () => void }) {
       </nav>
       {err && <div className="note-err">{err}</div>}
       {!n && !err && <div className="muted">Считаю…</div>}
-      {n && sub === 'overview' && <Overview n={n} reload={load} onHealth={onHealth} />}
+      {n && sub === 'overview' && <Overview n={n} reload={load} onHealth={onHealth} onLabs={onLabs} />}
       {n && sub === 'history' && <History n={n} />}
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Еда — записи YAZIO и Waterllama через Apple Health. Цели — ориентир, а не медицинская рекомендация.</p>
     </>
@@ -51,7 +51,7 @@ export function Nutrition({ onHealth }: { onHealth: () => void }) {
 
 // ---------- overview ----------
 
-function Overview({ n, reload, onHealth }: { n: NutritionSummary; reload: () => void; onHealth: () => void }) {
+function Overview({ n, reload, onHealth, onLabs }: { n: NutritionSummary; reload: () => void; onHealth: () => void; onLabs?: () => void }) {
   const t = n.targets, e = n.eaten;
   const [day, setDay] = useState(n.today);
   const rows: [string, number | null, number, string, string, string][] = [
@@ -100,6 +100,7 @@ function Overview({ n, reload, onHealth }: { n: NutritionSummary; reload: () => 
         <Quality n={n} />
         <Window n={n} />
       </div>
+      <DeficitCard n={n} reload={reload} onLabs={onLabs} />
       <Micro n={n} />
       <div className="grid">
         <section className="card" aria-label="Советы тренера">
@@ -112,6 +113,42 @@ function Overview({ n, reload, onHealth }: { n: NutritionSummary; reload: () => 
         </section>
       </div>
     </>
+  );
+}
+
+/** «Возможная нехватка» (0.20): 28 days of full food days, below 60% / 40% of the norm. */
+function DeficitCard({ n, reload, onLabs }: { n: NutritionSummary; reload: () => void; onLabs?: () => void }) {
+  const d = n.deficits;
+  const [open, setOpen] = useState<string | null>(null);
+  if (!d || d.items.length === 0) return null;
+  const col = { bad: '#FF6B6B', warn: '#F5B642', info: '#7FD3FF' };
+  return (
+    <section className="card" aria-label="Возможная нехватка">
+      <div className="between"><span className="label">Возможная нехватка в питании</span><span className="muted tiny">{plural(d.days, 'полный день', 'полных дня', 'полных дней')} из 28</span></div>
+      <div className="stack" style={{ gap: 10 }}>
+        {d.items.map((x) => (
+          <div key={x.key} className="stack" style={{ gap: 6, padding: '10px 12px', borderRadius: 10, background: col[x.level] + '12', border: `1px solid ${col[x.level]}44` }}>
+            <div className="between small" style={{ gap: 8 }}>
+              <span><b style={{ color: col[x.level] }}>{x.name}</b> · {x.pct}% нормы</span>
+              <button type="button" className="linkbtn tiny" onClick={() => setOpen(open === x.key ? null : x.key)}>{open === x.key ? 'Свернуть' : 'Подробнее'}</button>
+            </div>
+            <span className="small" style={{ lineHeight: 1.5 }}>{x.text} {x.advice}</span>
+            {open === x.key && (
+              <div className="stack small" style={{ gap: 4, lineHeight: 1.5 }}>
+                <span><span className="muted">Как может проявляться:</span> {x.signs}.</span>
+                <span><span className="muted">Где взять:</span> {x.foods}.</span>
+                {x.test && <span><span className="muted">Анализ:</span> {x.test}.</span>}
+                <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+                  {x.test && onLabs && <button type="button" className="linkbtn tiny" onClick={onLabs}>Загрузить результаты анализов →</button>}
+                  <button type="button" className="linkbtn tiny" onClick={() => api.deficitSnooze(x.key).then(reload).catch(() => {})}>Не напоминать 30 дней</button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Считается по дням, где записано не меньше 60% калорий: еда из YAZIO, оценка по продуктам без данных и отмеченные добавки. Это подсказка, а не диагноз: точно покажет только анализ.</span>
+    </section>
   );
 }
 

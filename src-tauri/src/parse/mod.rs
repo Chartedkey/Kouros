@@ -2,6 +2,8 @@
 
 pub mod csv;
 pub mod fit;
+pub mod labs;
+pub mod pdf;
 pub mod time;
 pub mod xml;
 

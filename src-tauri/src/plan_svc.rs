@@ -917,6 +917,45 @@ fn med_check(conn: &Connection, today: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// C-reactive protein above 5 mg/l in a sample of the last 7 days (0.20): the 3 days after the
+/// sample have no tempo, intervals or tests (they become easy runs) and long runs are shortened.
+fn lab_check(conn: &Connection, today: &str) -> Result<(), String> {
+    let Some((date, v)) = crate::labs_svc::crp_recent(conn, today) else { return Ok(()) };
+    let until = add_days(&date, 3);
+    for k in 0..4 {
+        let d = add_days(today, k);
+        if d > until {
+            break;
+        }
+        let Some((items, _, _)) = row(conn, &d) else { continue };
+        if !items.iter().any(|i| matches!(i.kind.as_str(), "tempo" | "intervals" | "test" | "long")) {
+            continue;
+        }
+        let tag = format!("[lab:crp:{date}]");
+        let seen: i64 = conn
+            .query_row("SELECT count(*) FROM plan_changes WHERE date = ?1 AND reason LIKE ?2", params![d, format!("%{tag}%")], |r| r.get(0))
+            .unwrap_or(0);
+        if seen > 0 {
+            continue;
+        }
+        let after: Vec<Item> = items
+            .iter()
+            .map(|i| match i.kind.as_str() {
+                "tempo" | "intervals" | "test" => Item { kind: "easy".into(), min: r5(i.min * 0.8).max(30.0) },
+                "long" => Item { kind: "easy".into(), min: r5(i.min * 0.7).clamp(30.0, 60.0) },
+                _ => i.clone(),
+            })
+            .collect();
+        let why = format!("С-реактивный белок {} мг/л в анализе от {} — признак воспаления, пока без интенсивных {tag}", format!("{v:.1}").replace('.', ","), date_ru(&date));
+        let state = if auto_apply(conn) { "accepted" } else { "proposed" };
+        add_change(conn, &d, &items, &after, &why, "kouros", state, None)?;
+        if state == "accepted" {
+            put(conn, &d, &after, "accepted", "")?;
+        }
+    }
+    Ok(())
+}
+
 /// Does a done workout correspond to something planned that day?
 fn planned_match(items: &[Item], a: &engine_svc::Cached) -> bool {
     let sg = sport_group(&a.sport);
@@ -1050,6 +1089,7 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
     check_today(conn, &s, &today, t)?;
     pain_check(conn, &today, t)?;
     med_check(conn, &today)?;
+    lab_check(conn, &today)?;
     {
         let by0 = acts_by_day(&acts, tz);
         unplanned_check(conn, &today, &by0, &rt, cap_week, s["day"]["usualLoad"].as_f64().unwrap_or(0.0))?;

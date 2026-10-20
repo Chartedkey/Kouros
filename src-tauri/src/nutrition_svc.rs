@@ -361,6 +361,9 @@ pub fn summary(conn: &Connection) -> Result<Value, String> {
         })
         .collect();
 
+    // ----- possible deficits, 28 days (0.20) -----
+    let deficits = deficits(conn, &today, &country, &est, |d| tgt(d).0.energy_kcal, &kcal);
+
     let est7: Vec<&crate::food_est::DayEst> = (0..7).filter_map(|k| est.get(&add_days(&today, -k))).collect();
     let est_entries7: usize = est7.iter().map(|e| e.entries).sum();
     let est_done7: usize = est7.iter().map(|e| e.estimated).sum();
@@ -403,6 +406,7 @@ pub fn summary(conn: &Connection) -> Result<Value, String> {
                    "hours": median(&windows).map(r1), "byDay": by_day_win,
                    "parts": [(parts[0] / ptot * 100.0).round(), (parts[1] / ptot * 100.0).round(), (parts[2] / ptot * 100.0).round()]},
         "micro": micro,
+        "deficits": deficits,
         "norms": {"country": country, "list": crate::norms::COUNTRIES.iter().map(|c| json!({"code": c.0, "name": c.1, "source": c.2})).collect::<Vec<_>>()},
         "estimate": {"entries7": est_entries7, "estimated7": est_done7, "unknown7": est_unknown7},
     }))
@@ -458,4 +462,114 @@ pub fn day(conn: &Connection, date: &str) -> Result<Value, String> {
         "waterMl": one("dietary_water_total").map(|v| v.round()),
         "latePct": if total > 0.0 { Some((late / total * 100.0).round()) } else { None },
     }))
+}
+
+/// Deficit notes (0.20): nutrient key, lab test key ("" = none useful), what to test, possible
+/// signs, where to get it. Sodium, phosphorus, copper and manganese are not warned about.
+const DEF: &[(&str, &str, &str, &str, &str)] = &[
+    ("dietary_iron_total", "ferritin", "ферритин и общий анализ крови (гемоглобин)", "усталость, одышка и высокий пульс на привычном темпе, бледность, ломкие ногти, тяга к холоду или льду", "говядина, печень, гречка, чечевица, фасоль, тыквенные семечки — вместе с овощами и фруктами с витамином C; чай и кофе не сразу после еды"),
+    ("dietary_vitamin_d_total", "vitd", "витамин D (25-OH)", "частые простуды, боль в мышцах и костях, медленное восстановление, стрессовые переломы", "из еды витамина D всегда мало — основной источник солнце; жирная рыба, печень трески, яйца, грибы"),
+    ("dietary_vitamin_b12_total", "b12", "витамин B12 (лучше вместе с гомоцистеином)", "усталость, онемение и покалывание в руках и ногах, ухудшение памяти, бледность", "мясо, рыба, яйца, молочные продукты; при растительном питании почти всегда нужна добавка"),
+    ("dietary_folate_total", "folate", "фолиевая кислота и общий анализ крови", "усталость, раздражительность, воспаления во рту", "зелень, шпинат, брокколи, бобовые, печень, апельсины"),
+    ("dietary_magnesium_total", "magnesium", "магний в крови (показывает дефицит не всегда)", "судороги и подёргивания мышц, плохой сон, раздражительность", "гречка, овсянка, орехи, семечки, бобовые, тёмный шоколад"),
+    ("dietary_calcium_total", "", "", "в крови кальций держится ровно даже при нехватке — страдают кости; у бегунов это риск стрессовых переломов", "творог, сыр, йогурт, кефир, сардины с костями, кунжут, брокколи"),
+    ("dietary_zinc_total", "zinc", "цинк", "частые простуды, медленное заживление, хуже вкус и аппетит", "говядина, печень, морепродукты, сыр, тыквенные семечки, гречка"),
+    ("dietary_potassium_total", "", "", "в крови почти всегда в норме; при нехватке в еде — судороги и усталость в жару и на длинных тренировках", "картофель, бананы, сухофрукты, бобовые, овощи, кефир"),
+    ("dietary_vitamin_a_total", "", "", "сухость кожи и глаз, хуже видно в сумерках", "печень, морковь, тыква, шпинат, яйца"),
+    ("dietary_vitamin_c_total", "", "", "кровоточивость дёсен, частые простуды, медленное заживление", "шиповник, сладкий перец, киви, цитрусовые, капуста, смородина"),
+    ("dietary_vitamin_e_total", "", "", "редко бывает заметен", "подсолнечное масло, семечки, миндаль, орехи"),
+    ("dietary_selenium_total", "", "", "редко бывает заметен", "бразильский орех (1–2 в день), рыба, яйца, мясо"),
+    ("dietary_thiamin_total", "", "", "усталость, раздражительность", "свинина, крупы, бобовые, орехи"),
+    ("dietary_riboflavin_total", "", "", "трещины в уголках рта", "молочные продукты, яйца, мясо, грибы"),
+    ("dietary_vitamin_b6_total", "", "", "раздражительность, воспаления во рту", "птица, рыба, картофель, бананы, нут"),
+    ("dietary_niacin_total", "", "", "редко бывает заметен", "птица, рыба, мясо, арахис"),
+    ("dietary_vitamin_k_total", "", "", "редко бывает заметен", "зелень, шпинат, брокколи, капуста"),
+];
+
+/// Nutrients that, on average over the full days of the last 28 (≥14 needed), stay below 60% of
+/// the norm (below 40% = «bad»), counting food, estimates and marked supplements. A recent normal
+/// lab result (≤90 days) turns the warning into a calm note; snoozed ones are skipped.
+fn deficits(conn: &Connection, today: &str, country: &str, est: &BTreeMap<String, crate::food_est::DayEst>, target: impl Fn(&str) -> f64, kcal: &Series) -> Value {
+    let full: Vec<String> = (1..=28)
+        .map(|k| add_days(today, -k))
+        .filter(|d| kcal.get(d).map(|v| *v >= 0.6 * target(d)).unwrap_or(false))
+        .collect();
+    let snooze: BTreeMap<String, String> = crate::db::get_setting(conn, "deficit_snooze").and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
+    if full.len() < 14 {
+        return json!({"days": full.len(), "need": 14, "items": []});
+    }
+    let supp = crate::meds_svc::supp_by_day(conn, &add_days(today, -28));
+    let meds_on = crate::meds_svc::enabled(conn);
+    let mut items: Vec<(f64, Value)> = Vec::new();
+    for (m, lab, test, signs, foods) in DEF {
+        let Some((_, name, unit, _)) = MICRO.iter().find(|x| x.0 == *m) else { continue };
+        let rda = crate::norms::norm(m, country).unwrap_or(0.0);
+        if rda <= 0.0 {
+            continue;
+        }
+        let s = series(conn, m, "max");
+        let ei = crate::food_est::NUTS.iter().position(|(_, d)| d == m);
+        let day = |d: &str| {
+            let e = est.get(d);
+            let sp = ei.and_then(|i| e.map(|e| e.supp[i])).unwrap_or(0.0);
+            let real = s.get(d).map(|v| (v - sp).max(0.0)).unwrap_or(0.0);
+            real + ei.and_then(|i| e.map(|e| e.add[i])).unwrap_or(0.0)
+        };
+        let covered = full.iter().filter(|d| day(d) > 0.0).count();
+        if (covered as f64) < 0.7 * full.len() as f64 {
+            continue;
+        }
+        let food = full.iter().map(|d| day(d)).sum::<f64>() / full.len() as f64;
+        let sup = full.iter().map(|d| supp.get(d).and_then(|x| x.get(*m)).copied().unwrap_or(0.0)).sum::<f64>() / full.len() as f64;
+        let pct = (food + sup) / rda * 100.0;
+        if pct >= 60.0 {
+            continue;
+        }
+        if snooze.get(*m).map(|u| u.as_str() >= today).unwrap_or(false) {
+            continue;
+        }
+        let level = if pct < 40.0 { "bad" } else { "warn" };
+        let lab_res = if lab.is_empty() { None } else { crate::labs_svc::latest(conn, lab, today, 90) };
+        let lab_v = lab_res.as_ref().map(|r| {
+            let st = crate::labs_svc::status(r);
+            json!({"date": r.date, "value": r.value, "unit": r.unit, "status": st})
+        });
+        let lab_ok = lab_res.as_ref().map(|r| {
+            let st = crate::labs_svc::status(r);
+            st == "ok" && !(r.key == "ferritin" && r.value.unwrap_or(0.0) < 30.0) && !(r.key == "vitd" && r.value.unwrap_or(0.0) < 30.0)
+        });
+        let text = format!(
+            "{name}: в среднем {}% нормы за {} дн. с полными записями ({} из {} {unit}){}.",
+            pct.round(),
+            full.len(),
+            fmt1(food + sup),
+            fmt1(rda),
+            if sup > 0.0 { format!(", из них добавки {}", fmt1(sup)) } else if meds_on { ", добавок не отмечено".to_string() } else { String::new() }
+        );
+        let advice = match lab_ok {
+            Some(true) => format!("Анализ от {} в норме — пока запасов хватает, но в еде этого мало.", crate::plan_svc::date_ru(&lab_res.as_ref().unwrap().date)),
+            Some(false) => format!("Анализ от {} тоже ниже нормы — обсуди с врачом.", crate::plan_svc::date_ru(&lab_res.as_ref().unwrap().date)),
+            None if !test.is_empty() => format!("Если отдельно не принимаешь — может стоить сдать анализ: {test}."),
+            None => String::new(),
+        };
+        items.push((pct, json!({"key": m, "name": name, "unit": unit, "pct": pct.round(), "avg": r1(food + sup), "food": r1(food), "supp": r1(sup), "rda": rda,
+            "level": if lab_ok == Some(true) { "info" } else { level }, "text": text, "advice": advice, "test": test, "signs": signs, "foods": foods, "lab": lab_v})));
+    }
+    items.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+    json!({"days": full.len(), "need": 14, "items": items.into_iter().map(|x| x.1).collect::<Vec<_>>()})
+}
+
+fn fmt1(v: f64) -> String {
+    let s = if v >= 100.0 { format!("{v:.0}") } else { format!("{v:.1}") };
+    s.replace('.', ",")
+}
+
+/// «Не напоминать 30 дней» for one nutrient.
+pub fn deficit_snooze(conn: &Connection, key: &str) -> Result<(), String> {
+    let p = engine_svc::profile(conn);
+    let today = engine_svc::today(&p);
+    let mut m: BTreeMap<String, String> = crate::db::get_setting(conn, "deficit_snooze").and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
+    m.retain(|_, u| u.as_str() >= today.as_str());
+    m.insert(key.to_string(), add_days(&today, 30));
+    crate::db::set_setting(conn, "deficit_snooze", &serde_json::to_string(&m).unwrap_or_default())
 }
