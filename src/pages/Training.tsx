@@ -46,13 +46,15 @@ function useOverview() {
   return { o, reloadO: load };
 }
 
-export function Training({ sub, onSub, open, onOpenDone }: { sub: TrainingSub; onSub: (s: TrainingSub) => void; open?: string | null; onOpenDone?: () => void }) {
+export function Training({ sub, onSub, open, onOpenDone, back }: { sub: TrainingSub; onSub: (s: TrainingSub) => void; open?: string | null; onOpenDone?: () => void; back?: { label: string; go: () => void } | null }) {
   const [openId, setOpenId] = useState<string | null>(open ?? null);
-  useEffect(() => { if (open) { setOpenId(open); onOpenDone?.(); } }, [open, onOpenDone]);
+  // A workout opened from another tab goes back there (1.0).
+  const [outside, setOutside] = useState<boolean>(!!open && !!back);
+  useEffect(() => { if (open) { setOpenId(open); setOutside(!!back); onOpenDone?.(); } }, [open, onOpenDone]); // eslint-disable-line react-hooks/exhaustive-deps
   const { s, err, reload } = useSummary();
   const { o, reloadO } = useOverview();
 
-  if (openId) return <Workout id={openId} onBack={() => setOpenId(null)} />;
+  if (openId) return <Workout id={openId} backLabel={outside && back ? back.label : 'Тренировки'} onBack={() => { setOpenId(null); if (outside && back) { setOutside(false); back.go(); } }} />;
 
   return (
     <>
@@ -199,14 +201,6 @@ function Overview({ s, o, reloadO, onOpen, onAll, onImport }: { s: EngineSummary
   }, []);
   useEffect(load, [load]);
   useDataChanged(load);
-  // «Сегодня» → «Мышцы и связки» opens this tab scrolled to the load card.
-  useEffect(() => {
-    let want = false;
-    try { want = sessionStorage.getItem('kouros_scroll') === 'load-dual'; } catch { /* ignore */ }
-    if (!want || !s) return;
-    try { sessionStorage.removeItem('kouros_scroll'); } catch { /* ignore */ }
-    setTimeout(() => document.getElementById('load-dual')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
-  }, [s]);
 
   if (stats && stats.count === 0) {
     return (
@@ -572,7 +566,7 @@ function GearTab() {
             </div>
           );
         })}
-        {list && list.length === 0 && <span className="muted small" style={{ lineHeight: 1.5 }}>В Strava кроссовки не добавлены. Внеси свои — Kouros будет считать их пробег по тренировкам с даты начала.</span>}
+        {list && list.length === 0 && <span className="muted small" style={{ lineHeight: 1.5 }}>Добавь свои кроссовки — Kouros будет считать пробег тренировок, для которых ты выбрал пару, и советовать, в какой паре бежать сегодня.</span>}
         {list && list.length > 0 && <span className="muted tiny" style={{ lineHeight: 1.5 }}>Пробег = «пробег до даты начала», который ты ввёл, плюс тренировки, для которых ты выбрал эту пару — в опросе после тренировки на «Сегодня», в «Обзоре» или на странице тренировки. Сам Kouros ничего не засчитывает. Ошибся парой — открой «Тренировки этой пары» и поменяй.</span>}
         {!form && <button type="button" className="btn2" style={{ alignSelf: 'flex-start' }} onClick={() => setForm({ name: '', kind: 'train', startDate: today, initialKm: '0', limitKm: '700', walks: false })}>+ Добавить кроссовки</button>}
       </section>

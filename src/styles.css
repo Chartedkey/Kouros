@@ -342,3 +342,7 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .opt-card { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line-2); background: transparent; color: var(--text-2); font: inherit; cursor: pointer; }
 .opt-card:hover { border-color: #4a525d; }
 .opt-card[aria-pressed='true'] { border-color: #3DDC97; background: #13201b; color: var(--text); }
+
+/* 1.0: a card reached by a link blinks once */
+.nav-hit { animation: navhit 1.6s ease-out; }
+@keyframes navhit { 0%, 30% { box-shadow: 0 0 0 2px #3DDC97; } 100% { box-shadow: 0 0 0 2px transparent; } }

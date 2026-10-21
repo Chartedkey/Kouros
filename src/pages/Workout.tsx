@@ -357,7 +357,7 @@ function ShoePick({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) {
   );
 }
 
-export function Workout({ id, onBack }: { id: string; onBack: () => void }) {
+export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id: string; onBack: () => void; backLabel?: string }) {
   const [d, setD] = useState<ActivityDetail | null>(null);
   const [prof, setProf] = useState<AthleteProfile | null>(null);
   const [online, setOnline] = useState(false);
@@ -376,7 +376,7 @@ export function Workout({ id, onBack }: { id: string; onBack: () => void }) {
   const pace = useMemo(() => (c ? paceSeries(c) : null), [c]);
   const hrS = useMemo(() => (c ? smooth(c.hr, 2) : []), [c]);
 
-  const back = <button type="button" className="backbtn" onClick={onBack}>← Тренировки</button>;
+  const back = <button type="button" className="backbtn" onClick={onBack}>← {backLabel}</button>;
   if (err) return <>{back}<div className="note-err">{err}</div></>;
   if (!d) return <>{back}<div className="muted">Загружаю…</div></>;
 

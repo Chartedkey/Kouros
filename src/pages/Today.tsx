@@ -6,6 +6,7 @@ import { CheckinCard, MorningPain } from '../components/Checkin';
 import { DupCards } from '../components/Workouts';
 import { DayPlanCard } from '../components/DayPlan';
 import { ShoeTodayCard } from '../components/Shoes';
+import type { Go } from '../lib/nav';
 import { api, errText, type EngineSummary, type HealthSummary, type MedsSummary, type CoachReport, type PlanState, type ShoeAdvice, type BodyState, type PsychSummary, type Split } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 
@@ -269,7 +270,17 @@ function loadHidden(): Record<string, number> {
   } catch { return {}; }
 }
 
-export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, onMeds, onCoach, onProfile, onGear }: { onGear?: () => void; onProfile?: () => void; onSettings: () => void; onTraining: () => void; onHealth: () => void; onPsych?: () => void; onHealthDay?: (d: string) => void; onMeds?: () => void; onCoach?: () => void }) {
+/** Where «Подробнее →» of a reminder leads (1.0). */
+const SIGNAL_GO: Record<string, Go> = {
+  rhr_up: { tab: 'health', card: 'Ранние сигналы' }, hrv_down: { tab: 'health', card: 'Ранние сигналы' },
+  low_rhr_low_hrv: { tab: 'health', card: 'Ранние сигналы' }, breath_up: { tab: 'health', card: 'Ранние сигналы' },
+  sleep_short: { tab: 'health', card: 'План сна' }, sleep_chronic: { tab: 'health', card: 'План сна' },
+  load_high: { tab: 'training', card: 'Нагрузка: сердце и мышцы' }, load_spike: { tab: 'training', card: 'Нагрузка: сердце и мышцы' },
+  food_missing: { tab: 'nutrition' }, weight_trend: { tab: 'health', sub: 'history', card: 'Состав тела' },
+  hr_over_max: { tab: 'settings', sub: 'prof' }, zones_old: { tab: 'settings', sub: 'prof' },
+};
+
+export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, onMeds, onCoach, onProfile, onGear, go }: { go?: (g: Go) => void; onGear?: () => void; onProfile?: () => void; onSettings: () => void; onTraining: () => void; onHealth: () => void; onPsych?: () => void; onHealthDay?: (d: string) => void; onMeds?: () => void; onCoach?: () => void }) {
   const [s, setS] = useState<EngineSummary | null>(null);
   const [hs, setHs] = useState<HealthSummary | null>(null);
   const [ps, setPs] = useState<PsychSummary | null>(null);
@@ -355,7 +366,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
       </div>
 
       {day.alcoholYesterday != null && day.alcoholYesterday > 0 && (
-        <button type="button" className="banner" onClick={onHealth}>
+        <button type="button" className="banner" onClick={() => (go ? go({ tab: 'health', card: 'Привычки' }) : onHealth())}>
           <span className="banner-ic">🍷</span>
           <span style={{ flex: '1 1 360px', display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left' }}>
             <b>Восстановление после алкоголя</b>
@@ -367,7 +378,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
         </button>
       )}
 
-      {ns && hs && ns.phase !== 'day' && <NightBanner hs={hs} onHealth={onHealth} />}
+      {ns && hs && ns.phase !== 'day' && <NightBanner hs={hs} onHealth={() => (go ? go({ tab: 'health', card: 'План сна' }) : onHealth())} />}
 
       <div className="rings">
         <section className="card ring-card" aria-label="Готовность">
@@ -527,7 +538,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
           {day.advice.hint && <span className="small" style={{ color: '#9DB8FF', lineHeight: 1.5 }}>{day.advice.hint}</span>}
           {day.advice.evening && <span className="muted tiny">С {s.readiness.eveningFrom ?? 'вечера'} совет и варианты считаются от вечерней готовности.</span>}
           {plan && plan.proposals.some((p) => p.date !== plan.today) && (
-            <button type="button" className="plain small" style={{ textAlign: 'left', lineHeight: 1.5, cursor: 'pointer' }} onClick={onCoach}>
+            <button type="button" className="plain small" style={{ textAlign: 'left', lineHeight: 1.5, cursor: 'pointer' }} onClick={go ? () => go({ tab: 'coach', sub: 'plan' }) : onCoach}>
               <span style={{ color: '#F5B642' }}>Kouros предлагает изменить план на другие дни ({plan.proposals.filter((p) => p.date !== plan.today).length}) →</span>
             </button>
           )}
@@ -541,7 +552,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
         </div>
       </section>
 
-      {plan && <DayPlanCard plan={plan} reload={load} onCoach={onCoach} />}
+      {plan && <DayPlanCard plan={plan} reload={load} onCoach={go ? () => go({ tab: 'coach', sub: 'plan' }) : onCoach} />}
       {shoe && <ShoeTodayCard a={shoe} reload={load} onGear={onGear} />}
 
       <div className="grid2">
@@ -579,6 +590,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
               <span className="dot" style={{ background: r.level === 'warn' ? '#F5B642' : '#9DB8FF', flex: 'none' }} />
               <span className="small" style={{ flex: 1, lineHeight: 1.45 }}>{r.text}</span>
               {r.psych && onPsych && <button type="button" className="linkbtn small" onClick={onPsych}>Пройти →</button>}
+              {!r.psych && go && SIGNAL_GO[r.code] && <button type="button" className="linkbtn small" onClick={() => go(SIGNAL_GO[r.code])}>Подробнее →</button>}
               <button type="button" aria-label="Скрыть на неделю" title="Скрыть на неделю" className="xbtn" onClick={() => hide(`${r.code}:${r.level}`)}>×</button>
             </div>
           ))}
@@ -589,7 +601,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
 
       <div className="grid2">
         <section className="card" aria-label="Нагрузка и тренировки">
-          <div className="between"><span className="label">Нагрузка и тренировки</span><button type="button" className="linkbtn small" onClick={onTraining}>Все</button></div>
+          <div className="between"><span className="label">Нагрузка и тренировки</span><button type="button" className="linkbtn small" onClick={() => (go ? go({ tab: 'training', sub: 'all' }) : onTraining())}>Все тренировки →</button></div>
           <div className="row" style={{ gap: '8px 24px', alignItems: 'baseline' }}>
             <span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 700, color: phaseColor }}>{phaseText}</span>
             <span className="small"><span className="muted">риск травмы </span><b style={{ color: riskColor }}>{riskText}</b>
@@ -606,7 +618,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
             Неделя {n0(s.load.week)} при обычных {n0(s.load.ctl * 7)} · соотношение {s.load.acwr != null ? n1(s.load.acwr) : '—'} (норма 0,8–1,3)
           </span>
           {mus && (
-            <button type="button" className="plain muted tiny" style={{ textAlign: 'left', cursor: 'pointer' }} title="Открыть историю нагрузки" onClick={() => { try { sessionStorage.setItem('kouros_scroll', 'load-dual'); } catch { /* ignore */ } onTraining(); }}>
+            <button type="button" className="plain muted tiny" style={{ textAlign: 'left', cursor: 'pointer' }} title="Открыть историю нагрузки" onClick={() => (go ? go({ tab: 'training', card: 'Нагрузка: сердце и мышцы' }) : onTraining())}>
               Мышцы и связки: {mus.acwr == null ? `неделя ${n0(mus.week)} · норма набирается` : mus.acwr > 1.3 ? `неделя на ${Math.round((mus.acwr - 1) * 100)}% тяжелее обычной` : mus.acwr < 0.8 ? 'легче обычного' : 'как обычно'}
               {mus.acwr != null ? ` (${n1(mus.acwr)})` : ''} →
             </button>
@@ -670,7 +682,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
           </span>
         </button>
       </section>
-      {allOpen && <Details s={s} onSettings={onSettings} />}
+      {allOpen && <Details s={s} onSettings={onProfile ?? onSettings} />}
     </>
   );
 }

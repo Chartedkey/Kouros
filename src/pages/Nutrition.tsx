@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, errText, plural, type AthleteProfile, type NutDay, type NutritionDay, type NutritionSummary, type Pt } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 import { LineBand } from './Health';
+import type { Go } from '../lib/nav';
 
 type Sub = 'overview' | 'history';
 
@@ -20,7 +21,7 @@ function Bar({ v, max, color }: { v: number; max: number; color: string }) {
   );
 }
 
-export function Nutrition({ onHealth, onLabs }: { onHealth: () => void; onLabs?: () => void }) {
+export function Nutrition({ onHealth, onLabs, go }: { onHealth: () => void; onLabs?: () => void; go?: (g: Go) => void }) {
   const [sub, setSub] = useState<Sub>('overview');
   const [n, setN] = useState<NutritionSummary | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -42,7 +43,7 @@ export function Nutrition({ onHealth, onLabs }: { onHealth: () => void; onLabs?:
       </nav>
       {err && <div className="note-err">{err}</div>}
       {!n && !err && <div className="muted">Считаю…</div>}
-      {n && sub === 'overview' && <Overview n={n} reload={load} onHealth={onHealth} onLabs={onLabs} />}
+      {n && sub === 'overview' && <Overview n={n} reload={load} onHealth={go ? () => go({ tab: 'health', sub: 'history', card: 'Состав тела' }) : onHealth} onLabs={onLabs} />}
       {n && sub === 'history' && <History n={n} />}
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Еда — записи YAZIO и Waterllama через Apple Health. Цели — ориентир, а не медицинская рекомендация.</p>
     </>

@@ -72,12 +72,6 @@ const SOURCES: Src[] = [
     stage: '',
   },
   {
-    id: 'anthropic', letter: 'C', bg: '#1B2633', fg: '#9DC6FF', name: 'Claude API', via: 'тренер',
-    gives: 'Отчёты, гибкий план, анализ недели и чат с тренером',
-    secrets: [{ name: 'anthropic_api_key', label: 'API-ключ Anthropic', hint: 'console.anthropic.com → API Keys' }],
-    stage: 'необязательно',
-  },
-  {
     id: 'files', letter: 'F', bg: '#22262D', fg: '#C3CAD2', name: 'Файлы тренировок', via: 'импорт вручную',
     gives: '.fit, .gpx, .tcx и архив данных Strava — запасной путь',
     secrets: [],
@@ -595,18 +589,6 @@ function DataTab({ status, refresh }: { status: Status; refresh: () => void }) {
 // ---------- О приложении ----------
 
 function AboutTab({ status }: { status: Status }) {
-  const stages: [string, boolean][] = [
-    ['1. Каркас: база, папка данных, ключи, вход', true],
-    ['2. Strava, freddy, импорт и экспорт файлов', true],
-    ['3. Движок расчётов', true],
-    ['4. Вкладки на реальных данных', true],
-    ['5. Тренер и Claude', true],
-    ['6. План тренировок', true],
-    ['7. Автообновление, добавки', true],
-    ['8. Анализы и нехватка в питании', true],
-    ['9. Меню и покупки', false],
-    ['10. Финальная шлифовка', false],
-  ];
   return (
     <div className="grid">
       <section className="card" aria-label="Версия">
@@ -622,14 +604,6 @@ function AboutTab({ status }: { status: Status }) {
         </span>
       </section>
       <UpdatesSection />
-      <section className="card" aria-label="План разработки">
-        <span className="label">План разработки</span>
-        <ul className="soon-list">
-          {stages.map(([s, done]) => (
-            <li key={s}><span>{s}</span><span className={`chip ${done ? 'chip-ok' : 'chip-off'}`}>{done ? 'готово' : 'впереди'}</span></li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }

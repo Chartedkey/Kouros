@@ -34,7 +34,7 @@ const STAGE: Record<string, [string, string, number]> = {
 };
 const LVL = ['#3DDC97', '#F5B642', '#FF6B6B'];
 
-export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, onSubUsed }: { onSettings: () => void; onOpenWorkout?: (id: string) => void; day?: string | null; onDayUsed?: () => void; initialSub?: Sub | null; onSubUsed?: () => void }) {
+export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, onSubUsed }: { onSettings: () => void; onOpenWorkout?: (id: string, day?: string) => void; day?: string | null; onDayUsed?: () => void; initialSub?: Sub | null; onSubUsed?: () => void }) {
   const [sub, setSub] = useState<Sub>(day ? 'history' : initialSub ?? 'overview');
   useEffect(() => { if (day) setSub('history'); }, [day]);
   useEffect(() => { if (initialSub) { setSub(initialSub); onSubUsed?.(); } }, [initialSub]);
@@ -735,7 +735,7 @@ function DayReady({ r }: { r: ReadinessDay }) {
       <div className="row" style={{ gap: 24, alignItems: 'baseline', flexWrap: 'wrap' }}>
         <span className="stack" style={{ gap: 0 }}><span className="muted tiny">готовность утром{m.frozen ? '' : ' · пересчитана'}</span><b className="num" style={{ fontSize: 30, color: rColor(m.score) }}>{m.score ?? '—'}</b></span>
         <span className="stack" style={{ gap: 0 }}><span className="muted tiny">вечером</span><b className="num" style={{ fontSize: 30, color: rColor(r.evening?.score) }}>{r.evening ? r.evening.score : '—'}</b></span>
-        {!r.evening && <span className="muted tiny" style={{ flex: '1 1 200px' }}>Вечерняя оценка появляется через 8 часов после пробуждения (между 18:00 и 22:00) и сохраняется начиная с версии 0.10.1.</span>}
+        {!r.evening && <span className="muted tiny" style={{ flex: '1 1 200px' }}>Вечерняя оценка появляется через 8 часов после пробуждения (между 18:00 и 22:00) и сохраняется в историю каждый день.</span>}
       </div>
       <div className="vitals">{r.vitals.filter((v) => v.value != null).map((v) => <Vital key={v.key} v={v} />)}</div>
       <div className="daygrid">
@@ -815,7 +815,7 @@ function ReadyBars({ from, to, morning, evening, sel, onPick, count }: { from: s
 
 const HABIT_NAMES: Record<string, string> = { screens: 'экраны в кровати', sauna: 'сауна или баня', breath: 'медитация, дыхание', stretch: 'растяжка вечером' };
 
-function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: HealthOverview | null; onOpen?: (id: string) => void; day?: string | null; onDayUsed?: () => void }) {
+function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: HealthOverview | null; onOpen?: (id: string, day?: string) => void; day?: string | null; onDayUsed?: () => void }) {
   const [days, setDays] = useState(30);
   const [sel, setSel] = useState<string>(day ?? h.night?.date ?? h.today);
   const [ready, setReady] = useState<Record<string, number>>({});
@@ -841,7 +841,7 @@ function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: Heal
   const w = h.body.weighings[0];
   return (
     <>
-      <DayCard date={sel} today={h.today} ready={ready[sel] ?? null} onDate={setSel} onOpen={onOpen} />
+      <DayCard date={sel} today={h.today} ready={ready[sel] ?? null} onDate={setSel} onOpen={onOpen ? (id) => onOpen(id, sel) : undefined} />
       <div className="row" role="group" aria-label="Период">
         {PERIODS.map(([d, n]) => <button key={d} type="button" className="pill" aria-pressed={days === d} onClick={() => setDays(d)}>{n}</button>)}
         <span className="muted small">{dayLabel(from)} — {dayLabel(h.today)} · нажми на любой день на графиках, чтобы открыть его наверху</span>

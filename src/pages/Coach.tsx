@@ -107,7 +107,7 @@ function Onboarding({ init, facts, onDone, onSkip }: { init: CoachProfile; facts
               </span>
             </div>
           ))}
-          <span className="muted small" style={{ lineHeight: 1.5 }}>Это шаблон обычной недели — позже его можно будет менять на конкретную неделю. Ходьба идёт каждый день и всегда считается в нагрузку.</span>
+          <span className="muted small" style={{ lineHeight: 1.5 }}>Это шаблон обычной недели. Конкретные дни потом можно менять в «Тренер → План» и в карточке «Тренировка на сегодня». Ходьба идёт каждый день и всегда считается в нагрузку.</span>
         </div>
       )}
       {step === 2 && (
@@ -275,10 +275,11 @@ function ReportView(props: { r: CoachReport; all: CoachReport[]; short: boolean;
 
 // ---------- page ----------
 
-export function Coach() {
+export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; onSubUsed?: () => void } = {}) {
   const [st, setSt] = useState<CoachState | null>(null);
   const [eng, setEng] = useState<EngineSummary | null>(null);
-  const [sub, setSub] = useState<Sub>('today');
+  const [sub, setSub] = useState<Sub>(SUBS.some(([k]) => k === initialSub) ? (initialSub as Sub) : 'today');
+  useEffect(() => { if (initialSub) onSubUsed?.(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [onb, setOnb] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);

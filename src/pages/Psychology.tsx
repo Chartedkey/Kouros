@@ -186,12 +186,11 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
           <Q name="Оценка тяжести" what="Тяжесть сессии × минуты — уточняет нагрузку силовых" when="После тренировки" status={p.unrated.length ? `ждут: ${p.unrated.length}` : 'всё оценено'} warn={p.unrated.length > 0} />
           <Q name="BRUMS" what="Профиль настроения по шести шкалам" when="Раз в неделю" status={p.due.brumsDays == null ? 'ни разу' : p.due.brumsDays >= 7 ? 'пора' : `через ${plural(7 - p.due.brumsDays, 'день', 'дня', 'дней')}`} warn={p.due.brumsDays == null || p.due.brumsDays >= 7} />
           <Q name="Стресс и восстановление" what="Баланс нагрузки и отдыха в жизни, анкета Kouros" when="Раз в неделю" status={p.due.stressrecDays == null ? 'ни разу' : p.due.stressrecDays >= 7 ? 'пора' : `через ${plural(7 - p.due.stressrecDays, 'день', 'дня', 'дней')}`} warn={p.due.stressrecDays == null || p.due.stressrecDays >= 7} />
-          <Q name="Тревога перед стартом" what="Тревога и уверенность за 1–3 дня до соревнования" when="Перед стартами" status="этап 6, вместе со стартами" />
         </div>
       </section>
       <section className="card" aria-label="Тренер">
-        <div className="between"><span className="label">Тренер Kouros</span><span className="chip chip-off">этап 5</span></div>
-        <span className="muted small">Тренер Claude будет учитывать опросы в плане: например, перенести темповую на вечер, если стресс пикует днём, или снизить интенсивность при расхождении ощущений и часов.</span>
+        <div className="between"><span className="label">Тренер Kouros</span></div>
+        <span className="muted small" style={{ lineHeight: 1.5 }}>Опросы учитываются в плане дня, но только в сторону облегчения: низкий TQR или плохие ощущения по Hooper убирают интенсивную работу или снижают ступень плана. Сама готовность тела считается только по часам — ощущения показаны рядом, а не внутри неё.</span>
       </section>
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Опросники помогают замечать перегруз, но не заменяют консультацию специалиста.</p>
     </>
