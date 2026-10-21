@@ -137,6 +137,7 @@ function demoDetail(id: string): ActivityDetail {
     charts: run ? { t, hr, dist, speed, alt: t.map((_, i) => 150 + 8 * Math.sin(i / 60)), cad: [], lat: t.map((_, i) => 59.94 + 0.01 * Math.sin(i / 90)), lng: t.map((_, i) => 30.31 + 0.015 * Math.cos(i / 90)) } : null,
     splits: run ? Array.from({ length: Math.floor(d / 1000) }, (_, k) => ({ km: k + 1, timeS: 1000 / (a.sport === 'run' ? 2.7 : 1.5) + (k % 3) * 8, hr: 140 + k, full: true })) : [],
     sets: strength ? Array.from({ length: 8 }, (_, k) => ({ idx: k, startUtc: a.startUtc + k * 150, durationS: k % 2 ? 90 : 40, reps: k % 2 ? null : 10, weightKg: k % 2 ? null : 40, kind: (k % 2 ? 'rest' : 'active') as 'rest' | 'active', exercise: null })) : [],
+    bodyKg: strength ? 78.4 : null,
   };
 }
 
@@ -284,6 +285,15 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'activity_get': return demoDetail(String(args.id));
     case 'activity_update': case 'strength_sets_save': case 'shoes_set': return null;
     case 'exercises_list': return ['Жим штанги лёжа', 'Приседания со штангой', 'Тяга верхнего блока'];
+    case 'exercise_library': return { source: 'демо', version: 'demo', items: [
+      { id: 'Pushups', ru: 'Отжимания', en: 'Pushups', syn: ['отжимания от пола'], tip: 'Руки на ширине плеч, тело прямое; опускай грудь к полу и выжимай.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'push', p: ['chest'], s: ['shoulders', 'triceps'], bw: 0.64, st: false, img: 2 },
+      { id: 'Pullups', ru: 'Подтягивания', en: 'Pullups', syn: ['подтягивания на турнике'], tip: 'Хват шире плеч; подтягивайся до подбородка над перекладиной.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'pull', p: ['lats'], s: ['biceps', 'middle back'], bw: 0.95, st: false, img: 2 },
+      { id: 'Barbell_Squat', ru: 'Приседания со штангой', en: 'Barbell Squat', syn: ['присед'], tip: 'Штанга на трапециях; садись до параллели, спина прямая.', cat: 'strength', eq: 'barbell', lvl: 'beginner', mech: 'compound', force: 'push', p: ['quadriceps'], s: ['glutes', 'hamstrings', 'calves'], bw: null, st: false, img: 2 },
+      { id: 'Plank', ru: 'Планка', en: 'Plank', syn: [], tip: 'Упор на предплечьях и носках; тело прямое.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'isolation', force: 'static', p: ['abdominals'], s: [], bw: null, st: true, img: 2 },
+      { id: 'Band_Pull_Apart', ru: 'Разведение резины перед собой', en: 'Band Pull Apart', syn: [], tip: 'Прямые руки перед собой; растягивай резину в стороны.', cat: 'strength', eq: 'bands', lvl: 'beginner', mech: 'isolation', force: 'pull', p: ['shoulders'], s: ['middle back', 'traps'], bw: null, st: false, img: 2 },
+    ] } satisfies ExerciseLibrary;
+    case 'bands_get': return [{ id: 'b1', name: 'Зелёная', color: '#3DDC97', lo: 15, hi: 35, unit: 'kg' }, { id: 'b2', name: 'Красная', color: '#FF6B6B', lo: 5, hi: 15, unit: 'kg' }] satisfies ResBand[];
+    case 'bands_set': return null;
     case 'activity_set_shoe': case 'setting_list_set': case 'map_set_enabled': case 'map_cache_clear': return null;
     case 'health_summary': return demoHealth();
     case 'habit_mark': case 'health_setting_set': return null;
@@ -675,13 +685,21 @@ export type ListFilter = { sport?: string | null; days?: number | null; query?: 
 export type SetRow = {
   idx?: number; startUtc: number | null; durationS: number | null; reps: number | null; weightKg: number | null;
   kind: 'active' | 'rest'; exercise: string | null; category?: number | null;
+  /** 0.22: exercise from the library, bands used, effective load of one repetition (kg). */
+  exId?: string | null; band?: { ids: string[]; mode: 'add' | 'assist' } | null; effKg?: number | null;
 };
+export type ExerciseItem = {
+  id: string; ru: string; en: string; syn: string[]; tip: string; cat: string | null; eq: string | null; lvl: string | null;
+  mech: string | null; force: string | null; p: string[]; s: string[]; bw: number | null; st: boolean; img: number;
+};
+export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[] };
+export type ResBand = { id: string; name: string; color: string; lo: number; hi: number; unit: 'kg' | 'lb' };
 export type KmSplit = { km: number; timeS: number; hr: number | null; full: boolean; distM?: number };
 export type ActivityDetail = {
   activity: ActivityRow; description: string | null; notes: string | null; weightLiftedKg: number | null; gear: string | null;
   load: number | null; loadMethod: string | null; zoneS: number[] | null; shoeId?: string | null;
   charts: { t: number[]; hr: (number | null)[]; dist: (number | null)[]; speed: (number | null)[]; alt: (number | null)[]; cad: (number | null)[]; lat: (number | null)[]; lng: (number | null)[] } | null;
-  splits: KmSplit[]; sets: SetRow[];
+  splits: KmSplit[]; sets: SetRow[]; bodyKg?: number | null;
   sourceName?: string; detailText?: string; hidden?: number; dupState?: string | null; alternatives?: WorkoutAlt[];
   muscle?: { total: number; up: number | null; down: number | null; rec: { hours: number; heartH: number; muscleH: number } | null; bad?: boolean | null; groups: { key: string; name: string; value: number; pct: number }[] } | null;
 };
@@ -854,6 +872,9 @@ export const api = {
   activityUpdate: (id: string, rpe: number | null, notes: string | null) => call<null>('activity_update', { id, rpe, notes }),
   strengthSetsSave: (id: string, sets: SetRow[]) => call<null>('strength_sets_save', { id, sets }),
   exercises: () => call<string[]>('exercises_list'),
+  exerciseLibrary: () => call<ExerciseLibrary>('exercise_library'),
+  bandsGet: () => call<ResBand[]>('bands_get'),
+  bandsSet: (bands: ResBand[]) => call<null>('bands_set', { bands }),
   shoesGet: () => call<Shoe[]>('shoes_get'),
   shoesSet: (shoes: Shoe[]) => call<null>('shoes_set', { shoes }),
   activitySetShoe: (id: string, shoe: string | null) => call<null>('activity_set_shoe', { id, shoe }),

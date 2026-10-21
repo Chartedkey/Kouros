@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   api, errText, fmtDur, fmtKm, fmtPace, fmtWhen, plural, sportOf,
-  type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type Split, type TrainingOverview,
+  type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type Split, type TrainingOverview, type ResBand, type ExerciseItem,
 } from '../lib/api';
 import { useDataChanged } from '../lib/events';
+import { EQUIP, ExerciseCard, MUSCLE, bandKg, searchExercises, useExerciseLib } from '../components/Exercises';
 import { DeletedList, DupCards } from '../components/Workouts';
 import { IoTab } from './TrainingIo';
 import { HrBars, Workout } from './Workout';
@@ -580,6 +581,108 @@ function GearTab() {
           </div>
         </section>
       )}
+      <BandsCard />
+      <LibraryCard />
     </div>
+  );
+}
+
+const BAND_COLORS: [string, string][] = [['#FFD54F', 'жёлтая'], ['#FF6B6B', 'красная'], ['#3DDC97', 'зелёная'], ['#4FA3FF', 'синяя'], ['#2B2F36', 'чёрная'], ['#C792EA', 'фиолетовая'], ['#FF8A65', 'оранжевая'], ['#9AA3AE', 'серая']];
+
+/** Resistance bands with the range printed on them (0.22). */
+function BandsCard() {
+  const [list, setList] = useState<ResBand[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [form, setForm] = useState<{ name: string; color: string; lo: string; hi: string; unit: 'kg' | 'lb' } | null>(null);
+  const load = useCallback(() => { api.bandsGet().then(setList).catch((e) => setErr(errText(e))); }, []);
+  useEffect(load, [load]);
+  async function save(next: ResBand[]) {
+    try { await api.bandsSet(next); setErr(null); load(); } catch (e) { setErr(errText(e)); }
+  }
+  function add() {
+    if (!form || !list) return;
+    const lo = Number(form.lo.replace(',', '.')), hi = Number((form.hi || form.lo).replace(',', '.'));
+    if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= 0) { setErr('Впиши диапазон нагрузки числами, как на ленте: например 15 и 35'); return; }
+    const name = form.name.trim() || (BAND_COLORS.find((c) => c[0] === form.color)?.[1] ?? 'Резина').replace(/^./, (c) => c.toUpperCase());
+    save([...list, { id: `b${Date.now()}`, name, color: form.color, lo: Math.min(lo, hi), hi: Math.max(lo, hi), unit: form.unit }]);
+    setForm(null);
+  }
+  return (
+    <section className="card" aria-label="Резинки и эспандеры">
+      <div className="between"><span className="label">Резинки и эспандеры</span><span className="muted tiny">{list ? plural(list.length, 'лента', 'ленты', 'лент') : ''}</span></div>
+      {err && <div className="note-err">{err}</div>}
+      {list?.map((b) => (
+        <div key={b.id} className="list-row small" style={{ gap: 10 }}>
+          <span className="dot" style={{ background: b.color || '#9AA3AE', width: 14, height: 14 }} />
+          <span style={{ flex: 1 }}><b>{b.name}</b> <span className="muted">· {String(b.lo).replace('.', ',')}–{String(b.hi).replace('.', ',')} {b.unit === 'lb' ? 'lb' : 'кг'} · в среднем ≈{Math.round(bandKg(b))} кг за повтор</span></span>
+          <button type="button" className="xbtn" aria-label="Удалить" onClick={() => save(list.filter((x) => x.id !== b.id))}>×</button>
+        </div>
+      ))}
+      {list && list.length === 0 && !form && <span className="muted small" style={{ lineHeight: 1.5 }}>Внеси свои ленты с диапазоном нагрузки, который на них написан, — в разборе силовой их можно будет выбрать в подходе, и Kouros сам посчитает нагрузку.</span>}
+      {form ? (
+        <div className="inset">
+          <div className="row" style={{ gap: 12, alignItems: 'flex-end' }}>
+            <div className="field"><label htmlFor="bd-name">Название</label><input id="bd-name" value={form.name} placeholder="например, Зелёная" onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="field"><label htmlFor="bd-lo">От</label><input id="bd-lo" inputMode="decimal" style={{ width: 70 }} value={form.lo} onChange={(e) => setForm({ ...form, lo: e.target.value })} /></div>
+            <div className="field"><label htmlFor="bd-hi">До</label><input id="bd-hi" inputMode="decimal" style={{ width: 70 }} value={form.hi} onChange={(e) => setForm({ ...form, hi: e.target.value })} /></div>
+            <div className="row" role="group" aria-label="Единицы">
+              <button type="button" className="pill" aria-pressed={form.unit === 'kg'} onClick={() => setForm({ ...form, unit: 'kg' })}>кг</button>
+              <button type="button" className="pill" aria-pressed={form.unit === 'lb'} onClick={() => setForm({ ...form, unit: 'lb' })}>lb (фунты)</button>
+            </div>
+          </div>
+          <div className="row" role="group" aria-label="Цвет" style={{ gap: 6 }}>
+            {BAND_COLORS.map(([c, n]) => (
+              <button key={c} type="button" className="pill" aria-pressed={form.color === c} title={n} onClick={() => setForm({ ...form, color: c })}><span className="dot" style={{ background: c, width: 14, height: 14 }} /></button>
+            ))}
+          </div>
+          <span className="muted tiny" style={{ lineHeight: 1.5 }}>Диапазон пишут на ленте или упаковке: «15–35 кг» или «25–80 lb». Лента тянет слабее в начале и сильнее в конце, поэтому Kouros берёт середину.</span>
+          <div className="row">
+            <button type="button" className="btn" onClick={add}>Добавить</button>
+            <button type="button" className="btn2" onClick={() => setForm(null)}>Отмена</button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" className="btn2" style={{ alignSelf: 'flex-start' }} onClick={() => setForm({ name: '', color: '#3DDC97', lo: '', hi: '', unit: 'kg' })}>+ Добавить ленту</button>
+      )}
+    </section>
+  );
+}
+
+/** Browse the exercise library (0.22). */
+function LibraryCard() {
+  const lib = useExerciseLib();
+  const [q, setQ] = useState('');
+  const [eq, setEq] = useState('');
+  const [info, setInfo] = useState<ExerciseItem | null>(null);
+  const hits = useMemo(() => {
+    if (!lib) return [];
+    const base = q.trim() ? searchExercises(lib.items, q, 60) : lib.items;
+    return base.filter((x) => !eq || x.eq === eq).slice(0, 60);
+  }, [lib, q, eq]);
+  return (
+    <section className="card" aria-label="Библиотека упражнений">
+      <div className="between"><span className="label">Библиотека упражнений</span><span className="muted tiny">{lib ? `${lib.items.length} упражнений` : ''}</span></div>
+      <div className="row" style={{ gap: 8 }}>
+        <input className="input" style={{ flex: '1 1 200px' }} value={q} placeholder="жим лёжа, подтягивания, планка…" onChange={(e) => setQ(e.target.value)} />
+        <select className="select" value={eq} onChange={(e) => setEq(e.target.value)} aria-label="Оборудование">
+          <option value="">любое оборудование</option>
+          {Object.entries(EQUIP).map(([k, n]) => <option key={k} value={k}>{n}</option>)}
+        </select>
+      </div>
+      <div className="stack" style={{ gap: 2, maxHeight: 420, overflowY: 'auto' }}>
+        {hits.map((x) => (
+          <button key={x.id} type="button" className="ex-opt" onClick={() => setInfo(x)}>
+            {x.img > 0 && <span className="ex-thumb sm" style={{ backgroundImage: `url(ex/${x.id}.webp)` }} />}
+            <span className="stack" style={{ gap: 0, minWidth: 0 }}>
+              <span className="small ellipsis">{x.ru}</span>
+              <span className="muted tiny ellipsis">{x.eq ? EQUIP[x.eq] ?? x.eq : ''}{x.p.length ? ` · ${x.p.map((m) => MUSCLE[m] ?? m).join(', ')}` : ''}</span>
+            </span>
+          </button>
+        ))}
+        {lib && hits.length === 0 && <span className="muted small">Ничего не нашлось — попробуй другое слово или английское название.</span>}
+      </div>
+      <span className="muted tiny">Фото и описания — Free Exercise DB (общественное достояние), русские названия и подсказки — Kouros.</span>
+      {info && <ExerciseCard ex={info} onClose={() => setInfo(null)} />}
+    </section>
   );
 }

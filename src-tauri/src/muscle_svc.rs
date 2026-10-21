@@ -237,11 +237,11 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
                 add(&mut g, &DOWN, down / 100.0 * 7.0 * k);
             }
             "strength" => {
-                let sets: Vec<(Option<i64>, String)> = conn
-                    .prepare("SELECT category, COALESCE(exercise, '') FROM strength_sets WHERE activity_id = ?1 AND (kind IS NULL OR kind != 'rest')")
+                let sets: Vec<(Option<i64>, String, Option<String>)> = conn
+                    .prepare("SELECT category, COALESCE(exercise, ''), ex_id FROM strength_sets WHERE activity_id = ?1 AND (kind IS NULL OR kind != 'rest')")
                     .map(|mut st| {
-                        let v: Vec<(Option<i64>, String)> =
-                            st.query_map(params![a.id], |r| Ok((r.get(0)?, r.get(1)?))).map(|r| r.flatten().collect()).unwrap_or_default();
+                        let v: Vec<(Option<i64>, String, Option<String>)> =
+                            st.query_map(params![a.id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).map(|r| r.flatten().collect()).unwrap_or_default();
                         v
                     })
                     .unwrap_or_default();
@@ -250,8 +250,10 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
                     add(&mut g, &GYM, total);
                 } else {
                     let per = total / sets.len() as f64;
-                    for (c, n) in &sets {
-                        add(&mut g, &exercise_groups(*c, n), per);
+                    for (c, n, x) in &sets {
+                        // 0.22: an exercise from the library brings its own muscles.
+                        let w = x.as_deref().and_then(crate::exercise_svc::groups).unwrap_or_else(|| exercise_groups(*c, n));
+                        add(&mut g, &w, per);
                     }
                 }
             }

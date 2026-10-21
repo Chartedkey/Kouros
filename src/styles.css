@@ -205,7 +205,19 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .rpe button { height: 40px; border-radius: 10px; border: 1px solid var(--line-2); background: transparent; color: var(--text); font-family: var(--display); font-weight: 700; cursor: pointer; }
 .rpe button[aria-pressed='true'] { color: var(--bg); border-color: transparent; }
 .sets { display: flex; flex-direction: column; }
-.set { display: grid; grid-template-columns: 28px minmax(0, 1fr) 80px 80px 48px 56px 70px; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #1c2026; }
+.set { display: grid; grid-template-columns: 28px minmax(0, 1fr) 76px 70px 64px 44px 52px 104px; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #1c2026; }
+/* exercise library (components/Exercises.tsx) */
+.ex-input { position: relative; display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.ex-input .input { flex: 1; min-width: 0; }
+.ex-thumb { flex: none; width: 36px; height: 24px; border-radius: 6px; border: 1px solid var(--line-2); background-color: #fff; background-size: 200% 100%; background-position: 0 0; cursor: pointer; padding: 0; }
+.ex-thumb.sm { width: 42px; height: 28px; cursor: inherit; }
+.ex-drop { position: absolute; top: calc(100% + 4px); left: 0; right: -120px; z-index: 30; display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: 0 12px 40px #000a; padding: 4px; max-height: 360px; overflow-y: auto; }
+.ex-opt { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 0; background: transparent; color: var(--text); text-align: left; border-radius: 8px; cursor: pointer; justify-content: space-between; }
+.ex-opt:hover { background: #1c2026; }
+.ex-opt > .stack { flex: 1; }
+.ex-anim { width: 100%; aspect-ratio: 3 / 2; margin: 0 auto; border-radius: 12px; background-color: #fff; background-repeat: no-repeat; }
+.ex-modal { position: fixed; inset: 0; z-index: 60; background: #000a; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.ex-modal-card { width: min(520px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; }
 .set.th { font-size: 12px; font-weight: 700; color: var(--muted); border-top: 0; }
 .set.rest { opacity: .6; }
 .input.sm { height: 36px; font-size: 14px; padding: 0 10px; width: 100%; }

@@ -23,6 +23,7 @@ mod norms;
 mod muscle_svc;
 mod meds_svc;
 mod labs_svc;
+mod exercise_svc;
 mod drugs;
 mod catalog_svc;
 mod coach_svc;
@@ -491,6 +492,23 @@ fn activity_update(id: String, rpe: Option<f64>, notes: Option<String>, app: App
 fn strength_sets_save(id: String, sets: Vec<serde_json::Value>, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
     with_db_mut(&st, |c| activity_svc::save_sets(c, &id, &sets))?;
     let _ = tauri::Emitter::emit(&app, "data-changed", "activity");
+    Ok(())
+}
+
+#[tauri::command]
+fn exercise_library() -> serde_json::Value {
+    exercise_svc::list()
+}
+
+#[tauri::command]
+fn bands_get(st: State<'_, AppState>) -> Result<Vec<serde_json::Value>, String> {
+    with_db(&st, |c| Ok(exercise_svc::bands(c)))
+}
+
+#[tauri::command]
+fn bands_set(bands: Vec<serde_json::Value>, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| exercise_svc::save_bands(c, &bands))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "bands");
     Ok(())
 }
 
@@ -1010,6 +1028,9 @@ pub fn run() {
             activity_update,
             strength_sets_save,
             exercises_list,
+            exercise_library,
+            bands_get,
+            bands_set,
             shoes_get,
             shoes_set,
             activity_set_shoe,

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type PointerEvent as RPointerEvent } from 'react';
 import {
   api, errText, fmtDur, fmtKm, fmtPace, fmtWhen, plural, sportOf,
-  type ActivityDetail, type AthleteProfile, type KmSplit, type SetRow, type Shoe,
+  type ActivityDetail, type AthleteProfile, type ResBand, type ExerciseItem, type KmSplit, type SetRow, type Shoe,
 } from '../lib/api';
+import { ExerciseCard, ExerciseInput, effectiveKg, useExerciseLib } from '../components/Exercises';
 import { useDataChanged } from '../lib/events';
 import { RouteMap } from './RouteMap';
 
@@ -158,28 +159,39 @@ const epley = (w: number | null, r: number | null) => (w && r && r > 0 && r <= 1
 function SetsEditor({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) {
   const [rows, setRows] = useState<SetRow[]>(d.sets);
   const [known, setKnown] = useState<string[]>([]);
+  const [bands, setBands] = useState<ResBand[]>([]);
   const [showRest, setShowRest] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [dirty, setDirty] = useState(false);
-  useEffect(() => { api.exercises().then(setKnown).catch(() => {}); }, []);
-  const names = useMemo(() => Array.from(new Set([...known, ...LIB])).sort((a, b) => a.localeCompare(b, 'ru')), [known]);
+  const [info, setInfo] = useState<ExerciseItem | null>(null);
+  const [bandRow, setBandRow] = useState<number | null>(null);
+  const lib = useExerciseLib();
+  useEffect(() => { api.exercises().then(setKnown).catch(() => {}); api.bandsGet().then(setBands).catch(() => {}); }, []);
+  const own = useMemo(() => Array.from(new Set([...known, ...LIB])).sort((a, b) => a.localeCompare(b, 'ru')), [known]);
+  const exOf = (r: SetRow) => (r.exId ? lib?.items.find((x) => x.id === r.exId) : undefined);
+  const effOf = (r: SetRow) => effectiveKg(exOf(r), r.weightKg, d.bodyKg, r.band, bands);
 
-  const upd = (i: number, p: Partial<SetRow>) => { setRows(rows.map((r, k) => (k === i ? { ...r, ...p } : r))); setDirty(true); };
+  const upd = (i: number, p: Partial<SetRow>) => { setRows((rs) => rs.map((r, k) => (k === i ? { ...r, ...p } : r))); setDirty(true); };
   const num = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')));
   function fillDown(i: number) {
-    const ex = rows[i].exercise;
+    const src = rows[i];
     let stop = false;
     setRows(rows.map((r, k) => {
       if (k <= i || stop || r.kind !== 'active') return r;
       if (r.exercise) { stop = true; return r; }
-      return { ...r, exercise: ex };
+      return { ...r, exercise: src.exercise, exId: src.exId ?? null, band: src.band ?? null };
     }));
     setDirty(true);
   }
   function addSet() {
     const lastA = [...rows].reverse().find((r) => r.kind === 'active');
-    setRows([...rows, { startUtc: null, durationS: null, reps: lastA?.reps ?? 10, weightKg: lastA?.weightKg ?? null, kind: 'active', exercise: lastA?.exercise ?? null }]);
+    setRows([...rows, { startUtc: null, durationS: null, reps: lastA?.reps ?? 10, weightKg: lastA?.weightKg ?? null, kind: 'active', exercise: lastA?.exercise ?? null, exId: lastA?.exId ?? null, band: lastA?.band ?? null }]);
     setDirty(true);
+  }
+  function toggleBand(i: number, id: string) {
+    const b = rows[i].band ?? { ids: [], mode: exOf(rows[i])?.en.toLowerCase().includes('assisted') ? 'assist' as const : 'add' as const };
+    const ids = b.ids.includes(id) ? b.ids.filter((x) => x !== id) : [...b.ids, id];
+    upd(i, { band: ids.length ? { ...b, ids } : null });
   }
   async function save() {
     try {
@@ -189,9 +201,10 @@ function SetsEditor({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) 
   }
 
   const active = rows.filter((r) => r.kind === 'active');
-  const tonnage = active.reduce((a, r) => a + (r.weightKg ?? 0) * (r.reps ?? 0), 0);
+  const tonnage = active.reduce((a, r) => a + (effOf(r) ?? r.weightKg ?? 0) * (r.reps ?? 0), 0);
   const exCount = new Set(active.map((r) => r.exercise).filter(Boolean)).size;
   const unnamed = active.filter((r) => !r.exercise).length;
+  const estimated = active.some((r) => { const e = effOf(r); return e != null && e !== r.weightKg; });
   let n = 0;
 
   return (
@@ -201,32 +214,71 @@ function SetsEditor({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) 
         <label className="row small" style={{ gap: 8, cursor: 'pointer' }}><input type="checkbox" checked={showRest} onChange={(e) => setShowRest(e.target.checked)} /> показывать отдых</label>
       </div>
       {unnamed > 0 && rows.length > 0 && (
-        <div className="note-warn">Strava и часы почти не сохраняют названия упражнений. Впиши, что это было: кнопка ↓ копирует упражнение на следующие подходы без названия.</div>
+        <div className="note-warn">Strava и часы почти не сохраняют названия упражнений. Начни вводить название — Kouros подскажет из библиотеки почти 900 упражнений; кнопка ↓ копирует упражнение на следующие подходы без названия.</div>
       )}
-      <datalist id="ex-list">{names.map((x) => <option key={x} value={x} />)}</datalist>
       <div className="sets">
-        <div className="set th"><span>#</span><span>Упражнение</span><span>Вес, кг</span><span>Повторы</span><span>1ПМ</span><span>Время</span><span /></div>
+        <div className="set th"><span>#</span><span>Упражнение</span><span>Вес, кг</span><span>Повторы</span><span title="Сколько килограммов на самом деле работало в повторе">Нагрузка</span><span>1ПМ</span><span>Время</span><span /></div>
         {rows.map((r, i) => {
           if (r.kind === 'rest' && !showRest) return null;
           if (r.kind === 'active') n++;
-          const orm = epley(r.weightKg, r.reps);
+          const ex = exOf(r);
+          const eff = r.kind === 'active' ? effOf(r) : null;
+          const orm = epley(eff ?? r.weightKg, r.reps);
+          const bandNames = (r.band?.ids ?? []).map((id) => bands.find((b) => b.id === id)?.name).filter(Boolean);
           return (
-            <div key={i} className={`set${r.kind === 'rest' ? ' rest' : ''}`}>
-              <span className="muted small num">{r.kind === 'active' ? n : '—'}</span>
-              {r.kind === 'active' ? (
-                <span className="row" style={{ flexWrap: 'nowrap', gap: 4 }}>
-                  <input className="input sm" list="ex-list" aria-label="Упражнение" value={r.exercise ?? ''} placeholder="не распознано" onChange={(e) => upd(i, { exercise: e.target.value || null })} />
-                  <button type="button" className="xbtn" title="Это же упражнение — на следующие подходы" aria-label="Скопировать вниз" disabled={!r.exercise} onClick={() => fillDown(i)}>↓</button>
+            <div key={i} className="stack" style={{ gap: 4 }}>
+              <div className={`set${r.kind === 'rest' ? ' rest' : ''}`}>
+                <span className="muted small num">{r.kind === 'active' ? n : '—'}</span>
+                {r.kind === 'active' ? (
+                  <span className="row" style={{ flexWrap: 'nowrap', gap: 4 }}>
+                    <ExerciseInput value={r.exercise} exId={r.exId} own={own} lib={lib} onPick={(name, id) => upd(i, { exercise: name, exId: id })} onInfo={setInfo} />
+                    <button type="button" className="xbtn" title="Это же упражнение — на следующие подходы" aria-label="Скопировать вниз" disabled={!r.exercise} onClick={() => fillDown(i)}>↓</button>
+                  </span>
+                ) : <span className="muted small">отдых</span>}
+                {r.kind === 'active'
+                  ? <input className="input sm" inputMode="decimal" aria-label="Вес" placeholder={ex?.bw != null ? 'свой вес' : ex?.st ? 'время' : ''} value={r.weightKg ?? ''} onChange={(e) => upd(i, { weightKg: num(e.target.value) })} />
+                  : <span />}
+                {r.kind === 'active' ? <input className="input sm" inputMode="numeric" aria-label="Повторы" value={r.reps ?? ''} onChange={(e) => upd(i, { reps: num(e.target.value) })} /> : <span />}
+                <span className="num small" style={{ color: eff != null && eff !== r.weightKg ? '#9DB8FF' : 'var(--muted)' }} title={eff != null && eff !== r.weightKg ? 'Оценка: свой вес и резина пересчитаны в килограммы' : ''}>
+                  {r.kind === 'active' ? (eff != null ? `${eff !== r.weightKg ? '≈' : ''}${Math.round(eff)}` : ex?.st ? 'статика' : '') : ''}
                 </span>
-              ) : <span className="muted small">отдых</span>}
-              {r.kind === 'active' ? <input className="input sm" inputMode="decimal" aria-label="Вес" value={r.weightKg ?? ''} onChange={(e) => upd(i, { weightKg: num(e.target.value) })} /> : <span />}
-              {r.kind === 'active' ? <input className="input sm" inputMode="numeric" aria-label="Повторы" value={r.reps ?? ''} onChange={(e) => upd(i, { reps: num(e.target.value) })} /> : <span />}
-              <span className="num small muted">{orm ? Math.round(orm) : ''}</span>
-              <span className="num tiny muted">{r.durationS ? fmtDur(r.durationS) : ''}</span>
-              <span className="row" style={{ gap: 4, flexWrap: 'nowrap' }}>
-                <button type="button" className="xbtn" title={r.kind === 'active' ? 'Сделать отдыхом' : 'Сделать подходом'} aria-label="Подход или отдых" onClick={() => upd(i, { kind: r.kind === 'active' ? 'rest' : 'active' })}>{r.kind === 'active' ? '⏸' : '▶'}</button>
-                <button type="button" className="xbtn" aria-label="Удалить" onClick={() => { setRows(rows.filter((_, k) => k !== i)); setDirty(true); }}>×</button>
-              </span>
+                <span className="num small muted">{orm ? Math.round(orm) : ''}</span>
+                <span className="num tiny muted">{r.durationS ? fmtDur(r.durationS) : ''}</span>
+                <span className="row" style={{ gap: 4, flexWrap: 'nowrap' }}>
+                  {r.kind === 'active' && (
+                    <button type="button" className="xbtn" title="Резина / эспандер" aria-label="Резина" aria-pressed={bandRow === i || !!r.band} style={r.band ? { color: '#3DDC97', borderColor: '#3DDC9766' } : undefined} onClick={() => setBandRow(bandRow === i ? null : i)}>〰</button>
+                  )}
+                  <button type="button" className="xbtn" title={r.kind === 'active' ? 'Сделать отдыхом' : 'Сделать подходом'} aria-label="Подход или отдых" onClick={() => upd(i, { kind: r.kind === 'active' ? 'rest' : 'active' })}>{r.kind === 'active' ? '⏸' : '▶'}</button>
+                  <button type="button" className="xbtn" aria-label="Удалить" onClick={() => { setRows(rows.filter((_, k) => k !== i)); setDirty(true); }}>×</button>
+                </span>
+              </div>
+              {r.kind === 'active' && bandRow !== i && bandNames.length > 0 && (
+                <span className="muted tiny" style={{ paddingLeft: 36 }}>резина: {bandNames.join(' + ')} · {r.band?.mode === 'assist' ? 'помогает' : 'добавляет нагрузку'}</span>
+              )}
+              {r.kind === 'active' && bandRow === i && (
+                <div className="inset" style={{ marginLeft: 36, gap: 8 }}>
+                  {bands.length === 0 ? (
+                    <span className="small muted">Резин пока нет — добавь их в «Тренировки → Инвентарь» с диапазоном нагрузки, который написан на ленте.</span>
+                  ) : (
+                    <>
+                      <div className="row" style={{ gap: 6 }}>
+                        {bands.map((b) => (
+                          <button key={b.id} type="button" className="pill" aria-pressed={r.band?.ids.includes(b.id) ?? false} onClick={() => toggleBand(i, b.id)}>
+                            <span className="dot" style={{ background: b.color || '#9AA3AE', marginRight: 6 }} />{b.name || 'Резина'} · {String(b.lo).replace('.', ',')}–{String(b.hi).replace('.', ',')} {b.unit === 'lb' ? 'lb' : 'кг'}
+                          </button>
+                        ))}
+                      </div>
+                      {r.band && (
+                        <div className="row" role="group" aria-label="Как работает резина" style={{ gap: 6 }}>
+                          <button type="button" className="pill" aria-pressed={r.band.mode === 'add'} onClick={() => upd(i, { band: { ...r.band!, mode: 'add' } })}>Добавляет нагрузку</button>
+                          <button type="button" className="pill" aria-pressed={r.band.mode === 'assist'} onClick={() => upd(i, { band: { ...r.band!, mode: 'assist' } })}>Помогает (подтягивания с резиной)</button>
+                        </div>
+                      )}
+                      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Считается середина диапазона с ленты: «15–35 кг» ≈ 25 кг за повтор. Несколько лент складываются.</span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -237,13 +289,16 @@ function SetsEditor({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) 
         <div className="tile"><span className="num tile-v2">{exCount}</span><span className="muted tiny">упражнений</span></div>
         <div className="tile"><span className="num tile-v2">{active.length}</span><span className="muted tiny">подходов</span></div>
         <div className="tile"><span className="num tile-v2">{active.reduce((a, r) => a + (r.reps ?? 0), 0)}</span><span className="muted tiny">повторений</span></div>
-        <div className="tile"><span className="num tile-v2">{tonnage ? `${Math.round(tonnage).toLocaleString('ru-RU')}` : '—'}</span><span className="muted tiny">тоннаж, кг</span></div>
+        <div className="tile"><span className="num tile-v2">{tonnage ? `${estimated ? '≈' : ''}${Math.round(tonnage).toLocaleString('ru-RU')}` : '—'}</span><span className="muted tiny">тоннаж, кг</span></div>
       </div>
       <div className="row">
         <button type="button" className="btn" disabled={!dirty} onClick={save}>Сохранить подходы</button>
         {msg && <span className={msg.ok ? 'small' : 'small note-err'} style={msg.ok ? { color: 'var(--green)' } : undefined}>{msg.text}</span>}
       </div>
-      <span className="muted tiny">1ПМ — расчётный максимум на одно повторение (формула Эпли), чтобы сравнивать 60 × 10 и 70 × 5.</span>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>
+        Нагрузка — сколько килограммов работало в повторе: вес снаряда, плюс доля веса тела в упражнениях со своим весом{d.bodyKg ? ` (по твоему весу ${String(d.bodyKg).replace('.', ',')} кг)` : ''}, плюс или минус резина. Значок ≈ — оценка. 1ПМ — расчётный максимум на одно повторение (формула Эпли), чтобы сравнивать 60 × 10 и 70 × 5.
+      </span>
+      {info && <ExerciseCard ex={info} bodyKg={d.bodyKg} onClose={() => setInfo(null)} />}
     </section>
   );
 }

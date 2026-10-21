@@ -372,6 +372,12 @@ const MIGRATIONS: &[&str] = &[
     );
     CREATE INDEX lab_results_key ON lab_results (key, date);
     "#,
+    // v18: exercise library — catalog id, resistance bands and the effective load of a set
+    r#"
+    ALTER TABLE strength_sets ADD COLUMN ex_id TEXT;
+    ALTER TABLE strength_sets ADD COLUMN band TEXT;
+    ALTER TABLE strength_sets ADD COLUMN eff_kg REAL;
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {

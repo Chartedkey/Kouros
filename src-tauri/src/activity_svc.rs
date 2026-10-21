@@ -89,7 +89,7 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
 
     let mut st = conn
         .prepare(
-            "SELECT idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category FROM strength_sets
+            "SELECT idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg FROM strength_sets
              WHERE activity_id = ?1 ORDER BY idx",
         )
         .map_err(err)?;
@@ -99,6 +99,9 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
                 "idx": r.get::<_, i64>(0)?, "startUtc": r.get::<_, Option<i64>>(1)?, "durationS": r.get::<_, Option<f64>>(2)?,
                 "reps": r.get::<_, Option<i64>>(3)?, "weightKg": r.get::<_, Option<f64>>(4)?, "kind": r.get::<_, Option<String>>(5)?,
                 "exercise": r.get::<_, Option<String>>(6)?, "category": r.get::<_, Option<i64>>(7)?,
+                "exId": r.get::<_, Option<String>>(8)?,
+                "band": r.get::<_, Option<String>>(9)?.and_then(|t| serde_json::from_str::<Value>(&t).ok()),
+                "effKg": r.get::<_, Option<f64>>(10)?,
             }))
         })
         .map_err(err)?
@@ -128,6 +131,7 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
         "charts": charts,
         "splits": km,
         "sets": sets,
+        "bodyKg": crate::exercise_svc::activity_date(conn, id).and_then(|d| crate::exercise_svc::body_kg(conn, &d)).map(|x| (x * 10.0).round() / 10.0),
         "muscle": muscle,
     }))
 }
@@ -147,6 +151,8 @@ pub fn update(conn: &Connection, id: &str, rpe: Option<f64>, notes: Option<Strin
 }
 
 pub fn save_sets(conn: &mut Connection, id: &str, sets: &[Value]) -> Result<(), String> {
+    let body = crate::exercise_svc::activity_date(conn, id).and_then(|d| crate::exercise_svc::body_kg(conn, &d));
+    let bands = crate::exercise_svc::bands(conn);
     let tx = conn.transaction().map_err(err)?;
     tx.execute("DELETE FROM strength_sets WHERE activity_id = ?1", params![id]).map_err(err)?;
     let (mut n_sets, mut n_reps, mut lifted) = (0i64, 0i64, 0.0f64);
@@ -155,18 +161,21 @@ pub fn save_sets(conn: &mut Connection, id: &str, sets: &[Value]) -> Result<(), 
         let w = s["weightKg"].as_f64().filter(|w| *w >= 0.0);
         let kind = s["kind"].as_str().unwrap_or("active").to_string();
         let ex = s["exercise"].as_str().map(|x| x.trim().to_string()).filter(|x| !x.is_empty());
+        let ex_id = s["exId"].as_str().filter(|x| !x.is_empty() && crate::exercise_svc::by_id(x).is_some()).map(String::from);
+        let band = s["band"].as_object().filter(|b| b.get("ids").and_then(|x| x.as_array()).map(|a| !a.is_empty()).unwrap_or(false)).map(|b| Value::Object(b.clone()).to_string());
+        let (eff, _, _) = crate::exercise_svc::effective(s, body, &bands);
         if kind == "active" {
             n_sets += 1;
             n_reps += reps.unwrap_or(0);
-            lifted += w.unwrap_or(0.0) * reps.unwrap_or(0) as f64;
+            lifted += eff.or(w).unwrap_or(0.0) * reps.unwrap_or(0) as f64;
         }
         if let Some(name) = &ex {
             tx.execute("INSERT OR IGNORE INTO exercises (name, source) VALUES (?1, 'manual')", params![name]).map_err(err)?;
         }
         tx.execute(
-            "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-            params![id, i as i64, s["startUtc"].as_i64(), s["durationS"].as_f64(), reps, w, kind, ex, s["category"].as_i64()],
+            "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+            params![id, i as i64, s["startUtc"].as_i64(), s["durationS"].as_f64(), reps, w, kind, ex, s["category"].as_i64(), ex_id, band, eff],
         )
         .map_err(err)?;
     }
