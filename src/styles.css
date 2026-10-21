@@ -205,11 +205,11 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .rpe button { height: 40px; border-radius: 10px; border: 1px solid var(--line-2); background: transparent; color: var(--text); font-family: var(--display); font-weight: 700; cursor: pointer; }
 .rpe button[aria-pressed='true'] { color: var(--bg); border-color: transparent; }
 .sets { display: flex; flex-direction: column; }
-.set { display: grid; grid-template-columns: 28px minmax(0, 1fr) 76px 70px 64px 44px 52px 104px; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #1c2026; }
+.set { display: grid; grid-template-columns: 22px minmax(0, 1fr) 62px 52px 54px 38px 44px 100px; gap: 6px; align-items: center; padding: 6px 0; border-top: 1px solid #1c2026; }
 /* exercise library (components/Exercises.tsx) */
 .ex-input { position: relative; display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
 .ex-input .input { flex: 1; min-width: 0; }
-.ex-thumb { flex: none; width: 36px; height: 24px; border-radius: 6px; border: 1px solid var(--line-2); background-color: #fff; background-size: 200% 100%; background-position: 0 0; cursor: pointer; padding: 0; }
+.ex-thumb { flex: none; width: 30px; height: 20px; border-radius: 6px; border: 1px solid var(--line-2); background-color: #fff; background-size: 200% 100%; background-position: 0 0; cursor: pointer; padding: 0; }
 .ex-thumb.sm { width: 42px; height: 28px; cursor: inherit; }
 .ex-drop { position: absolute; top: calc(100% + 4px); left: 0; right: -120px; z-index: 30; display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: 0 12px 40px #000a; padding: 4px; max-height: 360px; overflow-y: auto; }
 .ex-opt { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 0; background: transparent; color: var(--text); text-align: left; border-radius: 8px; cursor: pointer; justify-content: space-between; }

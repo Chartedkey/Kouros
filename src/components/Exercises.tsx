@@ -120,7 +120,7 @@ export function ExerciseInput({ value, exId, own, lib, onPick, onInfo }: {
         <button type="button" className="ex-thumb" title="Как выполнять" aria-label="Как выполнять" onClick={() => onInfo(ex)} style={{ backgroundImage: `url(ex/${ex.id}.webp)` }} />
       )}
       <input
-        className="input sm" aria-label="Упражнение" value={q} placeholder="найди упражнение"
+        className="input sm" aria-label="Упражнение" value={q} title={q} placeholder="найди упражнение"
         onFocus={() => setOpen(true)}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onBlur={() => { if (q !== (value ?? '')) onPick(q.trim() || null, null); }}
