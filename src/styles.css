@@ -368,7 +368,10 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .help-text mark { background: #3DDC9733; color: var(--text); border-radius: 3px; }
 @media (max-width: 900px) { .help-grid { grid-template-columns: 1fr; } .help-nav { position: static; } }
 .tour { position: fixed; inset: 0; z-index: 80; }
-.tour-dim { position: fixed; inset: 0; background: #000b; }
-.tour-hole { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px #000b; border: 2px solid #3DDC97; transition: all .25s ease; pointer-events: none; }
-.tour-pop { position: fixed; gap: 10px; box-shadow: 0 20px 60px #000c; z-index: 81; }
+.tour-hole { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px #000b; border: 2px solid #3DDC97; pointer-events: none;
+  transition: top .45s cubic-bezier(.22,.8,.3,1), left .45s cubic-bezier(.22,.8,.3,1), width .45s cubic-bezier(.22,.8,.3,1), height .45s cubic-bezier(.22,.8,.3,1), border-color .3s; }
+.tour-hole.none { border-color: transparent; }
+.tour-pop { position: fixed; bottom: 24px; gap: 10px; box-shadow: 0 20px 60px #000c; z-index: 81; transition: opacity .2s ease; }
+.tour-pop.moving { opacity: .35; }
+.tour-still .tour-hole, .tour-still .tour-pop { transition: none; }
 .help-nav .input { height: 40px; padding: 0 14px; border-radius: 12px; }
