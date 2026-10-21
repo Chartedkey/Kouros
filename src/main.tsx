@@ -12,10 +12,12 @@ import App from './App';
 import { initZoom } from './lib/zoom';
 import { initMasonry } from './lib/masonry';
 import { initBoard } from './lib/board';
+import { initHelpTips } from './lib/helptips';
 
 initZoom();
 initBoard();
 initMasonry();
+initHelpTips();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

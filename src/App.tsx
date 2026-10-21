@@ -13,6 +13,10 @@ import { Nutrition } from './pages/Nutrition';
 import { Psychology } from './pages/Psychology';
 import { api, errText, inTauri, type Status } from './lib/api';
 import { scrollToCard, type Go } from './lib/nav';
+import { Help } from './pages/Help';
+import { HelpLayer } from './components/HelpLayer';
+import { Tour } from './components/Tour';
+import { HELP_PAGE_EVENT } from './lib/helptips';
 
 export default function App() {
   const [status, setStatus] = useState<Status | null>(null);
@@ -28,6 +32,12 @@ export default function App() {
   const [healthDay, setHealthDay] = useState<string | null>(null);
   const [healthSub, setHealthSub] = useState<'overview' | 'history' | 'meds' | 'labs' | null>(null);
   const [coachSub, setCoachSub] = useState<string | null>(null);
+  const [helpFocus, setHelpFocus] = useState<string | null>(null);
+  useEffect(() => {
+    const on = (e: Event) => { setHelpFocus((e as CustomEvent<string | null>).detail); setTab('help'); };
+    window.addEventListener(HELP_PAGE_EVENT, on);
+    return () => window.removeEventListener(HELP_PAGE_EVENT, on);
+  }, []);
   const [setSub, setSetSub] = useState<'prof' | null>(null);
   const clearWorkout = useCallback(() => setWorkout(null), []);
   /** One way for links to lead somewhere: tab → subtab → card (1.0). */
@@ -67,7 +77,9 @@ export default function App() {
             {status.dbError}
           </div>
         )}
-        {tab === 'settings' ? (
+        {tab === 'help' ? (
+          <Help focus={helpFocus} onFocusUsed={() => setHelpFocus(null)} />
+        ) : tab === 'settings' ? (
           <Settings status={status} refresh={refresh} goImport={goImport} initialSub={setSub} onSubUsed={() => setSetSub(null)} />
         ) : tab === 'training' ? (
           <Training sub={trainSub} onSub={setTrainSub} open={workout} onOpenDone={clearWorkout} back={backTo ? { label: BACK_NAME[backTo] ?? 'Назад', go: () => { const t = backTo; setBackTo(null); if (t === 'health') { if (backDay) setHealthDay(backDay); else setHealthSub('history'); } setTab(t); } } : null} />
@@ -88,6 +100,8 @@ export default function App() {
         <BoardLayer />
       </div>
       <BoardBar />
+      <HelpLayer />
+      <Tour go={go} tab={tab} auto={!!status.unlocked} />
     </div>
   );
 }

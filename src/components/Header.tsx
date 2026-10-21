@@ -1,9 +1,9 @@
 import { Logo } from './Logo';
 import { useBoard } from './BoardEditor';
 
-export type Tab = 'today' | 'training' | 'health' | 'nutrition' | 'psychology' | 'coach' | 'settings';
+export type Tab = 'today' | 'training' | 'health' | 'nutrition' | 'psychology' | 'coach' | 'settings' | 'help';
 
-export const TABS: { id: Exclude<Tab, 'settings'>; name: string }[] = [
+export const TABS: { id: Exclude<Tab, 'settings' | 'help'>; name: string }[] = [
   { id: 'today', name: 'Сегодня' },
   { id: 'training', name: 'Тренировки' },
   { id: 'health', name: 'Здоровье' },
@@ -39,6 +39,16 @@ export function Header({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
       </nav>
       <div className="header-right">
         <span className="muted small">{today()}</span>
+        <button
+          type="button"
+          className="avatar"
+          title="Справка: как пользоваться Kouros"
+          aria-label="Открыть справку"
+          aria-current={tab === 'help' ? 'page' : undefined}
+          onClick={() => onTab('help')}
+        >
+          ?
+        </button>
         <button
           type="button"
           className="avatar"

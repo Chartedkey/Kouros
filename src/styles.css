@@ -346,3 +346,28 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 /* 1.0: a card reached by a link blinks once */
 .nav-hit { animation: navhit 1.6s ease-out; }
 @keyframes navhit { 0%, 30% { box-shadow: 0 0 0 2px #3DDC97; } 100% { box-shadow: 0 0 0 2px transparent; } }
+
+/* 1.1: справка, «?» у карточек, обучение */
+.help-q { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-left: 8px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font: 700 11px/1 var(--font); letter-spacing: 0; text-transform: none; cursor: pointer; vertical-align: 1px; padding: 0; }
+.help-q:hover { color: var(--text); border-color: #3DDC97; }
+.bd-edit .help-q { display: none; }
+.help-pop { width: min(560px, 100%); }
+.help-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+.help-nav { position: sticky; top: 16px; gap: 4px; padding: 14px; }
+.help-nav .input { margin-bottom: 8px; }
+.help-nav-item { text-align: left; background: transparent; border: 0; color: var(--text-2); padding: 9px 12px; border-radius: 10px; font: inherit; font-size: 14px; cursor: pointer; }
+.help-nav-item:hover { background: var(--card-2); color: var(--text); }
+.help-nav-item[aria-pressed='true'] { background: var(--card-2); color: var(--text); font-weight: 700; }
+.help-chapter { margin: 0; font-family: var(--display); font-size: 22px; }
+.help-h { margin: 0; font-size: 17px; font-weight: 700; }
+.help-sec { gap: 10px; scroll-margin-top: 16px; }
+.help-text { display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
+.help-text p { margin: 0; }
+.help-text ul, .help-text ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.help-text b { color: var(--text); }
+.help-text mark { background: #3DDC9733; color: var(--text); border-radius: 3px; }
+@media (max-width: 900px) { .help-grid { grid-template-columns: 1fr; } .help-nav { position: static; } }
+.tour { position: fixed; inset: 0; z-index: 80; }
+.tour-dim { position: fixed; inset: 0; background: #000b; }
+.tour-hole { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px #000b; border: 2px solid #3DDC97; transition: all .25s ease; pointer-events: none; }
+.tour-pop { position: fixed; gap: 10px; box-shadow: 0 20px 60px #000c; z-index: 81; }
