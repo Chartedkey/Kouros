@@ -121,7 +121,7 @@ export function DataSourcesCard() {
     <section className="card" aria-label="Откуда брать данные">
       <div className="between" style={{ flexWrap: 'wrap' }}>
         <span className="label">Откуда брать данные</span>
-        <span className="muted tiny">Тренировки — всегда из Strava</span>
+        <span className="muted tiny">Тренировки — в карточке «Откуда брать тренировки» ниже</span>
       </div>
       <span className="muted small" style={{ lineHeight: 1.5 }}>
         Kouros получает через freddy всё, что там подключено, и хранит данные всех источников. Здесь выбираешь, какой из них показывать и считать — для каждого вида данных отдельно. Еда, вода, кофеин и алкоголь — из Apple Health (YAZIO, Waterllama).

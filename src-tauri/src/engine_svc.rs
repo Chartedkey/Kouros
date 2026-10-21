@@ -758,14 +758,14 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
                 }
                 "hooper" => {
                     if let Some(f) = extra["feel"].as_f64() {
-                        let w = format!("самочувствие по Hooper {f:.0} из 100");
+                        let w = format!("самочувствие по индексу Хупера {f:.0} из 100");
                         if f < 25.0 { bump(3, w) } else if f < 40.0 { bump(2, w) } else if f <= 50.0 { bump(1, w) }
                     }
                     let item = |i: usize| answers.as_array().and_then(|a| a.get(i)).and_then(|x| x.as_f64()).unwrap_or(0.0);
                     if item(2) >= 6.0 {
-                        bump(2, "по Hooper сильная усталость".into());
+                        bump(2, "по индексу Хупера сильная усталость".into());
                     } else if item(3) >= 6.0 {
-                        bump(2, "по Hooper сильно болят мышцы".into());
+                        bump(2, "по индексу Хупера сильно болят мышцы".into());
                     }
                 }
                 "stressrec" => {

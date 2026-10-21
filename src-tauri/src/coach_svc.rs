@@ -493,7 +493,7 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
         facts.push(format!("TQR сегодня {} из 20", f0(t)));
     }
     if let Some(f) = hooper_today {
-        facts.push(format!("Самочувствие (Hooper) {} из 100", f0(f)));
+        facts.push(format!("Самочувствие (индекс Хупера) {} из 100", f0(f)));
     }
     if tqr_today.map(|t| t <= 11.0).unwrap_or(false) || hooper_today.map(|f| f < 40.0).unwrap_or(false) {
         secs.push(sec("feel", "Как ты себя чувствуешь", "warn", "По твоей самооценке восстановление ниже нормы.".into())
@@ -504,7 +504,7 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
     // Soreness / pain from the morning Hooper (4th answer, 1–7): don't push through it, offer what still works.
     let sore = ps["hooper"].as_array().and_then(|a| a.iter().rev().find(|x| x["date"].as_str() == Some(today.as_str()))).and_then(|x| x["answers"][3].as_f64());
     if let Some(sv) = sore {
-        facts.push(format!("Мышечная боль (Hooper) {} из 7", f0(sv)));
+        facts.push(format!("Мышечная боль (индекс Хупера) {} из 7", f0(sv)));
         if sv >= 5.0 && !night {
             let legs = over.iter().any(|g| ["квадрицепсы", "колени", "икры", "ахилл", "задняя поверхность бедра", "ягодицы"].iter().any(|k| g.contains(k)));
             let alt = if legs || over.is_empty() {

@@ -719,7 +719,7 @@ function DayCard({ date, today, ready, onDate, onOpen }: { date: string; today: 
 }
 
 const PSYCH: Record<string, [string, (p: ReadinessDay['psych'][number]) => string]> = {
-  hooper: ['Самочувствие (Hooper)', (p) => (p.extra?.feel != null ? `${p.extra.feel} из 100` : `${p.score ?? '—'} баллов`)],
+  hooper: ['Самочувствие (индекс Хупера)', (p) => (p.extra?.feel != null ? `${p.extra.feel} из 100` : `${p.score ?? '—'} баллов`)],
   tqr: ['Восстановление (TQR)', (p) => `${p.score ?? '—'} из 20`],
   brums: ['Настроение (BRUMS)', (p) => `индекс ${p.score ?? '—'}`],
   stressrec: ['Стресс и восстановление', (p) => (p.extra ? `стресс ${n1(p.extra.stress)} · восстановление ${n1(p.extra.recovery)}` : String(p.score ?? '—'))],
@@ -900,7 +900,7 @@ function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: Heal
             <span className="small"><span className="muted">Показателей</span> <b>{ov.stats.metrics}</b></span>
             <span className="small"><span className="muted">Период</span> <b>{ov.stats.firstDate ?? '—'} — {ov.stats.lastDate ?? '—'}</b></span>
           </div>
-          <span className="muted tiny">Тренировки из Apple Health не загружаются — они приходят только из Strava, чтобы не было двойного счёта.</span>
+          <span className="muted tiny">Тренировки берутся из источника, выбранного в «Настройки → Синхронизация» (Strava, Apple Health или оба) — одна и та же тренировка дважды не считается.</span>
         </section>
       )}
     </>

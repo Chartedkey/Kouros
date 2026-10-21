@@ -61,7 +61,7 @@ export function Training({ sub, onSub, open, onOpenDone, back }: { sub: Training
       <div className="page-head">
         <div className="stack">
           <h1>Тренировки</h1>
-          <p className="subtitle">Все активности из Strava — бег, ходьба, силовые и физиотерапия</p>
+          <p className="subtitle">Все активности — бег, ходьба, силовые и физиотерапия</p>
         </div>
         <button type="button" className="btn2" aria-pressed={sub === 'io'} onClick={() => onSub(sub === 'io' ? 'overview' : 'io')}>⇅ Импорт / экспорт</button>
       </div>

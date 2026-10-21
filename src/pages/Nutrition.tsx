@@ -33,7 +33,7 @@ export function Nutrition({ onHealth, onLabs, go }: { onHealth: () => void; onLa
       <div className="page-head">
         <div className="stack">
           <h1>Питание</h1>
-          <p className="subtitle">Цели по калориям, белкам, жирам, углеводам и воде пересчитываются каждый день — под твою цель и нагрузку из Strava</p>
+          <p className="subtitle">Цели по калориям, белкам, жирам, углеводам и воде пересчитываются каждый день — под твою цель и нагрузку тренировок</p>
         </div>
       </div>
       <nav className="subtabs" aria-label="Разделы питания">
@@ -64,7 +64,7 @@ function Overview({ n, reload, onHealth, onLabs }: { n: NutritionSummary; reload
       e.fiberEst ? `из них ≈${n1(e.fiberEst)} г оценено по продуктам без данных · 14 г на 1000 ккал` : '14 г на 1000 ккал'],
     ['Вода', e.waterMl != null ? e.waterMl / 1000 : null, t.waterMl / 1000, 'л', C.water, t.trainMin ? `с учётом ${n0(t.trainMin)} мин тренировок` : '35 мл на кг'],
   ];
-  const parts: [string, number][] = [['Базовый обмен', t.bmr], ['Обычная активность за день', t.neat], ['Тренировки дня из Strava (80%)', t.train]];
+  const parts: [string, number][] = [['Базовый обмен', t.bmr], ['Обычная активность за день', t.neat], ['Тренировки дня (80%)', t.train]];
   if (t.goalKcal) parts.push([t.goalKcal < 0 ? 'Дефицит под цель' : 'Профицит под цель', t.goalKcal]);
   return (
     <>
@@ -89,7 +89,7 @@ function Overview({ n, reload, onHealth, onLabs }: { n: NutritionSummary; reload
               {parts.map(([name, v]) => <div key={name} className="list-row small"><span className="muted">{name}</span><span className="num">{v > 0 && name !== 'Базовый обмен' ? '+' : ''}{n0(v)}</span></div>)}
               <div className="list-row small"><b>Цель на сегодня</b><b className="num">{n0(t.kcal)} ккал</b></div>
             </div>
-            <span className="muted tiny" style={{ lineHeight: 1.5 }}>Базовый обмен — по формуле Миффлина — Сан Жеора (рост, вес, возраст). Тренировки — калории из Strava, а если их нет — оценка по нагрузке.</span>
+            <span className="muted tiny" style={{ lineHeight: 1.5 }}>Базовый обмен — по формуле Миффлина — Сан Жеора (рост, вес, возраст). Тренировки — калории из записи тренировки (Strava или часы), а если их нет — оценка по нагрузке.</span>
           </section>
           <GoalCard n={n} reload={reload} onHealth={onHealth} />
         </div>
