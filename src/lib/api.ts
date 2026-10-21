@@ -249,7 +249,7 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
   switch (cmd) {
     case 'app_status':
       return {
-        version: '0.1.0', platform: 'browser', dataDir: 'C:\\Users\\User\\Kouros', dbOk: true, dbError: null,
+        version: '1.0.0', platform: 'browser', dataDir: 'C:\\Users\\User\\Kouros', dbOk: true, dbError: null,
         schemaVersion: 1, dbSize: 98304, cipherVersion: '4.6.1 community', hello: 'available',
         lockEnabled: demo.lock, unlocked: demo.unlocked,
       } satisfies Status;
@@ -470,7 +470,7 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'strava_connect': return 'Алекс';
     case 'strava_sync': return { added: 0, merged: 0, streams: 0, streamsLeft: 0, rateLimited: false, needsChoice: !demo.imported && !args.full };
     case 'freddy_sync': return { rows: 0, pages: 1, lastDate: null };
-    case 'health_overview': return { stats: { rows: 0, metrics: 0, firstDate: null, lastDate: null }, latest: [] };
+    case 'health_overview': return { stats: { rows: 5400, metrics: 42, firstDate: '2025-01-01', lastDate: '2026-10-17' }, latest: [] };
     case 'profile_get':
       return { name: 'Алекс', filled: true, hrMax: 184, hrRest: null, hrRestAuto: 55, zones: [110, 129, 147, 160, 171, 184], heightCm: 178, birthYear: 1990, male: true, proteinGPerKg: 1.8, zonesDate: null, thresholdPaceS: 330, weekCap: 1.3, paceZones: [573, 457, 383, 354, 331, 312] };
     case 'profile_set': return null;

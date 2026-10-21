@@ -190,7 +190,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
       </section>
       <section className="card" aria-label="Тренер">
         <div className="between"><span className="label">Тренер Kouros</span></div>
-        <span className="muted small" style={{ lineHeight: 1.5 }}>Опросы учитываются в плане дня, но только в сторону облегчения: низкий TQR или плохие ощущения по Hooper убирают интенсивную работу или снижают ступень плана. Сама готовность тела считается только по часам — ощущения показаны рядом, а не внутри неё.</span>
+        <span className="muted small" style={{ lineHeight: 1.5 }}>Опросы учитываются в плане дня, но только в сторону облегчения: низкий TQR или плохое самочувствие по индексу Хупера убирают интенсивную работу или снижают ступень плана. Сама готовность тела считается только по часам — ощущения показаны рядом, а не внутри неё.</span>
       </section>
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Опросники помогают замечать перегруз, но не заменяют консультацию специалиста.</p>
     </>
