@@ -4,6 +4,7 @@ import {
   type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type Split, type TrainingOverview, type ResBand, type ExerciseItem,
 } from '../lib/api';
 import { useDataChanged } from '../lib/events';
+import { SpecEditor } from '../components/Shoes';
 import { EQUIP, ExerciseCard, MUSCLE, bandKg, searchExercises, useExerciseLib } from '../components/Exercises';
 import { DeletedList, DupCards } from '../components/Workouts';
 import { IoTab } from './TrainingIo';
@@ -515,6 +516,7 @@ function GearTab() {
   const [list, setList] = useState<Shoe[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [form, setForm] = useState<{ name: string; kind: Shoe['kind']; startDate: string; initialKm: string; walks: boolean } | null>(null);
+  const [specOf, setSpecOf] = useState<string | null>(null);
   const load = useCallback(() => { api.shoesGet().then(setList).catch((e) => setErr(errText(e))); }, []);
   useEffect(load, [load]);
   useDataChanged(load);
@@ -547,12 +549,18 @@ function GearTab() {
                   {!sh.retired && (sh.main
                     ? <span className="chip chip-ok">основные</span>
                     : <button type="button" className="btn2" onClick={() => save(list.map((x) => ({ ...x, main: x.id === sh.id })))}>Сделать основными</button>)}
+                  <button type="button" className="btn2" aria-pressed={specOf === sh.id} onClick={() => setSpecOf(specOf === sh.id ? null : sh.id)}>Характеристики{sh.spec && Object.keys(sh.spec).length ? ' ✓' : ''}</button>
+                  {sh.url && <button type="button" className="linkbtn small" onClick={() => api.openLink(sh.url!).catch(() => {})}>обзор ↗</button>}
                   <button type="button" className="btn2" onClick={() => save(list.map((x) => (x.id === sh.id ? { ...x, retired: !x.retired } : x)))}>{sh.retired ? 'Вернуть' : 'В архив'}</button>
                   <button type="button" className="xbtn" aria-label="Удалить" onClick={() => save(list.filter((x) => x.id !== sh.id))}>×</button>
                 </span>
               </div>
               <div style={{ height: 8, borderRadius: 999, background: '#22262D', overflow: 'hidden' }}><div style={{ width: `${frac * 100}%`, height: '100%', background: col }} /></div>
               <span className="small"><b className="num">{n1(sh.km ?? 0)}</b> <span className="muted">из ≈ {sh.limitKm} км{frac > 0.9 ? ' · пора менять' : frac > 0.7 ? ' · скоро замена' : ''}</span></span>
+              {specOf === sh.id && (
+                <SpecEditor spec={sh.spec ?? {}} url={sh.url ?? ''} onCancel={() => setSpecOf(null)}
+                  onSave={(spec, url) => { save(list.map((x) => (x.id === sh.id ? { ...x, spec, url } : x))); setSpecOf(null); }} />
+              )}
             </div>
           );
         })}

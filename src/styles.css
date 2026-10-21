@@ -207,6 +207,9 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .sets { display: flex; flex-direction: column; }
 .set { display: grid; grid-template-columns: 22px minmax(0, 1fr) 62px 52px 54px 38px 44px 100px; gap: 6px; align-items: center; padding: 6px 0; border-top: 1px solid #1c2026; }
 /* exercise library (components/Exercises.tsx) */
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px 14px; }
+.spec-row { display: grid; grid-template-columns: minmax(0, 1fr) 80px; gap: 2px 8px; align-items: center; }
+.spec-row > .tiny { grid-column: 1 / -1; }
 .ex-input { position: relative; display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
 .ex-input .input { flex: 1; min-width: 0; }
 .ex-thumb { flex: none; width: 30px; height: 20px; border-radius: 6px; border: 1px solid var(--line-2); background-color: #fff; background-size: 200% 100%; background-position: 0 0; cursor: pointer; padding: 0; }

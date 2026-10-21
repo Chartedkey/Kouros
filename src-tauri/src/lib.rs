@@ -24,6 +24,7 @@ mod muscle_svc;
 mod meds_svc;
 mod labs_svc;
 mod exercise_svc;
+mod shoe_svc;
 mod drugs;
 mod catalog_svc;
 mod coach_svc;
@@ -512,6 +513,30 @@ fn bands_set(bands: Vec<serde_json::Value>, app: AppHandle, st: State<'_, AppSta
     Ok(())
 }
 
+/// Opens a review page of a shoe model in the browser (only http/https links).
+#[tauri::command]
+fn open_link(url: String, app: AppHandle) -> Result<(), String> {
+    if !(url.starts_with("https://") || url.starts_with("http://")) {
+        return Err("Это не ссылка на сайт".into());
+    }
+    app.opener().open_url(url, None::<&str>).map_err(|e| format!("Не удалось открыть браузер: {e}"))
+}
+
+#[tauri::command]
+fn shoe_advice(st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| shoe_svc::advice(c))
+}
+
+#[tauri::command]
+fn shoe_conditions_set(temp: String, surface: String, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| {
+        let today = engine_svc::today(&engine_svc::profile(c));
+        shoe_svc::set_conditions(c, &today, &temp, &surface)
+    })?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "shoes");
+    Ok(())
+}
+
 #[tauri::command]
 fn exercises_list(st: State<'_, AppState>) -> Result<Vec<String>, String> {
     with_db(&st, |c| Ok(activity_svc::exercises(c)))
@@ -885,6 +910,23 @@ fn plan_decide(id: i64, accept: bool, st: State<'_, AppState>) -> Result<(), Str
 }
 
 #[tauri::command]
+fn plan_check_choice(date: String, items: serde_json::Value, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db_mut(&st, |c| plan_svc::check_choice(c, &date, &items))
+}
+
+#[tauri::command]
+fn plan_choose(date: String, items: serde_json::Value, app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let v = with_db_mut(&st, |c| plan_svc::choose(c, &date, &items))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "plan");
+    Ok(v)
+}
+
+#[tauri::command]
+fn plan_confirm(date: String, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| plan_svc::confirm(c, &date))
+}
+
+#[tauri::command]
 fn plan_set_day(date: String, items: serde_json::Value, st: State<'_, AppState>) -> Result<(), String> {
     with_db(&st, |c| plan_svc::set_day(c, &date, &items))
 }
@@ -1028,6 +1070,9 @@ pub fn run() {
             activity_update,
             strength_sets_save,
             exercises_list,
+            shoe_advice,
+            open_link,
+            shoe_conditions_set,
             exercise_library,
             bands_get,
             bands_set,
@@ -1086,6 +1131,9 @@ pub fn run() {
             sources_map_set,
             plan_state,
             plan_decide,
+            plan_check_choice,
+            plan_choose,
+            plan_confirm,
             plan_set_day,
             plan_reset_day,
             plan_template_save,

@@ -4,7 +4,9 @@ import { Vital, pointsOf, fmtPts } from '../components/Readiness';
 import { useCallback, useEffect, useState } from 'react';
 import { CheckinCard, MorningPain } from '../components/Checkin';
 import { DupCards } from '../components/Workouts';
-import { api, errText, type EngineSummary, type HealthSummary, type MedsSummary, type CoachReport, type PlanState, type BodyState, type PsychSummary, type Split } from '../lib/api';
+import { DayPlanCard } from '../components/DayPlan';
+import { ShoeTodayCard } from '../components/Shoes';
+import { api, errText, type EngineSummary, type HealthSummary, type MedsSummary, type CoachReport, type PlanState, type ShoeAdvice, type BodyState, type PsychSummary, type Split } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 
 const LEVEL: Record<string, [string, string]> = {
@@ -267,7 +269,7 @@ function loadHidden(): Record<string, number> {
   } catch { return {}; }
 }
 
-export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, onMeds, onCoach, onProfile }: { onProfile?: () => void; onSettings: () => void; onTraining: () => void; onHealth: () => void; onPsych?: () => void; onHealthDay?: (d: string) => void; onMeds?: () => void; onCoach?: () => void }) {
+export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, onMeds, onCoach, onProfile, onGear }: { onGear?: () => void; onProfile?: () => void; onSettings: () => void; onTraining: () => void; onHealth: () => void; onPsych?: () => void; onHealthDay?: (d: string) => void; onMeds?: () => void; onCoach?: () => void }) {
   const [s, setS] = useState<EngineSummary | null>(null);
   const [hs, setHs] = useState<HealthSummary | null>(null);
   const [ps, setPs] = useState<PsychSummary | null>(null);
@@ -275,6 +277,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
   const [coach, setCoach] = useState<CoachReport | null>(null);
   const [plan, setPlan] = useState<PlanState | null>(null);
   const [body, setBody] = useState<BodyState | null>(null);
+  const [shoe, setShoe] = useState<ShoeAdvice | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [fOpen, setFOpen] = useState(true);
   const [allOpen, setAllOpen] = useState(false);
@@ -289,7 +292,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
     api.healthSummary().then(setHs).catch(() => {});
     api.psychSummary().then(setPs).catch(() => {});
     api.medsSummary().then(setMeds).catch(() => {});
-    api.planState().then(setPlan).catch(() => {});
+    api.planState().then((p) => { setPlan(p); api.shoeAdvice().then(setShoe).catch(() => {}); }).catch(() => {});
     api.bodyState().then(setBody).catch(() => {});
     api.coachState().then((c) => setCoach(c.reports.find((r) => r.kind !== 'claude' && r.body.headline) ?? null)).catch(() => {});
   }, []);
@@ -523,10 +526,9 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
           )}
           {day.advice.hint && <span className="small" style={{ color: '#9DB8FF', lineHeight: 1.5 }}>{day.advice.hint}</span>}
           {day.advice.evening && <span className="muted tiny">С {s.readiness.eveningFrom ?? 'вечера'} совет и варианты считаются от вечерней готовности.</span>}
-          {plan && (
+          {plan && plan.proposals.some((p) => p.date !== plan.today) && (
             <button type="button" className="plain small" style={{ textAlign: 'left', lineHeight: 1.5, cursor: 'pointer' }} onClick={onCoach}>
-              <span className="muted">По плану сегодня: </span><b>{plan.todayText}</b>
-              {plan.proposals.length > 0 && <span style={{ color: '#F5B642' }}> · тренер предлагает изменить план ({plan.proposals.length}) →</span>}
+              <span style={{ color: '#F5B642' }}>Kouros предлагает изменить план на другие дни ({plan.proposals.filter((p) => p.date !== plan.today).length}) →</span>
             </button>
           )}
           {coach ? (
@@ -538,6 +540,9 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
           )}
         </div>
       </section>
+
+      {plan && <DayPlanCard plan={plan} reload={load} onCoach={onCoach} />}
+      {shoe && <ShoeTodayCard a={shoe} reload={load} onGear={onGear} />}
 
       <div className="grid2">
         <section className="card" aria-label="Неделя">

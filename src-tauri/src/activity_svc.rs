@@ -261,6 +261,9 @@ pub fn save_shoes(conn: &Connection, list: &Value) -> Result<(), String> {
                 "initialKm": s["initialKm"].as_f64().unwrap_or(0.0), "limitKm": s["limitKm"].as_f64().unwrap_or(700.0),
                 "walks": s["walks"].as_bool().unwrap_or(false), "retired": s["retired"].as_bool().unwrap_or(false),
                 "main": s["main"].as_bool().unwrap_or(false),
+                // 0.23: characteristics (shoe_svc) and a link to the model's review page.
+                "spec": s["spec"].as_object().map(|o| Value::Object(o.clone())).unwrap_or_else(|| json!({})),
+                "url": s["url"].as_str().filter(|u| u.starts_with("http")).unwrap_or(""),
             })
         })
         .collect();

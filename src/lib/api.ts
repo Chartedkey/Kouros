@@ -42,6 +42,7 @@ const demo = {
   lock: true,
   unlocked: false,
   imported: false,
+  cond: null as { date: string; temp: string; surface: string } | null,
 };
 
 const DEMO_STRESS = {
@@ -419,7 +420,27 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
       longestWalk: { activityId: 's0', distanceM: 9800, timeS: 6000, startUtc: 1789000000 },
       longestSession: { activityId: 's2', distanceM: 15200, timeS: 5400, startUtc: 1783000000 }, hidden: [],
     } satisfies RecordsExtra;
-    case 'shoes_get': return [{ id: 'x', name: 'Кроссовки для лёгкого бега', kind: 'train', startDate: '2026-06-01', initialKm: 0, limitKm: 700, walks: false, retired: false, km: 412.4, workouts: 48 }];
+    case 'shoes_get': return [
+      { id: 'x', name: 'Кроссовки для лёгкого бега', kind: 'train', startDate: '2026-06-01', initialKm: 0, limitKm: 700, walks: false, retired: false, km: 412.4, workouts: 48, main: true,
+        spec: { pace: ['daily'], sa: 140, er: 62, traction: 0.48, arch: 'neutral', weightG: 290, dropMm: 9, softness: 22, softUnit: 'AC', coldPct: 25, breath: 3, season: 'all' } },
+      { id: 'y', name: 'Лёгкие темповые', kind: 'race', startDate: '2026-08-01', initialKm: 0, limitKm: 400, walks: false, retired: false, km: 96, workouts: 9,
+        spec: { pace: ['tempo', 'race'], sa: 118, er: 71, traction: 0.6, arch: 'neutral', weightG: 225, dropMm: 7, coldPct: 12, rocker: true } },
+    ] satisfies Shoe[];
+    case 'shoe_advice': return { need: { kind: 'easy', title: 'лёгкий бег', min: 45 }, shoes: 2, warn: [], conditions: demo.cond,
+      picks: [
+        { id: 'x', name: 'Кроссовки для лёгкого бега', score: 52, plus: ['подходит для «лёгкий бег»', 'хорошая амортизация (140 SA)'], minus: demo.cond?.temp === '-10..0' ? ['пена на холоде твердеет на 25%'] : [], km: 412.4, limitKm: 700, spec: true },
+        { id: 'y', name: 'Лёгкие темповые', score: 9, plus: [], minus: ['стартовую пару лучше беречь для ключевых дней'], km: 96, limitKm: 400, spec: true },
+      ] } satisfies ShoeAdvice;
+    case 'shoe_conditions_set': demo.cond = { date: '2026-10-17', temp: String(args.temp), surface: String(args.surface) }; return null;
+    case 'plan_check_choice': {
+      const items = (args.items as PlanItem[]) ?? [];
+      const hardOne = items.some((i) => ['long', 'tempo', 'intervals', 'test'].includes(i.kind));
+      return hardOne
+        ? { ok: false, warnings: ['Вчера уже был тяжёлый день — двум подряд лучше не быть, мышцам и связкам нужно 36–48 часов.'], suggestion: [{ kind: 'easy', min: 40 }], suggestionText: 'Лёгкий бег 40 мин' }
+        : { ok: true, warnings: [], suggestion: null, suggestionText: null };
+    }
+    case 'plan_choose': return { changes: [{ date: '2026-10-20', dateRu: 'вт 20 окт', before: 'Лёгкий бег 60 мин', after: 'Лёгкий бег 45 мин', why: 'неделя ≈700 при безопасных 640 — день короче' }] } satisfies ChoiceResult;
+    case 'plan_confirm': case 'open_link': return null;
     case 'activities_stats': {
       const items = demo.imported ? DEMO_ACTS : [];
       return {
@@ -589,7 +610,7 @@ export type PlanItem = { kind: string; min: number };
 export type PlanDetail = { kind: string; title: string; min: number; warmup: string; main: string; cooldown: string; drills: string | null; notes: string[] };
 export type PlanDay = {
   date: string; dateRu: string; wd: string; items: PlanItem[]; text: string; source: string | null; note: string | null;
-  hard: boolean; load: number; status: 'done' | 'partial' | 'missed' | 'planned' | 'rest';
+  hard: boolean; load: number; status: 'done' | 'partial' | 'missed' | 'planned' | 'rest'; confirmed?: boolean;
   doneActs: { id: string; sport: string; min: number; load: number; unplanned?: boolean }[]; block: number; week: number; deload: boolean; detail: PlanDetail[];
 };
 export type PlanChange = {
@@ -706,7 +727,23 @@ export type ActivityDetail = {
 export type Shoe = {
   id: string; name: string; kind: 'train' | 'race' | 'trail' | 'walk'; startDate: string; initialKm: number; limitKm: number;
   walks: boolean; retired: boolean; main?: boolean; km?: number; workouts?: number;
+  /** 0.23: characteristics (filled by hand or pasted from a review table) and a review link. */
+  spec?: ShoeSpec; url?: string;
 };
+export type ShoePace = 'daily' | 'recovery' | 'tempo' | 'race' | 'trail';
+export type ShoeSpec = {
+  pace?: ShoePace[]; sa?: number; er?: number; traction?: number; arch?: 'neutral' | 'stability'; weightG?: number; dropMm?: number;
+  softness?: number; softUnit?: 'AC' | 'HA'; coldPct?: number; outsoleMm?: number; toebox?: number; heelPad?: number; breath?: number;
+  season?: 'all' | 'summer' | 'winter'; widthMm?: number; toeboxMm?: number; heelMm?: number; foreMm?: number; rocker?: boolean;
+  extra?: Record<string, string>;
+};
+export type ShoePick = { id: string; name: string; score: number; plus: string[]; minus: string[]; km: number; limitKm: number; spec: boolean };
+export type ShoeAdvice = {
+  need: { kind: string; title: string; min: number } | null; shoes: number; warn?: string[];
+  conditions: { date: string; temp: string; surface: string } | null; picks: ShoePick[];
+};
+export type ChoiceCheck = { ok: boolean; warnings: string[]; suggestion: PlanItem[] | null; suggestionText: string | null };
+export type ChoiceResult = { changes: { date: string; dateRu: string; before: string; after: string; why: string }[] };
 export type Pt = [string, number];
 export type Band = [number, number, number] | null;
 export type HealthNight = { date: string; totalS: number; deepS: number; coreS: number; remS: number; awakeS: number; score: number; bedUtc: number | null; wakeUtc: number | null };
@@ -877,6 +914,12 @@ export const api = {
   bandsSet: (bands: ResBand[]) => call<null>('bands_set', { bands }),
   shoesGet: () => call<Shoe[]>('shoes_get'),
   shoesSet: (shoes: Shoe[]) => call<null>('shoes_set', { shoes }),
+  shoeAdvice: () => call<ShoeAdvice>('shoe_advice'),
+  openLink: (url: string) => (inTauri ? call<null>('open_link', { url }) : Promise.resolve(void window.open(url, '_blank')) as Promise<null>),
+  shoeConditionsSet: (temp: string, surface: string) => call<null>('shoe_conditions_set', { temp, surface }),
+  planCheckChoice: (date: string, items: PlanItem[]) => call<ChoiceCheck>('plan_check_choice', { date, items }),
+  planChoose: (date: string, items: PlanItem[]) => call<ChoiceResult>('plan_choose', { date, items }),
+  planConfirm: (date: string) => call<null>('plan_confirm', { date }),
   activitySetShoe: (id: string, shoe: string | null) => call<null>('activity_set_shoe', { id, shoe }),
   trainingOverview: () => call<TrainingOverview>('training_overview'),
   recordsExtra: () => call<RecordsExtra>('records_extra'),

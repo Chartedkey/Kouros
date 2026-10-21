@@ -67,7 +67,7 @@ export default function App() {
         ) : tab === 'coach' ? (
           <Coach />
         ) : tab === 'today' ? (
-          <Today onSettings={() => setTab('settings')} onTraining={() => { setTrainSub('overview'); setTab('training'); }} onHealth={() => setTab('health')} onPsych={() => setTab('psychology')} onHealthDay={(d) => { setHealthDay(d); setTab('health'); }} onMeds={() => { setHealthSub('meds'); setTab('health'); }} onCoach={() => setTab('coach')} onProfile={() => { setSetSub('prof'); setTab('settings'); }} />
+          <Today onSettings={() => setTab('settings')} onTraining={() => { setTrainSub('overview'); setTab('training'); }} onHealth={() => setTab('health')} onPsych={() => setTab('psychology')} onHealthDay={(d) => { setHealthDay(d); setTab('health'); }} onMeds={() => { setHealthSub('meds'); setTab('health'); }} onCoach={() => setTab('coach')} onGear={() => { setTrainSub('gear'); setTab('training'); }} onProfile={() => { setSetSub('prof'); setTab('settings'); }} />
         ) : (
           <Placeholder tab={tab} onSettings={() => setTab('settings')} />
         )}

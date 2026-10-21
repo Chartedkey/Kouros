@@ -581,7 +581,10 @@ fn auto_apply(conn: &Connection) -> bool {
 /// Today's check: if the plan asks for more than the body and the gates allow, propose a swap
 /// (and move a key workout to a later easy day).
 fn check_today(conn: &Connection, s: &Value, today: &str, t: f64) -> Result<(), String> {
-    let Some((items, _, _)) = row(conn, today) else { return Ok(()) };
+    let Some((items, src, _)) = row(conn, today) else { return Ok(()) };
+    if src == "chosen" {
+        return Ok(()); // 0.23: the athlete chose today's workout — the choice was checked then
+    }
     let tier = s["day"]["advice"]["tier"].as_str().and_then(|x| crate::engine::daily::TIERS.iter().position(|t| *t == x));
     let Some(allowed) = tier else { return Ok(()) };
     if s["day"]["todayLoad"].as_f64().unwrap_or(0.0) > 0.0 && s["day"]["todayLoad"].as_f64().unwrap_or(0.0) >= s["day"]["target"]["lo"].as_f64().unwrap_or(f64::MAX) {
@@ -832,7 +835,10 @@ fn pain_check(conn: &Connection, today: &str, t: f64) -> Result<(), String> {
     let ret = crate::body_svc::return_item(conn).is_some();
     for k in 0..3 {
         let d = add_days(today, k);
-        let Some((items, _, _)) = row(conn, &d) else { continue };
+        let Some((items, src, _)) = row(conn, &d) else { continue };
+        if src == "chosen" {
+            continue; // the athlete's own choice was already checked against the pain
+        }
         for (area, name, level, runs, upper) in &pains {
             if *level < 4 {
                 continue;
@@ -1112,6 +1118,7 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
         days.push(json!({
             "date": d, "dateRu": date_ru(&d), "wd": WD[wday(&d)], "items": items_json(&items), "text": items_text(&items),
             "source": r.as_ref().map(|x| x.1.clone()), "note": note,
+            "confirmed": conn.query_row("SELECT COALESCE(confirmed, 0) FROM plan_days WHERE date = ?1", params![d], |q| q.get::<_, i64>(0)).unwrap_or(0) == 1,
             "hard": hard(&items), "load": day_load(&items, &rt).round(), "status": st,
             "doneActs": da, "block": block, "week": wk, "deload": deload, "detail": det,
         }));
@@ -1179,4 +1186,253 @@ pub fn lines(conn: &Connection) -> Vec<String> {
         .unwrap_or_default();
     out.extend(props);
     out
+}
+
+// ---------- the athlete's choice of the day (0.23) ----------
+
+struct Ctx {
+    s: Value,
+    today: String,
+    rt: BTreeMap<&'static str, f64>,
+    cap_week: Option<f64>,
+    t: f64,
+    loads: BTreeMap<String, f64>,
+    usual_day: f64,
+}
+
+fn ctx(conn: &mut Connection) -> Result<Ctx, String> {
+    let s = engine_svc::summary(conn)?;
+    let p = engine_svc::profile(conn);
+    let today = engine_svc::today(&p);
+    let rest = engine_svc::resting_hr(conn, &p);
+    let acts = engine_svc::refresh_metrics(conn, &p, rest)?;
+    let rt = rates(&acts, &today, p.tz_offset_s);
+    let ctl = s["load"]["ctl"].as_f64().unwrap_or(0.0);
+    let cap_week = if ctl > 5.0 { Some(ctl * 7.0 * p.week_cap) } else { None };
+    let cp = coach_svc::profile(conn);
+    let t = cp["time"].as_str().and_then(|x| x.split_whitespace().next()?.parse::<f64>().ok()).unwrap_or(60.0);
+    let mut loads: BTreeMap<String, f64> = BTreeMap::new();
+    for a in &acts {
+        *loads.entry(day_of(a.start_utc, p.tz_offset_s)).or_default() += a.load;
+    }
+    let usual_day = s["day"]["usualLoad"].as_f64().unwrap_or(0.0);
+    Ok(Ctx { s, today, rt, cap_week, t, loads, usual_day })
+}
+
+/// Was a day hard: a hard planned day that was done, or a load well above the usual day.
+fn was_hard(conn: &Connection, c: &Ctx, d: &str) -> bool {
+    let load = c.loads.get(d).copied().unwrap_or(0.0);
+    if c.usual_day > 0.0 && load >= c.usual_day * 1.4 {
+        return true;
+    }
+    if d >= c.today.as_str() {
+        return row(conn, d).map(|x| hard(&x.0)).unwrap_or(false);
+    }
+    load > 0.0 && row(conn, d).map(|x| hard(&x.0)).unwrap_or(false)
+}
+
+/// A lighter version of a choice: no hard items, runs shorter; with leg pain — no running.
+fn lighter(items: &[Item], leg_pain: bool) -> Vec<Item> {
+    let mut out: Vec<Item> = Vec::new();
+    for i in items {
+        let n = match i.kind.as_str() {
+            "tempo" | "intervals" | "test" => Item { kind: "easy".into(), min: r5((i.min * 0.8).clamp(30.0, 50.0)) },
+            "long" => Item { kind: "easy".into(), min: r5((i.min * 0.6).clamp(35.0, 55.0)) },
+            "gym" => Item { kind: "ofp".into(), min: 30.0 },
+            _ => i.clone(),
+        };
+        let n = if leg_pain && is_run(&n.kind) { Item { kind: "bike".into(), min: r5(n.min.max(30.0)) } } else { n };
+        if !out.iter().any(|x| x.kind == n.kind) {
+            out.push(n);
+        }
+    }
+    if out.is_empty() {
+        out.push(Item { kind: "walk".into(), min: 30.0 });
+    }
+    out
+}
+
+/// Checks a choice for a day: warnings with reasons and a lighter suggestion when it is risky.
+pub fn check_choice(conn: &mut Connection, d: &str, items: &Value) -> Result<Value, String> {
+    let c = ctx(conn)?;
+    let chosen = items_of(items);
+    let mut warn: Vec<String> = Vec::new();
+    let is_hard = hard(&chosen) || chosen.iter().any(|i| i.kind == "gym");
+    let mut suggestion: Option<Vec<Item>> = None;
+    // Readiness (today only).
+    if d == c.today {
+        if let Some(allowed) = c.s["day"]["advice"]["tier"].as_str().and_then(|x| crate::engine::daily::TIERS.iter().position(|t| *t == x)) {
+            if need_tier(&chosen) > allowed {
+                let reasons: Vec<String> = c.s["day"]["advice"]["reasons"].as_array().map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect()).unwrap_or_default();
+                warn.push(format!(
+                    "Сегодня тело готово на «{}»{}{}.",
+                    c.s["day"]["advice"]["title"].as_str().unwrap_or(""),
+                    c.s["readiness"]["score"].as_f64().map(|x| format!(" (готовность {x:.0})")).unwrap_or_default(),
+                    if reasons.is_empty() { String::new() } else { format!(": {}", reasons.join("; ")) }
+                ));
+                suggestion = Some(fit(&chosen, allowed, c.t));
+            }
+        }
+    }
+    // Hard days in a row.
+    if is_hard {
+        let y1 = was_hard(conn, &c, &add_days(d, -1));
+        let y2 = y1 && was_hard(conn, &c, &add_days(d, -2));
+        if y2 {
+            warn.push("Это третий тяжёлый день подряд — так растёт риск перегруза и травмы.".into());
+        } else if y1 {
+            warn.push("Вчера уже был тяжёлый день — двум подряд лучше не быть, мышцам и связкам нужно 36–48 часов.".into());
+        }
+    }
+    // Acute:chronic load.
+    if is_hard {
+        let h = c.s["load"]["acwr"].as_f64().unwrap_or(0.0);
+        let m = c.s["load"]["muscle"]["acwr"].as_f64().unwrap_or(0.0);
+        if h > 1.3 || m > 1.3 {
+            let (what, v) = if m > h { ("мышц и связок", m) } else { ("сердца", h) };
+            warn.push(format!("Нагрузка {what} за неделю уже на {}% выше обычной — зона риска.", ((v - 1.0) * 100.0).round()));
+        }
+    }
+    // The week vs the headroom.
+    if let Some(cap) = c.cap_week.filter(|x| *x > 50.0) {
+        let m = monday(d);
+        let mut total = 0.0;
+        for k in 0..7 {
+            let e = add_days(&m, k);
+            total += if e.as_str() < c.today.as_str() {
+                c.loads.get(&e).copied().unwrap_or(0.0)
+            } else if e == d {
+                day_load(&chosen, &c.rt)
+            } else {
+                row(conn, &e).map(|x| day_load(&x.0, &c.rt)).unwrap_or(0.0)
+            };
+        }
+        if total > cap * 1.05 {
+            warn.push(format!("С этим выбором неделя выйдет ≈{} при безопасных {} — остальные дни придётся заметно облегчить.", total.round(), cap.round()));
+        }
+    }
+    // Pain.
+    let leg_pain = crate::body_svc::active(conn).iter().any(|p| p.2 >= 4 && p.3);
+    if leg_pain && chosen.iter().any(|i| is_run(&i.kind)) {
+        let names: Vec<String> = crate::body_svc::active(conn).into_iter().filter(|p| p.2 >= 4 && p.3).map(|p| format!("{} {}/10", p.1, p.2)).collect();
+        warn.push(format!("Болит {} — бег через боль меняет технику и может превратить её в травму.", names.join(", ").to_lowercase()));
+    }
+    // Illness signals.
+    let ill: Vec<String> = c.s["signals"].as_array().map(|a| a.iter().filter(|g| matches!(g["code"].as_str(), Some("rhr_up" | "temp_up" | "low_rhr_low_hrv" | "ill"))).filter_map(|g| g["text"].as_str().map(String::from)).collect()).unwrap_or_default();
+    if is_hard && !ill.is_empty() {
+        warn.push(format!("Есть признаки, что организм с чем-то борется: {}.", ill.join("; ")));
+    }
+    if !warn.is_empty() && suggestion.is_none() {
+        suggestion = Some(lighter(&chosen, leg_pain));
+    }
+    let suggestion = suggestion.filter(|x| *x != chosen);
+    Ok(json!({
+        "ok": warn.is_empty(), "warnings": warn,
+        "suggestion": suggestion.as_ref().map(|x| items_json(x)), "suggestionText": suggestion.as_ref().map(|x| items_text(x)),
+    }))
+}
+
+/// «Подтверждаю»: today's plan stays as it is.
+pub fn confirm(conn: &Connection, d: &str) -> Result<(), String> {
+    conn.execute("UPDATE plan_days SET confirmed = 1 WHERE date = ?1", params![d]).map_err(err)?;
+    Ok(())
+}
+
+/// The athlete's choice for a day: saved as is (the last word is theirs), then the following days
+/// are rebalanced — no hard day right after a hard choice, a dropped key workout moves to a later
+/// easy day, the week is trimmed to the headroom. Returns the changes made.
+pub fn choose(conn: &mut Connection, d: &str, items: &Value) -> Result<Value, String> {
+    let c = ctx(conn)?;
+    let chosen = items_of(items);
+    if chosen.is_empty() {
+        return Err("Выбери хотя бы одно занятие или отдых".into());
+    }
+    let before = row(conn, d).map(|x| x.0).unwrap_or_default();
+    put(conn, d, &chosen, "chosen", "")?;
+    conn.execute("UPDATE plan_days SET confirmed = 1 WHERE date = ?1", params![d]).map_err(err)?;
+    if before == chosen {
+        return Ok(json!({"changes": []}));
+    }
+    add_change(conn, d, &before, &chosen, "выбрано тобой", "manual", "accepted", None)?;
+    let tag = format!("[choice:{d}]");
+    // Earlier rebalancing for this day is replaced.
+    let mut changes: Vec<Value> = Vec::new();
+    let mut apply = |conn: &Connection, e: &str, b: &[Item], a: &[Item], why: &str| -> Result<(), String> {
+        if b == a {
+            return Ok(());
+        }
+        add_change(conn, e, b, a, &format!("{why} {tag}"), "kouros", "accepted", None)?;
+        put(conn, e, a, "accepted", "")?;
+        changes.push(json!({"date": e, "dateRu": date_ru(e), "before": items_text(b), "after": items_text(a), "why": why}));
+        Ok(())
+    };
+    let chosen_hard = hard(&chosen);
+    let lost_key: Vec<Item> = before.iter().filter(|i| kind(&i.kind).3 && !chosen.iter().any(|x| x.kind == i.kind)).cloned().collect();
+    // 1. A hard choice: tomorrow must not be hard as well — its key workout moves on.
+    let mut carry: Vec<Item> = lost_key.clone();
+    if chosen_hard {
+        let n1 = add_days(d, 1);
+        if let Some((ni, ns, _)) = row(conn, &n1) {
+            if hard(&ni) && ns != "chosen" {
+                let key: Vec<Item> = ni.iter().filter(|i| kind(&i.kind).3).cloned().collect();
+                let after = lighter(&ni, false);
+                apply(conn, &n1, &ni, &after, &format!("после тяжёлого {} — лёгкий день", date_ru(d)))?;
+                for k in key {
+                    if !carry.iter().any(|x| x.kind == k.kind) && !chosen.iter().any(|x| x.kind == k.kind) {
+                        carry.push(k);
+                    }
+                }
+            }
+        }
+    }
+    // 2. Key workouts that lost their day go to the next easy day in 2–4 days (not next to a hard one).
+    if !carry.is_empty() {
+        let start = if chosen_hard { 2 } else { 1 };
+        for j in start..=4 {
+            let e = add_days(d, j);
+            let Some((ei, es, _)) = row(conn, &e) else { break };
+            if es == "chosen" || hard(&ei) || ei.iter().any(|i| i.kind == "gym") {
+                continue;
+            }
+            let prev_hard = j == 1 && chosen_hard || row(conn, &add_days(&e, -1)).map(|x| hard(&x.0)).unwrap_or(false);
+            let next_hard = row(conn, &add_days(&e, 1)).map(|x| hard(&x.0)).unwrap_or(false);
+            if prev_hard || next_hard {
+                continue;
+            }
+            let mut moved = carry.clone();
+            moved.extend(ei.iter().filter(|i| matches!(i.kind.as_str(), "ofp" | "mobility")).cloned());
+            apply(conn, &e, &ei, &moved, &format!("перенос ключевой тренировки с {}", date_ru(d)))?;
+            break;
+        }
+    }
+    // 3. The rest of the week vs the headroom.
+    if let Some(cap) = c.cap_week.filter(|x| *x > 50.0) {
+        let m = monday(d);
+        let days: Vec<String> = (0..7).map(|k| add_days(&m, k)).collect();
+        let mut done = 0.0;
+        let mut rest: Vec<(String, Vec<Item>, String)> = Vec::new();
+        for e in &days {
+            if e.as_str() < c.today.as_str() {
+                done += c.loads.get(e).copied().unwrap_or(0.0);
+            } else if let Some((i, src, _)) = row(conn, e) {
+                if e.as_str() <= d || src == "chosen" {
+                    done += day_load(&i, &c.rt);
+                } else {
+                    rest.push((e.clone(), i, src));
+                }
+            }
+        }
+        let planned: f64 = rest.iter().map(|x| day_load(&x.1, &c.rt)).sum();
+        if done + planned > cap * 1.05 && planned > 0.0 {
+            let flex: f64 = rest.iter().flat_map(|x| x.1.iter()).filter(|i| matches!(i.kind.as_str(), "easy" | "long" | "bike" | "walk")).map(|i| i.min * c.rt.get(i.kind.as_str()).copied().unwrap_or(0.5)).sum();
+            if flex > 0.0 {
+                let k = (1.0 - (done + planned - cap) / flex).clamp(0.3, 0.95);
+                for (e, items, _) in &rest {
+                    let after: Vec<Item> = items.iter().map(|i| if matches!(i.kind.as_str(), "easy" | "long" | "bike" | "walk") { Item { kind: i.kind.clone(), min: r5(i.min * k).max(20.0) } } else { i.clone() }).collect();
+                    apply(conn, e, items, &after, &format!("неделя ≈{} при безопасных {} — день короче", (done + planned).round(), cap.round()))?;
+                }
+            }
+        }
+    }
+    Ok(json!({"changes": changes}))
 }

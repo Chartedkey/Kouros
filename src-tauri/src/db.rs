@@ -378,6 +378,10 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE strength_sets ADD COLUMN band TEXT;
     ALTER TABLE strength_sets ADD COLUMN eff_kg REAL;
     "#,
+    // v19: the athlete confirmed the day's plan (0.23)
+    r#"
+    ALTER TABLE plan_days ADD COLUMN confirmed INTEGER;
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {
