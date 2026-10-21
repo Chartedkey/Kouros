@@ -23,7 +23,7 @@
 <a href="#-для-разработчиков">Для разработчиков</a>
 </p>
 
-<p align="center"><img src=".github/screens/today.jpg" width="900" alt="Вкладка «Сегодня»"></p>
+<p align="center"><img src=".github/screens/health.jpg" width="900" alt="Вкладка «Здоровье»"></p>
 
 > [!IMPORTANT]
 > Kouros — **не медицинское изделие**. Он не ставит диагнозов и не заменяет врача или тренера: все подсказки о здоровье, анализах и лекарствах сводятся к «обрати внимание» и «обсуди с врачом».
@@ -97,8 +97,8 @@
 
 <table>
 <tr>
+<td><img src=".github/screens/today.jpg" alt="Сегодня"></td>
 <td><img src=".github/screens/training.jpg" alt="Тренировки"></td>
-<td><img src=".github/screens/health.jpg" alt="Здоровье"></td>
 </tr>
 <tr>
 <td><img src=".github/screens/nutrition.jpg" alt="Питание"></td>
