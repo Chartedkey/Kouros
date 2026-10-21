@@ -41,7 +41,7 @@ const demo = {
   backups: [{ name: 'kouros-2026-10-17_005000.db', size: 98304, modified: Date.now() / 1000 }] as BackupInfo[],
   lock: true,
   unlocked: false,
-  imported: false,
+  imported: true,
   cond: null as { date: string; temp: string; surface: string } | null,
 };
 

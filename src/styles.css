@@ -371,3 +371,4 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .tour-dim { position: fixed; inset: 0; background: #000b; }
 .tour-hole { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px #000b; border: 2px solid #3DDC97; transition: all .25s ease; pointer-events: none; }
 .tour-pop { position: fixed; gap: 10px; box-shadow: 0 20px 60px #000c; z-index: 81; }
+.help-nav .input { height: 40px; padding: 0 14px; border-radius: 12px; }
