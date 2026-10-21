@@ -257,6 +257,7 @@ function injuryRisk(acwr: number | null): [string, string] {
 }
 
 const HIDE_KEY = 'kouros_hidden_reminders';
+const daysAgo = (n: number) => { const m10 = n % 10, m100 = n % 100; return `${n} ${m10 === 1 && m100 !== 11 ? 'день' : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? 'дня' : 'дней'} назад`; };
 /** Reminders closed with × stay hidden for 7 days (0.21, owner). */
 function loadHidden(): Record<string, number> {
   try {
@@ -322,8 +323,8 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
   const surveyRem: { level: 'info'; code: string; text: string; psych: true }[] = [];
   if (ps) {
     const b = ps.due.brumsDays, r = ps.due.stressrecDays;
-    if (b == null || b >= 7) surveyRem.push({ level: 'info', code: 'survey_brums', text: b == null ? 'Пройди профиль настроения BRUMS — 2–3 минуты, раз в неделю.' : `Профиль настроения BRUMS проходил ${plural(b, 'день', 'дня', 'дней')} назад — пора повторить (2–3 минуты).`, psych: true });
-    if (r == null || r >= 7) surveyRem.push({ level: 'info', code: 'survey_stressrec', text: r == null ? 'Пройди анкету «Баланс стресса и восстановления» — 1 минута, раз в неделю.' : `Анкету «Баланс стресса и восстановления» проходил ${plural(r, 'день', 'дня', 'дней')} назад — пора повторить (1 минута).`, psych: true });
+    if (b == null || b >= 7) surveyRem.push({ level: 'info', code: 'survey_brums', text: b == null ? 'Пройди профиль настроения BRUMS — 2–3 минуты, раз в неделю.' : `Профиль настроения BRUMS проходил ${daysAgo(b)} — пора повторить (2–3 минуты).`, psych: true });
+    if (r == null || r >= 7) surveyRem.push({ level: 'info', code: 'survey_stressrec', text: r == null ? 'Пройди анкету «Баланс стресса и восстановления» — 1 минута, раз в неделю.' : `Анкету «Баланс стресса и восстановления» проходил ${daysAgo(r)} — пора повторить (1 минута).`, psych: true });
   }
   const now = Date.now();
   const reminders: { level: string; code: string; text: string; psych?: boolean }[] = [...s.signals, ...surveyRem].filter((g) => !(hidden[`${g.code}:${g.level}`] > now));
