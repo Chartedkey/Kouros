@@ -448,10 +448,9 @@ function RecordsTab({ s, onOpen }: { s: EngineSummary; onOpen: (id: string) => v
         ) : <span className="muted small">Нужна пробежка от 5 км с графиком дистанции за последние 120 дней.</span>}
       </section>
       <section className="card" aria-label="Цели">
-        <div className="between"><span className="label">Старты и цели</span><span className="chip chip-off">этап 6</span></div>
+        <span className="label">Старты и цели</span>
         <span className="muted small" style={{ lineHeight: 1.5 }}>
-          Здесь появятся твои старты с обратным отсчётом и нужным темпом, а тренер построит под них план. Рекорды в силовых —
-          после того как в разборе силовой будут вписаны упражнения и веса.
+          Цель-старт с прогнозом и контрольными тестами — в «Тренер → Цель». Рекорды в силовых появляются, когда в разборе силовой вписаны упражнения и веса.
         </span>
       </section>
     </div>

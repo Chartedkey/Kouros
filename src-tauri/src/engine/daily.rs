@@ -72,13 +72,22 @@ pub fn corridor(hist: &[f64], floor: f64) -> Option<(f64, f64, f64)> {
     Some((m, m - w, m + w))
 }
 
-/// Score 0–100 with a dead zone: inside the corridor = 50 (no effect), beyond it 18 points per
-/// standard deviation (at least `floor`) past the edge, in the good or bad direction.
+/// Score 0–100 against your corridor (0.21, owner): inside it the score moves gently with the
+/// distance from your median — up to ±16 at the edge (HRV ≈ ±5 points of readiness); beyond the
+/// edge another 18 per standard deviation (at least `floor`), in the good or bad direction.
 fn corr_score(v: f64, hist: &[f64], dir: f64, floor: f64) -> Option<(f64, f64)> {
     let (m, lo, hi) = corridor(hist, floor)?;
     let s = sd(hist).unwrap_or(floor).max(floor);
-    let e = if v > hi { v - hi } else if v < lo { v - lo } else { 0.0 };
-    Some((clamp(50.0 + 18.0 * dir * e / s, 0.0, 100.0), m))
+    let d = if v > hi {
+        16.0 + 18.0 * (v - hi) / s
+    } else if v < lo {
+        -16.0 + 18.0 * (v - lo) / s
+    } else if v >= m {
+        16.0 * (v - m) / (hi - m).max(1e-9)
+    } else {
+        16.0 * (v - m) / (m - lo).max(1e-9)
+    };
+    Some((clamp(50.0 + dir * d, 0.0, 100.0), m))
 }
 
 fn fmt1(x: f64) -> String {

@@ -102,16 +102,6 @@ function Overview({ n, reload, onHealth, onLabs }: { n: NutritionSummary; reload
       </div>
       <DeficitCard n={n} reload={reload} onLabs={onLabs} />
       <Micro n={n} />
-      <div className="grid">
-        <section className="card" aria-label="Советы тренера">
-          <div className="between"><span className="label">Советы по рациону</span><span className="chip chip-off">этап 5</span></div>
-          <span className="muted small" style={{ lineHeight: 1.5 }}>Тренер Claude будет смотреть на твои реальные записи и подсказывать по четырём направлениям: что оставить, что добавить, что заменить и что перенести на другое время. Плюс итоги недели.</span>
-        </section>
-        <section className="card" aria-label="Меню и покупки">
-          <div className="between"><span className="label">Меню на завтра и список покупок</span><span className="chip chip-off">этап 7</span></div>
-          <span className="muted small" style={{ lineHeight: 1.5 }}>Меню из блюд, которые ты уже ешь, под план тренировок и цели дня. Список покупок на неделю. Там же — добавки и их учёт в микронутриентах.</span>
-        </section>
-      </div>
     </>
   );
 }

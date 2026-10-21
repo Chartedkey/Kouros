@@ -93,7 +93,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
         </section>
       </div>
 
-      <div className="grid2">
+      <div className="grid">
         <section className="card" aria-label="Утренний опрос">
           <div className="between"><span className="label">Утренний опрос · индекс Хупера</span><span className="muted tiny">30 секунд, каждое утро</span></div>
           {open === 'hooper' || !hToday
@@ -120,9 +120,6 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
           <DualChart today={today} hooper={p.hooper} ready={ready} />
           <span className="muted tiny" style={{ lineHeight: 1.5 }}>Жёлтая полоса — дни, когда ощущения и часы расходятся на 20+ пунктов. Если часы показывают хорошее восстановление, а самочувствие хуже — обычно это стресс вне спорта: работа, недосып, эмоции. В такие дни лучше снизить интенсивность, даже если HRV в норме.</span>
         </section>
-      </div>
-
-      <div className="grid2">
         <section className="card" aria-label="Профиль настроения">
           <div className="between"><span className="label">Профиль настроения · BRUMS</span><span className="muted tiny">шкала 0–16</span></div>
           {open === 'brums'
@@ -134,8 +131,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
               </>
             )}
         </section>
-        <div className="stack" style={{ gap: 20 }}>
-          <section className="card" aria-label="Перед тренировкой">
+          <section key="tqr" className="card" aria-label="Перед тренировкой">
             <div className="between"><span className="label">Перед тренировкой · TQR</span><span className="muted tiny">5 секунд</span></div>
             <span className="small" style={{ color: 'var(--text-2)' }}>Насколько ты восстановился к тренировке?</span>
             <div className="tqr" role="group" aria-label="Восстановление 6–20">
@@ -148,7 +144,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
             {(() => { const last = p.tqr.find((x) => x.date === today); return last ? <span className="small" style={{ color: 'var(--green)' }}>Сегодня: {last.score} — {TQR[last.score] ?? TQR[last.score - 1] ?? ''}</span> : null; })()}
           </section>
           {p.unrated.length > 0 && (
-            <section className="card" aria-label="Оценить тренировки">
+            <section key="unrated" className="card" aria-label="Оценить тренировки">
               <span className="label">Оцени тяжесть тренировок</span>
               {p.unrated.map((a) => {
                 const sp = sportOf(a.sport);
@@ -163,11 +159,8 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
               <span className="muted tiny">Оценка 1–10 уточняет нагрузку силовых и физиотерапии и помогает тренеру.</span>
             </section>
           )}
-        </div>
-      </div>
-
-      <section className="card" aria-label="Стресс и восстановление">
-        <div className="between"><span className="label">Баланс стресса и восстановления</span><span className="muted tiny">раз в 2 недели · 1 минута</span></div>
+      <section key="stressrec" className="card" aria-label="Стресс и восстановление">
+        <div className="between"><span className="label">Баланс стресса и восстановления</span><span className="muted tiny">раз в неделю · 1 минута</span></div>
         {open === 'stressrec'
           ? <ScaleForm items={STRESSREC.map((q) => [q, SR_SCALE[0], SR_SCALE[6]])} min={0} max={6} labels={SR_SCALE} hint="Как часто за последние 3 дня…" onSave={(a) => save('stressrec', a)} onCancel={() => setOpen(null)} />
           : (
@@ -178,21 +171,18 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
           )}
       </section>
 
-      <section className="card" aria-label="Опросники">
+      <section key="surveys" className="card" aria-label="Опросники">
         <span className="label">Опросники · Kouros напомнит, когда пора</span>
         <div>
           <Q name="Индекс Хупера" what="Сон, стресс, усталость, мышечная боль" when="Каждое утро" status={p.due.hooper ? 'ждёт' : 'пройден'} warn={p.due.hooper} />
           <Q name="TQR" what="Насколько восстановился перед тренировкой, 6–20" when="Перед тренировкой" status={p.due.tqr ? 'сегодня не пройден' : 'пройден'} />
           <Q name="Оценка тяжести" what="Тяжесть сессии × минуты — уточняет нагрузку силовых" when="После тренировки" status={p.unrated.length ? `ждут: ${p.unrated.length}` : 'всё оценено'} warn={p.unrated.length > 0} />
           <Q name="BRUMS" what="Профиль настроения по шести шкалам" when="Раз в неделю" status={p.due.brumsDays == null ? 'ни разу' : p.due.brumsDays >= 7 ? 'пора' : `через ${plural(7 - p.due.brumsDays, 'день', 'дня', 'дней')}`} warn={p.due.brumsDays == null || p.due.brumsDays >= 7} />
-          <Q name="Стресс и восстановление" what="Баланс нагрузки и отдыха в жизни, анкета Kouros" when="Раз в 2 недели" status={p.due.stressrecDays == null ? 'ни разу' : p.due.stressrecDays >= 14 ? 'пора' : `через ${plural(14 - p.due.stressrecDays, 'день', 'дня', 'дней')}`} warn={p.due.stressrecDays == null || p.due.stressrecDays >= 14} />
-          <Q name="Тревога перед стартом" what="Тревога и уверенность за 1–3 дня до соревнования" when="Перед стартами" status="этап 6, вместе со стартами" />
+          <Q name="Стресс и восстановление" what="Баланс нагрузки и отдыха в жизни, анкета Kouros" when="Раз в неделю" status={p.due.stressrecDays == null ? 'ни разу' : p.due.stressrecDays >= 7 ? 'пора' : `через ${plural(7 - p.due.stressrecDays, 'день', 'дня', 'дней')}`} warn={p.due.stressrecDays == null || p.due.stressrecDays >= 7} />
         </div>
+        <span className="muted tiny" style={{ lineHeight: 1.5 }}>Опросы влияют на план дня: плохое самочувствие или низкий TQR снижают интенсивность, даже если часы показывают хорошее восстановление. Тренер учитывает их в «Как мой день?» и анализе недели.</span>
       </section>
-      <section className="card" aria-label="Тренер">
-        <div className="between"><span className="label">Тренер Kouros</span><span className="chip chip-off">этап 5</span></div>
-        <span className="muted small">Тренер Claude будет учитывать опросы в плане: например, перенести темповую на вечер, если стресс пикует днём, или снизить интенсивность при расхождении ощущений и часов.</span>
-      </section>
+      </div>
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Опросники помогают замечать перегруз, но не заменяют консультацию специалиста.</p>
     </>
   );

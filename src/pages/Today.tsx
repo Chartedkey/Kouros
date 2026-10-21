@@ -256,6 +256,16 @@ function injuryRisk(acwr: number | null): [string, string] {
   return ['низкий', '#3DDC97'];
 }
 
+const HIDE_KEY = 'kouros_hidden_reminders';
+/** Reminders closed with × stay hidden for 7 days (0.21, owner). */
+function loadHidden(): Record<string, number> {
+  try {
+    const v = JSON.parse(localStorage.getItem(HIDE_KEY) ?? '{}') as Record<string, number>;
+    const now = Date.now();
+    return Object.fromEntries(Object.entries(v).filter(([, t]) => typeof t === 'number' && t > now));
+  } catch { return {}; }
+}
+
 export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, onMeds, onCoach, onProfile }: { onProfile?: () => void; onSettings: () => void; onTraining: () => void; onHealth: () => void; onPsych?: () => void; onHealthDay?: (d: string) => void; onMeds?: () => void; onCoach?: () => void }) {
   const [s, setS] = useState<EngineSummary | null>(null);
   const [hs, setHs] = useState<HealthSummary | null>(null);
@@ -267,7 +277,12 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
   const [err, setErr] = useState<string | null>(null);
   const [fOpen, setFOpen] = useState(true);
   const [allOpen, setAllOpen] = useState(false);
-  const [hidden, setHidden] = useState<string[]>([]);
+  const [hidden, setHidden] = useState<Record<string, number>>(loadHidden);
+  const hide = (code: string) => {
+    const next = { ...hidden, [code]: Date.now() + 7 * 86400000 };
+    setHidden(next);
+    try { localStorage.setItem(HIDE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+  };
   const load = useCallback(() => {
     api.engineSummary().then((v) => { setS(v); setErr(null); }).catch((e) => setErr(errText(e)));
     api.healthSummary().then(setHs).catch(() => {});
@@ -303,7 +318,15 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
   const [riskText, riskColor] = injuryRisk(riskFrom === 'muscle' ? mAcwr : s.load.acwr);
   const rec = s.recovery;
   const weekday = (d: string) => (new Date(d + 'T12:00:00').getDay() + 6) % 7;
-  const reminders = s.signals.filter((g) => !hidden.includes(g.code));
+  // Survey reminders (0.21): BRUMS and stress/recovery once a week.
+  const surveyRem: { level: 'info'; code: string; text: string; psych: true }[] = [];
+  if (ps) {
+    const b = ps.due.brumsDays, r = ps.due.stressrecDays;
+    if (b == null || b >= 7) surveyRem.push({ level: 'info', code: 'survey_brums', text: b == null ? 'Пройди профиль настроения BRUMS — 2–3 минуты, раз в неделю.' : `Профиль настроения BRUMS проходил ${plural(b, 'день', 'дня', 'дней')} назад — пора повторить (2–3 минуты).`, psych: true });
+    if (r == null || r >= 7) surveyRem.push({ level: 'info', code: 'survey_stressrec', text: r == null ? 'Пройди анкету «Баланс стресса и восстановления» — 1 минута, раз в неделю.' : `Анкету «Баланс стресса и восстановления» проходил ${plural(r, 'день', 'дня', 'дней')} назад — пора повторить (1 минута).`, psych: true });
+  }
+  const now = Date.now();
+  const reminders: { level: string; code: string; text: string; psych?: boolean }[] = [...s.signals, ...surveyRem].filter((g) => !(hidden[`${g.code}:${g.level}`] > now));
   const dateTitle = new Date(s.today + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
   const weekTitle = `${dayLabel(day.week[0].date)} — ${dayLabel(day.week[6].date)}`;
   const recNote = s.readiness.level === 'unknown'
@@ -481,7 +504,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
               </span>
             ))}
             <p className="muted small" style={{ margin: 0, lineHeight: 1.5 }}>
-              Обычный день — 50 баллов. Цифра справа — сколько баллов показатель прибавил или отнял от этих 50 с учётом его веса. Пока показатель в своём коридоре нормы, он оценку не двигает. Алкоголь снимает лишь несколько баллов сверху: основное его влияние уже видно по HRV и пульсу.
+              Обычный день — 50 баллов. Цифра справа — сколько баллов показатель прибавил или отнял от этих 50 с учётом его веса. Внутри коридора нормы показатель двигает оценку чуть-чуть (HRV — до 5 баллов), за коридором — заметно сильнее. Алкоголь снимает от 3 до 10 баллов сверху — к тому, что уже видно по HRV и пульсу.
             </p>
           </>
         )}
@@ -541,7 +564,6 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
             <span className="row" style={{ gap: 6 }}><span className="wdot" style={{ background: '#3DDC97', borderColor: '#3DDC97' }} />сделано</span>
             <span className="row" style={{ gap: 6 }}><span className="wdot" style={{ borderColor: '#9AA3AE' }} />впереди</span>
             <span className="row" style={{ gap: 6 }}><ReadyDot v={null} />готовность</span>
-            <span className="muted">план недели — этап 6</span>
           </div>
         </section>
         <section className="card" aria-label="Напоминания">
@@ -550,10 +572,12 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
             <div key={r.code} className="list-row" style={{ alignItems: 'center' }}>
               <span className="dot" style={{ background: r.level === 'warn' ? '#F5B642' : '#9DB8FF', flex: 'none' }} />
               <span className="small" style={{ flex: 1, lineHeight: 1.45 }}>{r.text}</span>
-              <button type="button" aria-label="Скрыть напоминание" className="xbtn" onClick={() => setHidden([...hidden, r.code])}>×</button>
+              {r.psych && onPsych && <button type="button" className="linkbtn small" onClick={onPsych}>Пройти →</button>}
+              <button type="button" aria-label="Скрыть на неделю" title="Скрыть на неделю" className="xbtn" onClick={() => hide(`${r.code}:${r.level}`)}>×</button>
             </div>
           ))}
           {reminders.length === 0 && <span className="muted small">Всё в порядке — напоминаний нет.</span>}
+          {reminders.length > 0 && <span className="muted tiny">× — скрыть на неделю. Если за это время станет хуже, напоминание вернётся.</span>}
         </section>
       </div>
 
@@ -636,7 +660,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
         <button type="button" className="collapse" aria-expanded={allOpen} onClick={() => setAllOpen(!allOpen)}>
           <span className="row" style={{ gap: 14, flexWrap: 'nowrap' }}>
             <span className="chev" style={{ transform: allOpen ? 'rotate(180deg)' : 'none' }}>⌄</span>
-            <span className="stack" style={{ gap: 4 }}><span className="label">Все расчёты</span><span className="muted small">Сон, питание, интенсивность, рекорды, тело, недели — переедут в свои вкладки</span></span>
+            <span className="stack" style={{ gap: 4 }}><span className="label">Все расчёты</span><span className="muted small">Подробные цифры: сон, нагрузка, интенсивность, рекорды, тело, недели</span></span>
           </span>
         </button>
       </section>

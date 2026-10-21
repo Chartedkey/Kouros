@@ -322,10 +322,6 @@ function Overview({ h, reload }: { h: HealthSummary; reload: () => void }) {
         <AlcoholCalc h={h} />
       </div>
       <Diary h={h} reload={reload} />
-      <section className="card" aria-label="Тренер">
-        <div className="between"><span className="label">Итоги недели от тренера</span><span className="chip chip-off">этап 5</span></div>
-        <span className="muted small">Тренер Claude будет разбирать неделю: что помогло восстановлению, что мешало, и как поменять режим.</span>
-      </section>
     </>
   );
 }

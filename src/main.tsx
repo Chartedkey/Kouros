@@ -10,8 +10,10 @@ import '@fontsource/manrope/700.css';
 import './styles.css';
 import App from './App';
 import { initZoom } from './lib/zoom';
+import { initMasonry } from './lib/masonry';
 
 initZoom();
+initMasonry();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

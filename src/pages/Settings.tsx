@@ -75,7 +75,7 @@ const SOURCES: Src[] = [
     id: 'anthropic', letter: 'C', bg: '#1B2633', fg: '#9DC6FF', name: 'Claude API', via: 'тренер',
     gives: 'Отчёты, гибкий план, анализ недели и чат с тренером',
     secrets: [{ name: 'anthropic_api_key', label: 'API-ключ Anthropic', hint: 'console.anthropic.com → API Keys' }],
-    stage: 'Тренер — этап 5',
+    stage: 'необязательно',
   },
   {
     id: 'files', letter: 'F', bg: '#22262D', fg: '#C3CAD2', name: 'Файлы тренировок', via: 'импорт вручную',
