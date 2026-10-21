@@ -22,6 +22,11 @@ export function initMasonry() {
     }
   });
   function layout(g: HTMLElement) {
+    // Top-level grids belong to the movable-card board (lib/board.ts).
+    if (g.parentElement?.classList.contains('wrap') || g.closest('.bd-in') && g.parentElement?.classList.contains('bd-in')) {
+      g.classList.remove('mz');
+      return;
+    }
     const kids = Array.from(g.children) as HTMLElement[];
     if (!seen.has(g)) { seen.add(g); ro.observe(g); }
     for (const c of kids) {

@@ -144,7 +144,7 @@ function Details({ s, onSettings }: { s: EngineSummary; onSettings: () => void }
           ) : <span className="muted">Нет записей еды за последние дни</span>}
           <span className="muted tiny" style={{ lineHeight: 1.5 }}>
             Сегодня: {n0(tg.kcal)} ккал · белок {n0(tg.protein)} г · углеводы {n0(tg.carbs)} г · жиры {n0(tg.fat)} г · вода {n1(tg.waterMl / 1000)} л.
-            Цель — поддержание веса; с целью похудения или набора её поправит тренер на этапе 5.
+            Цель по весу (поддержание, снижение или набор) меняется в «Питании» → «Моя цель».
           </span>
         </section>
       </div>

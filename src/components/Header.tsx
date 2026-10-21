@@ -1,4 +1,5 @@
 import { Logo } from './Logo';
+import { useBoard } from './BoardEditor';
 
 export type Tab = 'today' | 'training' | 'health' | 'nutrition' | 'psychology' | 'coach' | 'settings';
 
@@ -17,6 +18,7 @@ function today(): string {
 }
 
 export function Header({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
+  const b = useBoard();
   return (
     <header className="header">
       <button type="button" className="brand" onClick={() => onTab('today')} aria-label="Kouros — на главную">
@@ -37,6 +39,16 @@ export function Header({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
       </nav>
       <div className="header-right">
         <span className="muted small">{today()}</span>
+        <button
+          type="button"
+          className="avatar"
+          title="Изменить расположение карточек на этой вкладке"
+          aria-label="Изменить расположение карточек"
+          aria-pressed={b.editing}
+          onClick={() => b.setEditing(!b.editing)}
+        >
+          ⠿
+        </button>
         <button
           type="button"
           className="avatar"

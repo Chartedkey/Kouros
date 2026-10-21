@@ -329,7 +329,7 @@ export function IntensityWeeks({ o }: { o: TrainingOverview }) {
         <span><b style={{ color: '#FF6B6B' }}>{pct(sum.high, sum.tot)}%</b> Z4–Z5</span>
         <span className="muted">за {plural(rows.length, 'неделю', 'недели', 'недель')}</span>
       </div>
-      <span className="muted tiny">Ориентир для бегуна — около 80% лёгкой работы и 20% качественной. Подробный разбор с советами напишет тренер на этапе 5.</span>
+      <span className="muted tiny">Ориентир для бегуна — около 80% лёгкой работы и 20% качественной. Разбор недели с советами — в «Тренер → Анализ недели».</span>
     </section>
   );
 }

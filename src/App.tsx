@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { BoardBar, BoardLayer } from './components/BoardEditor';
 import { UpdateBanner } from './components/Updates';
 import { Header, type Tab } from './components/Header';
 import { Logo } from './components/Logo';
@@ -45,7 +46,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <div className="wrap">
+      <div className="wrap" data-page={tab}>
         <Header tab={tab} onTab={setTab} />
         <UpdateBanner />
         {status.dbError && (
@@ -71,9 +72,11 @@ export default function App() {
           <Placeholder tab={tab} onSettings={() => setTab('settings')} />
         )}
         <p className="footer">
-          Kouros {status.version} · этап 5 — тренер{!inTauri && ' · демо в браузере'}
+          Kouros {status.version}{!inTauri && ' · демо в браузере'}
         </p>
+        <BoardLayer />
       </div>
+      <BoardBar />
     </div>
   );
 }
