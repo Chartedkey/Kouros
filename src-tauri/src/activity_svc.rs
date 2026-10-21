@@ -200,23 +200,14 @@ pub fn exercises(conn: &Connection) -> Vec<String> {
 // ---------- shoes ----------
 
 /// Shoes are kept as JSON in settings: [{id, name, kind, startDate, initialKm, limitKm, walks, retired, main}].
-/// A workout counts for the shoes it was assigned to; unassigned ones since the start date go to the main pair.
-pub fn shoes(conn: &Connection, tz: i64) -> Result<Value, String> {
+/// 0.23.1 (owner): a workout counts only for the shoes the athlete picked for it — nothing is added
+/// on its own; earlier mileage is the «пробег до этой даты» he enters himself.
+pub fn shoes(conn: &Connection, _tz: i64) -> Result<Value, String> {
     let raw = db::get_setting(conn, "shoes").unwrap_or_else(|| "[]".into());
     let list: Vec<Value> = serde_json::from_str(&raw).unwrap_or_default();
-    let active: Vec<&Value> = list.iter().filter(|s| !s["retired"].as_bool().unwrap_or(false)).collect();
-    let main_id: Option<String> = active
-        .iter()
-        .find(|s| s["main"].as_bool().unwrap_or(false))
-        .or(if active.len() == 1 { active.first() } else { None })
-        .and_then(|s| s["id"].as_str().map(|x| x.to_string()));
     let mut out = Vec::new();
     for s in &list {
         let id = s["id"].as_str().unwrap_or("");
-        let start = s["startDate"].as_str().unwrap_or("1970-01-01");
-        let since = crate::engine::day_num(start).map(|d| d * 86400 - tz).unwrap_or(0);
-        let walks = s["walks"].as_bool().unwrap_or(false);
-        let sports = if walks { "'run', 'walk', 'hike'" } else { "'run'" };
         let (km_a, n_a): (f64, i64) = conn
             .query_row(
                 "SELECT COALESCE(sum(distance_m), 0) / 1000.0, count(*) FROM va WHERE shoe_id = ?1",
@@ -224,24 +215,41 @@ pub fn shoes(conn: &Connection, tz: i64) -> Result<Value, String> {
                 |r| Ok((r.get(0)?, r.get(1)?)),
             )
             .map_err(err)?;
-        let (km_u, n_u): (f64, i64) = if main_id.as_deref() == Some(id) {
-            conn.query_row(
-                &format!("SELECT COALESCE(sum(distance_m), 0) / 1000.0, count(*) FROM va WHERE sport IN ({sports}) AND shoe_id IS NULL AND start_utc >= ?1"),
-                params![since],
-                |r| Ok((r.get(0)?, r.get(1)?)),
-            )
-            .map_err(err)?
-        } else {
-            (0.0, 0)
-        };
         let initial = s["initialKm"].as_f64().unwrap_or(0.0);
         let mut v = s.clone();
-        v["km"] = json!(((km_a + km_u + initial) * 10.0).round() / 10.0);
-        v["workouts"] = json!(n_a + n_u);
-        v["main"] = json!(main_id.as_deref() == Some(id));
+        v["km"] = json!(((km_a + initial) * 10.0).round() / 10.0);
+        v["workouts"] = json!(n_a);
+        v["main"] = json!(s["main"].as_bool().unwrap_or(false));
         out.push(v);
     }
     Ok(Value::Array(out))
+}
+
+/// Workouts counted for one pair (newest first), to check them and fix a wrong pick.
+pub fn shoe_runs(conn: &Connection, id: &str) -> Result<Value, String> {
+    let mut st = conn
+        .prepare("SELECT id, sport, name, start_utc, distance_m FROM va WHERE shoe_id = ?1 ORDER BY start_utc DESC LIMIT 300")
+        .map_err(err)?;
+    let v: Vec<Value> = st
+        .query_map(params![id], |r| {
+            Ok(json!({"id": r.get::<_, String>(0)?, "sport": r.get::<_, String>(1)?, "name": r.get::<_, Option<String>>(2)?,
+                      "startUtc": r.get::<_, i64>(3)?, "distanceM": r.get::<_, Option<f64>>(4)?}))
+        })
+        .map_err(err)?
+        .flatten()
+        .collect();
+    Ok(Value::Array(v))
+}
+
+/// Should Kouros ask for the shoes of this sport? Runs always (when pairs exist), walks/hikes only
+/// when some active pair is worn for walking too.
+pub fn ask_shoe(conn: &Connection, sport: &str) -> bool {
+    let list: Vec<Value> = serde_json::from_str(&db::get_setting(conn, "shoes").unwrap_or_else(|| "[]".into())).unwrap_or_default();
+    let active: Vec<&Value> = list.iter().filter(|s| !s["retired"].as_bool().unwrap_or(false)).collect();
+    if active.is_empty() {
+        return false;
+    }
+    sport.contains("run") || (matches!(sport, "walk" | "hike") && active.iter().any(|s| s["walks"].as_bool().unwrap_or(false)))
 }
 
 /// `shoe`: a shoe id, "none" (answered: no listed shoes), or null (not answered).

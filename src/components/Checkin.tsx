@@ -1,7 +1,7 @@
 // «Как прошла тренировка?» after a workout, and the morning «как сейчас?» question for a painful
 // place (it decides the next return-to-run step).
-import { useState } from 'react';
-import { api, errText, sportOf, type BodyState, type PendingCheckin } from '../lib/api';
+import { useEffect, useState } from 'react';
+import { api, errText, sportOf, type BodyState, type PendingCheckin, type Shoe } from '../lib/api';
 import { PainFigure, painColor, sideText } from './PainFigure';
 
 const RPE_HINT: Record<number, string> = { 1: 'очень легко', 3: 'легко', 5: 'средне', 7: 'тяжело', 9: 'очень тяжело', 10: 'на пределе' };
@@ -18,7 +18,18 @@ export function LevelPills({ value, onChange }: { value: number | null; onChange
   );
 }
 
-export function CheckinCard({ a, areas, onDone }: { a: PendingCheckin; areas: BodyState['areas']; onDone: () => void }) {
+export function CheckinCard({ a, areas, suggest, onDone }: { a: PendingCheckin; areas: BodyState['areas']; suggest?: string | null; onDone: () => void }) {
+  const [shoes, setShoes] = useState<Shoe[]>([]);
+  const [shoe, setShoe] = useState<string | null>(a.shoeId ?? null);
+  useEffect(() => {
+    if (!a.askShoe) return;
+    api.shoesGet().then((l) => {
+      const act = l.filter((x) => !x.retired && (a.sport === 'run' || x.walks));
+      setShoes(act);
+      // Preselect: already chosen → today's advice → the main pair → the only pair.
+      setShoe((cur) => cur ?? (act.find((x) => x.id === suggest)?.id ?? act.find((x) => x.main)?.id ?? (act.length === 1 ? act[0].id : null)));
+    }).catch(() => {});
+  }, [a.askShoe, a.sport, suggest]);
   const [rpe, setRpe] = useState<number | null>(a.rpe);
   const [feel, setFeel] = useState<number | null>(null);
   const [hurt, setHurt] = useState(false);
@@ -33,7 +44,7 @@ export function CheckinCard({ a, areas, onDone }: { a: PendingCheckin; areas: Bo
     setErr(null);
     try {
       await api.checkinSave(a.id, skip ? { skip: true } : {
-        rpe, feel, note, pain: (Object.entries(pains) as [string, number][]).filter(([, l]) => l > 0).map(([k, level]) => { const [area, side] = k.split(':'); return { area, side, level }; }),
+        shoe: shoe ?? undefined, rpe, feel, note, pain: (Object.entries(pains) as [string, number][]).filter(([, l]) => l > 0).map(([k, level]) => { const [area, side] = k.split(':'); return { area, side, level }; }),
       });
       onDone();
     } catch (e) { setErr(errText(e)); }
@@ -42,6 +53,16 @@ export function CheckinCard({ a, areas, onDone }: { a: PendingCheckin; areas: Bo
     <section className="card" aria-label="Как прошла тренировка">
       <div className="between"><span className="label">Как прошла тренировка?</span><span className="muted tiny">{when}</span></div>
       <b><span style={{ color: sp.color }}>{sp.name}</span> · {a.name || sp.name} · {a.min} мин{a.km ? ` · ${String(a.km).replace('.', ',')} км` : ''}</b>
+      {shoes.length > 0 && (
+        <div className="stack" style={{ gap: 6 }}>
+          <span className="small">В каких кроссовках {a.sport === 'run' ? 'бегал' : 'ходил'}?</span>
+          <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+            {shoes.map((x) => <button key={x.id} type="button" className="pill" aria-pressed={shoe === x.id} onClick={() => setShoe(x.id)}>{x.name}</button>)}
+            <button type="button" className="pill" aria-pressed={shoe === 'none'} onClick={() => setShoe('none')}>в других</button>
+          </div>
+          {shoe && shoe !== 'none' && suggest === shoe && !a.shoeId && <span className="muted tiny">Выбрана пара, которую Kouros советовал на сегодня — поменяй, если бегал в другой.</span>}
+        </div>
+      )}
       <div className="stack" style={{ gap: 6 }}>
         <span className="small">Насколько было тяжело (RPE){rpe ? ` — ${RPE_HINT[rpe] ?? RPE_HINT[rpe - 1] ?? ''}` : ''}</span>
         <div className="row" style={{ gap: 4, flexWrap: 'wrap' }}>
@@ -75,7 +96,7 @@ export function CheckinCard({ a, areas, onDone }: { a: PendingCheckin; areas: Bo
         <button type="button" className="btn btn-green" onClick={() => save(false)}>Сохранить</button>
         <button type="button" className="linkbtn small" onClick={() => save(true)}>Не сейчас</button>
       </div>
-      <span className="muted tiny">RPE уточняет нагрузку силовых и йоги, а отметки боли идут в дневник — тренер учтёт их в плане.</span>
+      <span className="muted tiny">RPE уточняет нагрузку силовых и йоги, отметки боли идут в дневник — тренер учтёт их в плане{shoes.length ? ', а пробег засчитается выбранной паре' : ''}.</span>
       {err && <div className="note-err">{err}</div>}
     </section>
   );

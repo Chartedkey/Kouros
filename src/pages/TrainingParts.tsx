@@ -22,13 +22,14 @@ function writeLS(key: string, v: string) {
 
 export function ShoeQuestion({ q, onDone }: { q: NonNullable<TrainingOverview['shoeQuestion']>; onDone: () => void }) {
   const [shoes, setShoes] = useState<Shoe[]>([]);
-  useEffect(() => { api.shoesGet().then((l) => setShoes(l.filter((s) => !s.retired))).catch(() => {}); }, []);
+  useEffect(() => { api.shoesGet().then((l) => setShoes(l.filter((s) => !s.retired && (q.sport === 'run' || s.walks)))).catch(() => {}); }, [q.sport]);
   if (!shoes.length) return null;
   const pick = (id: string) => api.activitySetShoe(q.id, id).then(onDone).catch(() => {});
   return (
     <section className="card" aria-label="Кроссовки" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
       <span className="stack" style={{ gap: 2, flex: '1 1 260px' }}>
         <b>В каких кроссовках была тренировка?</b>
+        <span className="muted tiny">Пока пара не выбрана, пробег этой тренировки никуда не засчитан.</span>
         <span className="muted small">{q.name || sportOf(q.sport).name} · {new Date(q.startUtc * 1000).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{q.distanceM ? ` · ${fmtKm(q.distanceM)}` : ''}</span>
       </span>
       <span className="row">

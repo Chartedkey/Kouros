@@ -166,24 +166,26 @@ pub fn overview(conn: &mut Connection) -> Result<Value, String> {
         })
         .collect();
 
-    // ----- which shoes? the latest run or walk of the last 3 days without an answer -----
-    let shoes: Vec<Value> = serde_json::from_str(&db::get_setting(conn, "shoes").unwrap_or_else(|| "[]".into())).unwrap_or_default();
-    let active: Vec<&Value> = shoes.iter().filter(|s| !s["retired"].as_bool().unwrap_or(false)).collect();
-    let ask = if active.is_empty() {
-        Value::Null
-    } else {
-        conn.query_row(
+    // ----- which shoes? the latest run (or walk, when a pair is worn for walking) of 14 days without an answer -----
+    let ask = conn
+        .prepare(
             "SELECT id, sport, name, start_utc, distance_m FROM va
              WHERE sport IN ('run', 'walk', 'hike') AND shoe_id IS NULL AND start_utc >= ?1
-             ORDER BY start_utc DESC LIMIT 1",
-            params![crate::store::now() - 3 * 86400],
-            |r| {
-                Ok(json!({"id": r.get::<_, String>(0)?, "sport": r.get::<_, String>(1)?, "name": r.get::<_, Option<String>>(2)?,
-                          "startUtc": r.get::<_, i64>(3)?, "distanceM": r.get::<_, Option<f64>>(4)?}))
-            },
+             ORDER BY start_utc DESC LIMIT 20",
         )
-        .unwrap_or(Value::Null)
-    };
+        .ok()
+        .and_then(|mut st| {
+            let rows: Vec<Value> = st
+                .query_map(params![crate::store::now() - 14 * 86400], |r| {
+                    Ok(json!({"id": r.get::<_, String>(0)?, "sport": r.get::<_, String>(1)?, "name": r.get::<_, Option<String>>(2)?,
+                              "startUtc": r.get::<_, i64>(3)?, "distanceM": r.get::<_, Option<f64>>(4)?}))
+                })
+                .ok()?
+                .flatten()
+                .collect();
+            rows.into_iter().find(|a| crate::activity_svc::ask_shoe(conn, a["sport"].as_str().unwrap_or("")))
+        })
+        .unwrap_or(Value::Null);
 
     Ok(json!({
         "tolerance": tolerance,

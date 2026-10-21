@@ -349,7 +349,7 @@ function ShoePick({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) {
     <label className="row small" style={{ gap: 10 }}>
       <span className="muted">Кроссовки</span>
       <select className="select" value={val} onChange={(e) => api.activitySetShoe(d.activity.id, e.target.value || null).then(onSaved).catch(() => {})}>
-        <option value="">{list.some((s) => s.main) ? 'основные (не указаны)' : 'не указаны'}</option>
+        <option value="">не выбраны — пробег не считается</option>
         {list.filter((s) => !s.retired || s.id === val).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         <option value="none">другие / без кроссовок</option>
       </select>

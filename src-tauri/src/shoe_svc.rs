@@ -64,6 +64,7 @@ pub fn advice(conn: &Connection) -> Result<Value, String> {
     let heavy = body.map(|b| b >= 85.0).unwrap_or(false);
     let long_run = nd == "long" || min >= 75.0;
 
+    let mut any_membrane = false;
     let mut picks: Vec<(f64, Value)> = Vec::new();
     for s in &active {
         let kind = s["kind"].as_str().unwrap_or("train");
@@ -182,6 +183,28 @@ pub fn advice(conn: &Connection) -> Result<Value, String> {
             }
             _ => {}
         }
+        // 0.23.1: membrane (Gore-Tex and similar). Unset → guessed from the model name (GTX).
+        let nm = s["name"].as_str().unwrap_or("").to_lowercase();
+        let membrane = sp["membrane"].as_bool().unwrap_or(nm.contains("gtx") || nm.contains("gore-tex") || nm.contains("goretex"));
+        if membrane {
+            any_membrane = true;
+            match surface.as_str() {
+                "wet" => { score += 8.0; plus.push("мембрана (Gore-Tex) — ноги останутся сухими".into()) }
+                "snow" => { score += 12.0; plus.push("мембрана (Gore-Tex) — снег не промочит ноги".into()) }
+                "ice" => { score += 5.0; plus.push("мембрана — ноги в тепле и сухие".into()) }
+                _ => {}
+            }
+            if hot {
+                score -= 10.0;
+                minus.push("мембрана — в жару ноге будет жарко и влажно".into());
+            } else if temp == "10..20" && long_run {
+                score -= 4.0;
+                minus.push("мембрана — на долгой пробежке в тепло ноге жарко".into());
+            } else if cold && surface != "wet" && surface != "snow" && surface != "ice" {
+                score += 3.0;
+                plus.push("мембрана не продувается — теплее в мороз".into());
+            }
+        }
         if cold {
             if let Some(c) = f(sp, "coldPct") {
                 if c >= 20.0 {
@@ -236,6 +259,9 @@ pub fn advice(conn: &Connection) -> Result<Value, String> {
     let mut warn: Vec<String> = Vec::new();
     if surface == "ice" {
         warn.push("На льду в обычных кроссовках легко упасть: лучше с шипами или накладками — или перенести бег на дорожку.".into());
+    }
+    if any_membrane && matches!(surface.as_str(), "wet" | "snow") {
+        warn.push("Мембрана не спасает, если вода заливается сверху — в глубокие лужи или снег выше щиколотки она удержит воду внутри. Помогут высокие носки или гетры.".into());
     }
     if temp == "lt-10" && matches!(nd, "tempo" | "race") {
         warn.push("В сильный мороз интенсивную работу лучше делать в зале или сократить — дыхательным путям тяжело.".into());

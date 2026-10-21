@@ -426,6 +426,10 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
       { id: 'y', name: 'Лёгкие темповые', kind: 'race', startDate: '2026-08-01', initialKm: 0, limitKm: 400, walks: false, retired: false, km: 96, workouts: 9,
         spec: { pace: ['tempo', 'race'], sa: 118, er: 71, traction: 0.6, arch: 'neutral', weightG: 225, dropMm: 7, coldPct: 12, rocker: true } },
     ] satisfies Shoe[];
+    case 'shoe_runs': return [
+      { id: 's1', sport: 'run', name: 'Вечерний бег', startUtc: 1792440000, distanceM: 9400 },
+      { id: 's2', sport: 'run', name: 'Длительная', startUtc: 1792180000, distanceM: 15200 },
+    ] satisfies ShoeRun[];
     case 'shoe_advice': return { need: { kind: 'easy', title: 'лёгкий бег', min: 45 }, shoes: 2, warn: [], conditions: demo.cond,
       picks: [
         { id: 'x', name: 'Кроссовки для лёгкого бега', score: 52, plus: ['подходит для «лёгкий бег»', 'хорошая амортизация (140 SA)'], minus: demo.cond?.temp === '-10..0' ? ['пена на холоде твердеет на 25%'] : [], km: 412.4, limitKm: 700, spec: true },
@@ -492,7 +496,7 @@ function demoBody(): BodyState {
   return {
     areas: [['foot', 'Стопа'], ['ankles', 'Ахилл и голеностоп'], ['shin', 'Голень'], ['calves', 'Икры'], ['knees', 'Колено'], ['quads', 'Передняя поверхность бедра'], ['hams', 'Задняя поверхность бедра'], ['hips', 'Тазобедренный сустав'], ['glutes', 'Ягодицы'], ['back', 'Спина'], ['core', 'Живот и кор'], ['chest', 'Грудь'], ['shoulders', 'Плечо'], ['arms', 'Рука'], ['neck', 'Шея'], ['other', 'Другое']].map(([key, name]) => ({ key, name })),
     pains: [{ area: 'knees', side: 'R', name: 'Колено (правая сторона)', level: 4, date: '2026-10-19', active: true, trend: 'better', days14: 5, series: [['2026-10-13', 6], ['2026-10-15', 5], ['2026-10-17', 4], ['2026-10-19', 4]], entries: [{ id: 1, date: '2026-10-19', level: 4, context: 'morning', note: null }] }],
-    pending: [{ id: 's1', sport: 'run', name: 'Вечерний бег', start: 1792440000, min: 52, km: 9.4, rpe: null }],
+    pending: [{ id: 's1', sport: 'run', name: 'Вечерний бег', start: 1792440000, min: 52, km: 9.4, rpe: null, shoeId: null, askShoe: true }],
     return: { active: false, steps: ['Бодрая ходьба 30 минут', '5 × (1 мин бег / 2 мин ходьба)', '6 × (2 мин бег / 1 мин ходьба)', '5 × (4 мин бег / 1 мин ходьба)', 'Лёгкий бег 20 минут без остановок', 'Лёгкий бег 30 минут'], stageText: '' },
     tools: { have: 4, best: [{ name: 'Роллер', text: '10 минут: икры, квадрицепсы — по 1–2 минуты на группу, медленно.' }, { name: 'Компрессионная одежда', text: 'Надень на 2–3 часа после тренировки.' }, { name: 'Растяжка', text: '10–15 минут: икры, задняя поверхность бедра.' }], more: [], not: [{ name: 'Перкуссионный массажёр', text: 'не по больному месту (ахилл, 5/10)' }] },
     goal: { goal: { title: 'Весенний полумарафон', distanceKm: 21.1, target: '1:45:00', date: '2027-04-25' }, distanceM: 21100, targetS: 6300, daysLeft: 188, predS: 6520, predText: '1:48:40', fromDistanceM: 10000, fromTimeS: 2950, fromDate: '2026-10-11', gapS: 220, trend: [['2026-07-26', 6700], ['2026-08-23', 6640], ['2026-09-20', 6580], ['2026-10-19', 6520]], ratePerWeek: -15, verdict: 'При нынешнем темпе прогресса (0:15 в неделю) цель достижима к старту.', tests: [{ date: '2026-09-24', time: 1380, timeText: '23:00', activity: 'x' }], nextTest: '2026-10-29' },
@@ -583,7 +587,8 @@ export type DeletedWorkout = { id: string; sport: string; name: string | null; s
 export type WorkoutAlt = { id: string; sourceName: string; detail: string; min: number; km: number | null; avgHr: number | null; counted: boolean };
 
 // ---------- body: check-in, pain, return to run, tools, goal (0.16) ----------
-export type PendingCheckin = { id: string; sport: string; name: string | null; start: number; min: number; km: number | null; rpe: number | null };
+export type PendingCheckin = { id: string; sport: string; name: string | null; start: number; min: number; km: number | null; rpe: number | null; shoeId?: string | null; askShoe?: boolean };
+export type ShoeRun = { id: string; sport: string; name: string | null; startUtc: number; distanceM: number | null };
 export type PainEntry = { id: number; date: string; level: number; context: string; note: string | null };
 export type PainArea = {
   area: string; side: string; name: string; level: number; date: string; active: boolean; trend: 'better' | 'worse' | 'same' | 'new';
@@ -603,7 +608,7 @@ export type GoalState = {
   tests: { date: string; time: number | null; timeText: string | null; activity: string | null }[]; nextTest: string | null;
 };
 export type BodyState = { areas: { key: string; name: string }[]; pains: PainArea[]; pending: PendingCheckin[]; return: ReturnState; tools: ToolsState; goal: GoalState };
-export type CheckinData = { rpe?: number | null; feel?: number | null; pain?: { area: string; side: string; level: number }[]; note?: string; skip?: boolean };
+export type CheckinData = { shoe?: string; rpe?: number | null; feel?: number | null; pain?: { area: string; side: string; level: number }[]; note?: string; skip?: boolean };
 
 // ---------- plan (0.15) ----------
 export type PlanItem = { kind: string; min: number };
@@ -735,6 +740,8 @@ export type ShoeSpec = {
   pace?: ShoePace[]; sa?: number; er?: number; traction?: number; arch?: 'neutral' | 'stability'; weightG?: number; dropMm?: number;
   softness?: number; softUnit?: 'AC' | 'HA'; coldPct?: number; outsoleMm?: number; toebox?: number; heelPad?: number; breath?: number;
   season?: 'all' | 'summer' | 'winter'; widthMm?: number; toeboxMm?: number; heelMm?: number; foreMm?: number; rocker?: boolean;
+  /** 0.23.1: waterproof membrane (Gore-Tex and similar). */
+  membrane?: boolean;
   extra?: Record<string, string>;
 };
 export type ShoePick = { id: string; name: string; score: number; plus: string[]; minus: string[]; km: number; limitKm: number; spec: boolean };
@@ -914,6 +921,7 @@ export const api = {
   bandsSet: (bands: ResBand[]) => call<null>('bands_set', { bands }),
   shoesGet: () => call<Shoe[]>('shoes_get'),
   shoesSet: (shoes: Shoe[]) => call<null>('shoes_set', { shoes }),
+  shoeRuns: (id: string) => call<ShoeRun[]>('shoe_runs', { id }),
   shoeAdvice: () => call<ShoeAdvice>('shoe_advice'),
   openLink: (url: string): Promise<null> => { if (inTauri) return call<null>('open_link', { url }); window.open(url, '_blank'); return Promise.resolve(null); },
   shoeConditionsSet: (temp: string, surface: string) => call<null>('shoe_conditions_set', { temp, surface }),

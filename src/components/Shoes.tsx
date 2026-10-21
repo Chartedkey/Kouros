@@ -61,6 +61,9 @@ const LABELS: [string, (v: string, sp: ShoeSpec) => void][] = [
   ['Traction', (v, sp) => { sp.traction = num(v); }],
   ['Our score', (v, sp) => { ex(sp, 'Оценка обзора', v); }],
   ['Rocker', (v, sp) => { sp.rocker = yes(v); }],
+  ['Waterproofing', (v, sp) => { sp.membrane = wet(v); }],
+  ['Waterproof', (v, sp) => { sp.membrane = wet(v); }],
+  ['Gore-Tex', (v, sp) => { sp.membrane = wet(v); }],
   ['Season', (v, sp) => { sp.season = /winter/i.test(v) ? 'winter' : /summer/i.test(v) ? 'summer' : 'all'; }],
   ['Size', (v, sp) => { ex(sp, 'Размер', v); }],
   ['Pace', (v, sp) => {
@@ -75,6 +78,7 @@ const LABELS: [string, (v: string, sp: ShoeSpec) => void][] = [
 ];
 function ex(sp: ShoeSpec, k: string, v: string) { const t = v.trim(); if (t) sp.extra = { ...(sp.extra ?? {}), [k]: t }; }
 function yes(v: string) { return /✓|yes|да|✔/i.test(v) || v.trim() === ''; }
+function wet(v: string) { return !/^\s*(no|нет|none|-|✗|✕)\b/i.test(v) && /✓|✔|yes|да|gore|gtx|membrane|waterproof/i.test(v); }
 function grams(v: string) { const m = v.replace(',', '.').match(/(\d+(\.\d+)?)\s*g\b/i); return m ? Number(m[1]) : undefined; }
 
 /** Reads a table copied from a review page: «Label value» pairs in any layout. */
@@ -103,13 +107,13 @@ export function parseTable(text: string): ShoeSpec {
       v = nv; // the first value of the pair is the lab one
     }
     // Rocker / orthotic / insole: an empty cell after the label means «no» only if the next line is not a tick.
-    if (!v && ['Rocker', 'Orthotic friendly', 'Removable insole'].includes(lab)) return;
+    if (!v && ['Rocker', 'Orthotic friendly', 'Removable insole', 'Waterproofing', 'Waterproof', 'Gore-Tex'].includes(lab)) return;
     LABELS[h.i][1](v, sp);
   });
   return sp;
 }
 
-export function SpecEditor({ spec, url, onSave, onCancel }: { spec: ShoeSpec; url: string; onSave: (s: ShoeSpec, url: string) => void; onCancel: () => void }) {
+export function SpecEditor({ spec, url, name = '', onSave, onCancel }: { spec: ShoeSpec; url: string; name?: string; onSave: (s: ShoeSpec, url: string) => void; onCancel: () => void }) {
   const [sp, setSp] = useState<ShoeSpec>(spec);
   const [u, setU] = useState(url);
   const [paste, setPaste] = useState<string | null>(null);
@@ -165,6 +169,13 @@ export function SpecEditor({ spec, url, onSave, onCancel }: { spec: ShoeSpec; ur
           {([['all', 'всесезонные'], ['summer', 'лето'], ['winter', 'зима']] as const).map(([k, n]) => <button key={k} type="button" className="pill" aria-pressed={(sp.season ?? 'all') === k} onClick={() => setSp({ ...sp, season: k })}>{n}</button>)}
         </span>
       </div>
+      <div className="row" style={{ gap: 6 }} role="group" aria-label="Мембрана">
+        <span className="small" style={{ marginRight: 6 }}>Мембрана (Gore-Tex и т. п.)</span>
+        <button type="button" className="pill" aria-pressed={sp.membrane === true} onClick={() => setSp({ ...sp, membrane: true })}>есть</button>
+        <button type="button" className="pill" aria-pressed={sp.membrane === false} onClick={() => setSp({ ...sp, membrane: false })}>нет</button>
+        {sp.membrane == null && <span className="muted tiny">{/gtx|gore-?tex/i.test(name) ? 'по названию (GTX) похоже, что есть' : 'не указано — считаю, что нет'}</span>}
+      </div>
+      <span className="muted tiny" style={{ lineHeight: 1.5, marginTop: -6 }}>Мембрана — плюс в дождь, слякоть и снег, минус в жару: нога в ней хуже дышит.</span>
       {sp.extra && Object.keys(sp.extra).length > 0 && (
         <div className="stack" style={{ gap: 2 }}>
           <span className="muted tiny">Для справки (в совете не используется)</span>

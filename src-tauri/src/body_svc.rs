@@ -54,7 +54,7 @@ fn today(conn: &Connection) -> (String, i64) {
 pub fn pending(conn: &Connection) -> Vec<Value> {
     let since = store::now() - 36 * 3600;
     let Ok(mut st) = conn.prepare(
-        "SELECT a.id, a.sport, a.name, a.start_utc, COALESCE(a.moving_s, a.elapsed_s), a.distance_m, a.rpe FROM va a
+        "SELECT a.id, a.sport, a.name, a.start_utc, COALESCE(a.moving_s, a.elapsed_s), a.distance_m, a.rpe, a.shoe_id FROM va a
          WHERE a.start_utc >= ?1 AND NOT EXISTS (SELECT 1 FROM checkins c WHERE c.activity_id = a.id) ORDER BY a.start_utc DESC LIMIT 3",
     ) else {
         return Vec::new();
@@ -63,12 +63,20 @@ pub fn pending(conn: &Connection) -> Vec<Value> {
         .query_map(params![since], |r| {
             Ok(json!({"id": r.get::<_, String>(0)?, "sport": r.get::<_, String>(1)?, "name": r.get::<_, Option<String>>(2)?,
                       "start": r.get::<_, i64>(3)?, "min": (r.get::<_, Option<f64>>(4)?.unwrap_or(0.0) / 60.0).round(),
-                      "km": r.get::<_, Option<f64>>(5)?.map(|d| (d / 100.0).round() / 10.0), "rpe": r.get::<_, Option<i64>>(6)?}))
+                      "km": r.get::<_, Option<f64>>(5)?.map(|d| (d / 100.0).round() / 10.0), "rpe": r.get::<_, Option<i64>>(6)?,
+                      "shoeId": r.get::<_, Option<String>>(7)?}))
         })
         .map(|r| r.flatten().collect())
         .unwrap_or_default();
     // Short easy walks don't need a question.
-    v.into_iter().filter(|a| !(a["sport"] == "walk" && a["min"].as_f64().unwrap_or(0.0) < 30.0)).collect()
+    v.into_iter()
+        .filter(|a| !(a["sport"] == "walk" && a["min"].as_f64().unwrap_or(0.0) < 30.0))
+        .map(|mut a| {
+            // 0.23.1: «В каких кроссовках?» inside the check-in (runs; walks when a pair is worn for walking).
+            a["askShoe"] = json!(crate::activity_svc::ask_shoe(conn, a["sport"].as_str().unwrap_or("")));
+            a
+        })
+        .collect()
 }
 
 /// Saves the check-in: RPE goes to the workout (it sets the load of strength-type sessions), pains
@@ -92,6 +100,9 @@ pub fn save_checkin(conn: &Connection, id: &str, v: &Value) -> Result<(), String
     .map_err(err)?;
     if let Some(r) = rpe {
         conn.execute("UPDATE activities SET rpe = ?2 WHERE id = ?1", params![id, r]).map_err(err)?;
+    }
+    if let Some(sh) = v["shoe"].as_str().filter(|x| !x.is_empty()) {
+        crate::activity_svc::set_shoe(conn, id, Some(sh.to_string()))?;
     }
     for (a, s, l) in &pains {
         log_pain(conn, &date, a, s, *l, "checkin", Some(id), None)?;

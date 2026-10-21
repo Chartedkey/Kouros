@@ -548,6 +548,11 @@ fn shoes_get(st: State<'_, AppState>) -> Result<serde_json::Value, String> {
 }
 
 #[tauri::command]
+fn shoe_runs(id: String, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| activity_svc::shoe_runs(c, &id))
+}
+
+#[tauri::command]
 fn shoes_set(shoes: serde_json::Value, st: State<'_, AppState>) -> Result<(), String> {
     with_db(&st, |c| activity_svc::save_shoes(c, &shoes))
 }
@@ -1078,6 +1083,7 @@ pub fn run() {
             bands_set,
             shoes_get,
             shoes_set,
+            shoe_runs,
             activity_set_shoe,
             training_overview,
             records_extra,

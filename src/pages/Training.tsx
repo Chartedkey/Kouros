@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   api, errText, fmtDur, fmtKm, fmtPace, fmtWhen, plural, sportOf,
-  type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type Split, type TrainingOverview, type ResBand, type ExerciseItem,
+  type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type ShoeRun, type Split, type TrainingOverview, type ResBand, type ExerciseItem,
 } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 import { SpecEditor } from '../components/Shoes';
@@ -515,8 +515,9 @@ const SHOE_KIND: [Shoe['kind'], string, number][] = [['train', 'Трениров
 function GearTab() {
   const [list, setList] = useState<Shoe[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [form, setForm] = useState<{ name: string; kind: Shoe['kind']; startDate: string; initialKm: string; walks: boolean } | null>(null);
+  const [form, setForm] = useState<{ id?: string; name: string; kind: Shoe['kind']; startDate: string; initialKm: string; limitKm: string; walks: boolean } | null>(null);
   const [specOf, setSpecOf] = useState<string | null>(null);
+  const [runsOf, setRunsOf] = useState<string | null>(null);
   const load = useCallback(() => { api.shoesGet().then(setList).catch((e) => setErr(errText(e))); }, []);
   useEffect(load, [load]);
   useDataChanged(load);
@@ -526,9 +527,11 @@ function GearTab() {
   }
   function add() {
     if (!form || !list || !form.name.trim()) return;
-    const limit = SHOE_KIND.find((k) => k[0] === form.kind)?.[2] ?? 700;
-    const km = Number(form.initialKm.replace(',', '.')) || 0;
-    save([...list, { id: String(Date.now()), name: form.name.trim(), kind: form.kind, startDate: form.startDate, initialKm: km, limitKm: limit, walks: form.walks, retired: false }]);
+    const limit = Number(form.limitKm.replace(',', '.')) || (SHOE_KIND.find((k) => k[0] === form.kind)?.[2] ?? 700);
+    const km = Math.max(0, Number(form.initialKm.replace(',', '.')) || 0);
+    const v = { name: form.name.trim(), kind: form.kind, startDate: form.startDate, initialKm: km, limitKm: limit, walks: form.walks };
+    if (form.id) save(list.map((x) => (x.id === form.id ? { ...x, ...v } : x)));
+    else save([...list, { id: String(Date.now()), ...v, retired: false }]);
     setForm(null);
   }
   const today = new Date().toISOString().slice(0, 10);
@@ -549,6 +552,7 @@ function GearTab() {
                   {!sh.retired && (sh.main
                     ? <span className="chip chip-ok">основные</span>
                     : <button type="button" className="btn2" onClick={() => save(list.map((x) => ({ ...x, main: x.id === sh.id })))}>Сделать основными</button>)}
+                  <button type="button" className="btn2" onClick={() => setForm({ id: sh.id, name: sh.name, kind: sh.kind, startDate: sh.startDate, initialKm: String(sh.initialKm ?? 0).replace('.', ','), limitKm: String(sh.limitKm), walks: sh.walks })}>Изменить</button>
                   <button type="button" className="btn2" aria-pressed={specOf === sh.id} onClick={() => setSpecOf(specOf === sh.id ? null : sh.id)}>Характеристики{sh.spec && Object.keys(sh.spec).length ? ' ✓' : ''}</button>
                   {sh.url && <button type="button" className="linkbtn small" onClick={() => api.openLink(sh.url!).catch(() => {})}>обзор ↗</button>}
                   <button type="button" className="btn2" onClick={() => save(list.map((x) => (x.id === sh.id ? { ...x, retired: !x.retired } : x)))}>{sh.retired ? 'Вернуть' : 'В архив'}</button>
@@ -556,41 +560,72 @@ function GearTab() {
                 </span>
               </div>
               <div style={{ height: 8, borderRadius: 999, background: '#22262D', overflow: 'hidden' }}><div style={{ width: `${frac * 100}%`, height: '100%', background: col }} /></div>
-              <span className="small"><b className="num">{n1(sh.km ?? 0)}</b> <span className="muted">из ≈ {sh.limitKm} км{frac > 0.9 ? ' · пора менять' : frac > 0.7 ? ' · скоро замена' : ''}</span></span>
+              <div className="between">
+                <span className="small"><b className="num">{n1(sh.km ?? 0)}</b> <span className="muted">из ≈ {sh.limitKm} км{frac > 0.9 ? ' · пора менять' : frac > 0.7 ? ' · скоро замена' : ''}{sh.initialKm ? ` · из них ${n1(sh.initialKm)} до ${dayLabel(sh.startDate)}` : ''}</span></span>
+                {(sh.workouts ?? 0) > 0 && <button type="button" className="linkbtn small" onClick={() => setRunsOf(runsOf === sh.id ? null : sh.id)}>{runsOf === sh.id ? 'Скрыть тренировки' : 'Тренировки этой пары'}</button>}
+              </div>
+              {runsOf === sh.id && <ShoeRunsList shoe={sh} all={list} onChanged={load} />}
               {specOf === sh.id && (
-                <SpecEditor spec={sh.spec ?? {}} url={sh.url ?? ''} onCancel={() => setSpecOf(null)}
+                <SpecEditor spec={sh.spec ?? {}} url={sh.url ?? ''} name={sh.name} onCancel={() => setSpecOf(null)}
                   onSave={(spec, url) => { save(list.map((x) => (x.id === sh.id ? { ...x, spec, url } : x))); setSpecOf(null); }} />
               )}
             </div>
           );
         })}
         {list && list.length === 0 && <span className="muted small" style={{ lineHeight: 1.5 }}>В Strava кроссовки не добавлены. Внеси свои — Kouros будет считать их пробег по тренировкам с даты начала.</span>}
-        {list && list.length > 0 && <span className="muted tiny" style={{ lineHeight: 1.5 }}>Пробег — тренировки, где выбраны эти кроссовки (в «Обзоре» Kouros спрашивает после пробежки или ходьбы), плюс тренировки без ответа с даты начала — их получают основные.</span>}
-        {!form && <button type="button" className="btn2" style={{ alignSelf: 'flex-start' }} onClick={() => setForm({ name: '', kind: 'train', startDate: today, initialKm: '0', walks: false })}>+ Добавить кроссовки</button>}
+        {list && list.length > 0 && <span className="muted tiny" style={{ lineHeight: 1.5 }}>Пробег = «пробег до даты начала», который ты ввёл, плюс тренировки, для которых ты выбрал эту пару — в опросе после тренировки на «Сегодня», в «Обзоре» или на странице тренировки. Сам Kouros ничего не засчитывает. Ошибся парой — открой «Тренировки этой пары» и поменяй.</span>}
+        {!form && <button type="button" className="btn2" style={{ alignSelf: 'flex-start' }} onClick={() => setForm({ name: '', kind: 'train', startDate: today, initialKm: '0', limitKm: '700', walks: false })}>+ Добавить кроссовки</button>}
       </section>
       {form && (
         <section className="card" aria-label="Новые кроссовки">
-          <span className="label">Новые кроссовки</span>
+          <span className="label">{form.id ? 'Изменить кроссовки' : 'Новые кроссовки'}</span>
           <div className="field"><label htmlFor="sh-name">Модель</label><input id="sh-name" style={{ width: '100%' }} value={form.name} placeholder="Модель кроссовок" onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div className="row" role="group" aria-label="Тип">
-            {SHOE_KIND.map(([k, n]) => <button key={k} type="button" className="pill" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })}>{n}</button>)}
+            {SHOE_KIND.map(([k, n, lim]) => <button key={k} type="button" className="pill" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k, limitKm: form.id ? form.limitKm : String(lim) })}>{n}</button>)}
           </div>
           <div className="row" style={{ gap: 16, alignItems: 'flex-end' }}>
             <div className="field"><label htmlFor="sh-date">Ношу с</label><input id="sh-date" type="date" style={{ width: 170 }} value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></div>
             <div className="field"><label htmlFor="sh-km">Пробег до этой даты, км</label><input id="sh-km" inputMode="decimal" value={form.initialKm} onChange={(e) => setForm({ ...form, initialKm: e.target.value })} /></div>
+            <div className="field"><label htmlFor="sh-lim">Ресурс, км</label><input id="sh-lim" inputMode="decimal" style={{ width: 90 }} value={form.limitKm} onChange={(e) => setForm({ ...form, limitKm: e.target.value })} /></div>
           </div>
           <label className="row small" style={{ gap: 10, cursor: 'pointer' }}>
-            <input type="checkbox" checked={form.walks} onChange={(e) => setForm({ ...form, walks: e.target.checked })} /> Ношу и для ходьбы — считать её пробег тоже
+            <input type="checkbox" checked={form.walks} onChange={(e) => setForm({ ...form, walks: e.target.checked })} /> Ношу и для ходьбы — спрашивать про них и после прогулок
           </label>
-          <span className="muted tiny">Ресурс: тренировочные ≈ 700 км, соревновательные ≈ 400, трейловые ≈ 600, для ходьбы ≈ 900.</span>
+          <span className="muted tiny" style={{ lineHeight: 1.5 }}>«Пробег до этой даты» — сколько ты уже набегал в них раньше; тренировки с даты начала добавятся, когда ты выберешь эту пару. Ресурс: тренировочные ≈ 700 км, соревновательные ≈ 400, трейловые ≈ 600, для ходьбы ≈ 900.</span>
           <div className="row">
-            <button type="button" className="btn" disabled={!form.name.trim()} onClick={add}>Добавить</button>
+            <button type="button" className="btn" disabled={!form.name.trim()} onClick={add}>{form.id ? 'Сохранить' : 'Добавить'}</button>
             <button type="button" className="btn2" onClick={() => setForm(null)}>Отмена</button>
           </div>
         </section>
       )}
       <BandsCard />
       <LibraryCard />
+    </div>
+  );
+}
+
+/** Workouts counted for one pair — change the pair or take a workout off (0.23.1). */
+function ShoeRunsList({ shoe, all, onChanged }: { shoe: Shoe; all: Shoe[]; onChanged: () => void }) {
+  const [runs, setRuns] = useState<ShoeRun[] | null>(null);
+  const load = useCallback(() => { api.shoeRuns(shoe.id).then(setRuns).catch(() => setRuns([])); }, [shoe.id]);
+  useEffect(load, [load]);
+  const move = (id: string, to: string) => api.activitySetShoe(id, to || null).then(() => { load(); onChanged(); }).catch(() => {});
+  if (!runs) return <span className="muted tiny">Загружаю…</span>;
+  if (!runs.length) return <span className="muted tiny">Тренировок с этой парой пока нет.</span>;
+  return (
+    <div className="stack" style={{ gap: 4, maxHeight: 320, overflowY: 'auto' }}>
+      {runs.map((r) => (
+        <div key={r.id} className="between small" style={{ gap: 10 }}>
+          <span className="muted" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {new Date(r.startUtc * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })} · {r.name || sportOf(r.sport).name}{r.distanceM ? ` · ${n1(r.distanceM / 1000)} км` : ''}
+          </span>
+          <select className="select" value={shoe.id} aria-label="Кроссовки этой тренировки" onChange={(e) => move(r.id, e.target.value)}>
+            {all.filter((x) => !x.retired || x.id === shoe.id).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            <option value="none">другие / без кроссовок</option>
+            <option value="">не выбраны</option>
+          </select>
+        </div>
+      ))}
     </div>
   );
 }
