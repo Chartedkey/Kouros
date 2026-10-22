@@ -5,12 +5,12 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { sportOf, type MuscleGroupState } from '../lib/api';
 
-// For the athlete: in order (fresh + normal, grey), tired (loaded), overloaded (over).
-const COLOR: Record<string, string> = { fresh: '#8b939e', normal: '#8b939e', loaded: '#F5B642', over: '#FF6B6B' };
-// Owner's choice (1.2): fresh muscles stay grey — only what needs attention is coloured.
-const ALPHA: Record<string, number> = { fresh: 0, normal: 0, loaded: 0.92, over: 0.96 };
-const WORD: Record<string, string> = { fresh: 'в порядке', normal: 'в порядке', loaded: 'утомлены', over: 'перегружены' };
-const LEGEND: [string, string][] = [['fresh', 'в порядке'], ['loaded', 'утомлены'], ['over', 'перегружены']];
+// Owner's choice (1.3.1): below 60 % of the usual level grey (fresh), 60–120 % green (normal working
+// load), 120–160 % yellow (tired), above 160 % red (overloaded). Thresholds = muscle_svc::map_state.
+const COLOR: Record<string, string> = { fresh: '#8b939e', normal: '#3DDC97', loaded: '#F5B642', over: '#FF6B6B' };
+const ALPHA: Record<string, number> = { fresh: 0, normal: 0.8, loaded: 0.92, over: 0.96 };
+const WORD: Record<string, string> = { fresh: 'свежие', normal: 'в норме', loaded: 'утомлены', over: 'перегружены' };
+const LEGEND: [string, string, string][] = [['fresh', 'свежие', 'до 60 %'], ['normal', 'в норме', '60–120 %'], ['loaded', 'утомлены', '120–160 %'], ['over', 'перегружены', 'больше 160 %']];
 // Same order as muscle_svc::GROUPS — the label map stores the index + 1.
 const KEYS = ['calves', 'quads', 'hams', 'glutes', 'hips', 'core', 'back', 'chest', 'shoulders', 'arms', 'knees', 'ankles'];
 
@@ -67,11 +67,16 @@ export function MuscleMap({ groups, onOpen }: { groups: MuscleGroupState[]; onOp
   const hot = groups.filter((x) => x.state === 'loaded' || x.state === 'over').sort((a, b) => (b.ratio ?? 0) - (a.ratio ?? 0));
   return (
     <section className="card" aria-label="Карта мышц">
-      <div className="between">
-        <span className="label">Карта мышц · что ещё не восстановилось</span>
-        <span className="row tiny" style={{ gap: 10 }}>
-          {LEGEND.map(([k, w]) => <span key={k} className="row" style={{ gap: 4 }}><span className="dot" style={{ background: COLOR[k] }} />{w}</span>)}
-        </span>
+      <span className="label">Карта мышц · что ещё не восстановилось</span>
+      <div className="mm-legend" aria-label="Цвета карты: доля от твоего обычного уровня нагрузки">
+        {LEGEND.map(([k, w, pct]) => (
+          <span key={k} className="mm-leg">
+            <span className="mm-sw" style={{ background: COLOR[k] }} />
+            <span className="small" style={{ fontWeight: 600 }}>{w}</span>
+            <span className="muted tiny">{pct}</span>
+          </span>
+        ))}
+        <span className="muted tiny" style={{ alignSelf: 'center' }}>от твоего обычного уровня</span>
       </div>
       <div className="row" style={{ gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: '3 1 420px', minWidth: 0 }}><Body by={by} sel={sel} onPick={setSel} /></div>

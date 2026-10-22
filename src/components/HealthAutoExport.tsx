@@ -92,6 +92,36 @@ function Switch({ st, onDone }: { st: HaeState; onDone: () => void }) {
   );
 }
 
+/** What has arrived from the phone; important data missing for 3+ days gets a hint. */
+function Coverage({ st }: { st: HaeState }) {
+  if (!st.coverage.length) return null;
+  const today = new Date();
+  const days = (d: string) => Math.round((today.getTime() - new Date(`${d}T12:00:00`).getTime()) / 86400000);
+  const missing = st.coverage.filter((c) => c.important && (!c.last || days(c.last) > 3));
+  return (
+    <div className="stack" style={{ gap: 6, marginTop: 4 }}>
+      <div className="row" style={{ gap: '6px 8px', flexWrap: 'wrap' }}>
+        {st.coverage.map((c) => {
+          const ok = !!c.last && days(c.last) <= 3;
+          const col = ok ? 'var(--green)' : c.important ? '#F5B642' : 'var(--muted)';
+          return (
+            <span key={c.key} className="tiny" title={c.last ? `последние данные — ${ruDate(c.last)}` : 'не приходило'}
+              style={{ padding: '4px 9px', borderRadius: 999, border: `1px solid ${ok ? 'var(--green-line)' : 'var(--line-2)'}`, color: col, whiteSpace: 'nowrap' }}>
+              {ok ? '✓' : c.last ? '…' : '—'} {c.name}
+            </span>
+          );
+        })}
+      </div>
+      {missing.length > 0 && (
+        <span className="tiny" style={{ color: '#F5B642', lineHeight: 1.5 }}>
+          Не приходит: {missing.map((c) => c.name.toLowerCase()).join(', ')}. Проверь, что в автоматизации выбраны все показатели, а на iPhone у Health Auto Export есть доступ к ним: Настройки → Здоровье → Доступ к данным и устройства → Health Auto Export → «Включить все».
+        </span>
+      )}
+      <span className="muted tiny">«—» — такие данные не приходили (например, нет весов или не ведёшь еду) — это не ошибка.</span>
+    </div>
+  );
+}
+
 export function HaeCard() {
   const [st, setSt] = useState<HaeState | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -170,7 +200,7 @@ export function HaeCard() {
               </div>
               <div className="stack" style={{ gap: 6 }}>
                 <b className="small">2. Адрес для Health Auto Export</b>
-                <span className="muted tiny">Автоматизации → новая → REST API → вставь в поле URL. Ключ уже внутри адреса.</span>
+                <span className="muted tiny">Автоматизации → новая → REST API → вставь в поле URL (ключ уже внутри). Показатели — выбери все: Kouros сам возьмёт нужное.</span>
                 <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
                   <code className="mono small" style={{ flex: '1 1 260px', minWidth: 0, padding: '10px 12px', borderRadius: 10, background: 'var(--bg)', border: '1px solid var(--line-2)', overflowWrap: 'anywhere' }}>{st.url}</code>
                   <Copy text={st.url} />
@@ -183,9 +213,7 @@ export function HaeCard() {
                   {st.data.rows > 0 && st.data.first && st.data.last ? ` Всего записано с ${ruDate(st.data.first)} по ${ruDate(st.data.last)}.` : ''}
                   {st.waiting > 0 ? ` Ждут разбора: ${st.waiting}.` : ''}
                 </span>
-                {st.lastImport && st.lastImport.stats.unknown.length > 0 && (
-                  <span className="muted tiny">Не используются: {st.lastImport.stats.unknown.join(', ')} — их можно не выгружать.</span>
-                )}
+                <Coverage st={st} />
               </div>
               <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span className="muted tiny">Порт</span>
@@ -215,7 +243,7 @@ export function HaeCard() {
       <div className="inset" style={{ gap: 8 }}>
         <b className="small">История из выгрузки</b>
         <span className="muted tiny" style={{ lineHeight: 1.5 }}>
-          ZIP или JSON из «Ручной загрузки» Health Auto Export. Можно загружать кусками (например, по месяцам) и повторно — одинаковые записи не задвоятся.
+          ZIP или JSON из «Ручной загрузки» Health Auto Export (все показатели). Выгружай по неделе — так телефон справится быстрее; можно загружать повторно, одинаковые записи не задвоятся.
         </span>
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <button type="button" className="btn2" disabled={busy} onClick={importFile}>Загрузить выгрузку…</button>
@@ -226,7 +254,6 @@ export function HaeCard() {
             </span>
           )}
         </div>
-        {done && done.unknown.length > 0 && <span className="muted tiny">Не используются: {done.unknown.join(', ')}.</span>}
       </div>
 
       <Switch st={st} onDone={load} />

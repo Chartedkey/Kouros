@@ -724,6 +724,38 @@ pub fn start(app: AppHandle) {
 
 // ---------------------------------------------------------------- commands' helpers
 
+/// What Kouros needs from Health Auto Export: (metric, name, important).
+const COVER: [(&str, &str, bool); 16] = [
+    ("sleep_analysis_raw", "Сон по фазам", true),
+    ("hrv_sdnn_raw", "HRV", true),
+    ("heart_rate_raw", "Пульс", true),
+    ("resting_heart_rate_merged_avg", "Пульс покоя", true),
+    ("respiratory_rate_merged_avg", "Дыхание во сне", true),
+    ("blood_oxygen", "Кислород", false),
+    ("wrist_temp", "Температура запястья", false),
+    ("steps_total", "Шаги", true),
+    ("active_energy_total", "Активные калории", true),
+    ("vo2_max", "VO₂max", false),
+    ("body_mass", "Вес", false),
+    ("food_entry_energy", "Еда", false),
+    ("drink_entry_volume", "Вода", false),
+    ("food_entry_caffeine", "Кофеин", false),
+    ("running_power_raw", "Беговая динамика", false),
+    ("walking_speed_raw", "Ходьба", false),
+];
+
+/// Which of the needed data has arrived and when last (only once something came at all).
+fn coverage(conn: &Connection) -> Vec<Value> {
+    let list = COVER.iter().map(|c| format!("'{}'", c.0)).collect::<Vec<_>>().join(",");
+    let mut last: BTreeMap<String, String> = BTreeMap::new();
+    if let Ok(mut st) = conn.prepare(&format!("SELECT metric, max(date) FROM health_metrics WHERE provider = ?1 AND metric IN ({list}) GROUP BY metric")) {
+        if let Ok(rows) = st.query_map(params![HAE], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))) {
+            last.extend(rows.flatten());
+        }
+    }
+    COVER.iter().map(|(m, name, imp)| json!({"key": m, "name": name, "important": imp, "last": last.get(*m)})).collect()
+}
+
 pub fn state(app: &AppHandle, conn: &Connection) -> Value {
     let mut v = cfg(conn);
     let port = v["port"].as_u64().unwrap_or(DEFAULT_PORT as u64);
@@ -738,6 +770,7 @@ pub fn state(app: &AppHandle, conn: &Connection) -> Value {
     if let Some(o) = v.as_object_mut() {
         o.remove("seen");
     }
+    let cover: Vec<Value> = if rows > 0 { coverage(conn) } else { Vec::new() };
     json!({
         "enabled": v["enabled"].as_bool().unwrap_or(false),
         "port": port,
@@ -754,6 +787,7 @@ pub fn state(app: &AppHandle, conn: &Connection) -> Value {
         "lastImport": v["lastImport"],
         "waiting": waiting,
         "data": {"first": first, "last": last, "rows": rows},
+        "coverage": cover,
         "groups": crate::sources::GROUPS.iter().map(|g| json!({"key": g.0, "name": g.1, "current": crate::sources::current(conn, g.0)})).chain(std::iter::once(json!({"key": crate::sources::OTHER, "name": crate::sources::OTHER_NAME, "current": crate::sources::current(conn, crate::sources::OTHER)}))).collect::<Vec<_>>(),
     })
 }

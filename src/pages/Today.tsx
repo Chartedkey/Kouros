@@ -496,7 +496,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
                         <div style={{ minWidth: 0 }}><div className="small" style={{ fontWeight: 600 }}>{c!.label}</div><div className="muted tiny">{c!.note}</div></div>
                         <div className="fbar">
                           <div className="fmid" />
-                          {pts != null && <div style={{ position: 'absolute', top: 0, bottom: 0, borderRadius: 999, background: pts >= 0 ? '#3DDC97' : '#FF6B6B', left: pts >= 0 ? '50%' : `${50 - w}%`, width: `${w}%` }} />}
+                          {pts != null && Math.abs(pts) >= 0.5 && <div style={{ position: 'absolute', top: 0, bottom: 0, borderRadius: 999, background: pts >= 0 ? '#3DDC97' : '#FF6B6B', left: pts >= 0 ? '50%' : `${50 - w}%`, width: `${w}%` }} />}
                         </div>
                         <span className="num small" style={{ textAlign: 'right', fontWeight: 700, color: pts == null ? 'var(--muted)' : Math.abs(pts) < 0.5 ? 'var(--muted)' : pts > 0 ? '#3DDC97' : '#FF6B6B' }}>{fmtPts(pts)}</span>
                       </div>

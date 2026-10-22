@@ -500,7 +500,8 @@ const demoHae = {
     const url = 'http://192.168.1.20:8765';
     return { enabled: this.enabled, port: this.port, token: 'k7pm2xq9ra4fbn3t', folder: this.folder, ip: '192.168.1.20', url: `${url}/hae?key=k7pm2xq9ra4fbn3t`, checkUrl: `${url}/check?key=k7pm2xq9ra4fbn3t`,
       running: this.enabled, error: null, lastPush: this.enabled ? Math.floor(Date.now() / 1000) - 600 : null, lastCheck: null, progress: null,
-      lastImport: null, waiting: 0, data: { first: null, last: null, rows: 0 },
+      lastImport: null, waiting: 0, data: this.enabled ? { first: '2026-10-01', last: '2026-10-22', rows: 48210 } : { first: null, last: null, rows: 0 },
+      coverage: this.enabled ? [['Сон по фазам', 1, '2026-10-22'], ['HRV', 1, '2026-10-22'], ['Пульс', 1, '2026-10-22'], ['Пульс покоя', 1, '2026-10-22'], ['Дыхание во сне', 1, null], ['Кислород', 0, '2026-10-22'], ['Температура запястья', 0, '2026-10-22'], ['Шаги', 1, '2026-10-22'], ['Активные калории', 1, '2026-10-22'], ['VO₂max', 0, '2026-10-20'], ['Вес', 0, null], ['Еда', 0, '2026-10-22'], ['Вода', 0, '2026-10-22'], ['Кофеин', 0, '2026-10-21'], ['Беговая динамика', 0, '2026-10-21'], ['Ходьба', 0, '2026-10-21']].map(([name, imp, last], i) => ({ key: `m${i}`, name: name as string, important: !!imp, last: last as string | null })) : [],
       groups: [['sleep', 'Сон'], ['hrv', 'HRV'], ['rhr', 'Пульс покоя'], ['vitals', 'Дыхание, SpO₂ и температура'], ['activity', 'Шаги, калории и VO₂max'], ['body', 'Вес и состав тела'], ['pulse', 'Пульс днём и стресс'], ['other', 'Питание, вода и остальное']].map(([key, name]) => ({ key, name, current: 'APPLE_HEALTH' })) };
   },
 };
@@ -609,6 +610,7 @@ export type HaeState = {
   progress: { label: string; samples: number; first: string | null; last: string | null } | null;
   lastImport: { at: number; how: string; stats: HaeImport } | null; waiting: number;
   data: { first: string | null; last: string | null; rows: number };
+  coverage: { key: string; name: string; important: boolean; last: string | null }[];
   groups: { key: string; name: string; current: string }[];
 };
 
