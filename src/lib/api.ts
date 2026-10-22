@@ -52,6 +52,17 @@ const DEMO_STRESS = {
 
 const DEMO_SUMMARY = {
   today: '2026-10-17', hrRestUsed: 53,
+  // Fictional muscle state for the demo map (1.2).
+  muscleMap: ([
+    ['calves', 'Икры', 'loaded', 1.38], ['quads', 'Квадрицепсы', 'over', 1.74], ['hams', 'Задняя поверхность бедра', 'loaded', 1.31],
+    ['glutes', 'Ягодицы', 'loaded', 1.25], ['hips', 'Таз и бёдра (стабилизаторы)', 'normal', 1.05], ['core', 'Кор', 'normal', 0.9],
+    ['back', 'Спина', 'fresh', 0.4], ['chest', 'Грудь', 'fresh', 0.3], ['shoulders', 'Плечи', 'fresh', 0.35], ['arms', 'Руки', 'fresh', 0.5],
+    ['knees', 'Колени', 'loaded', 1.4], ['ankles', 'Ахиллы и голеностоп', 'normal', 1.1],
+  ] as const).map(([key, name, state, ratio]) => ({
+    key, name, state, ratio, now: Math.round(ratio * 40), usual: 40,
+    contrib: state === 'fresh' ? [] : [{ id: 's2', sport: 'run', start: 1792180000, name: 'Длительная', share: 64 }, { id: 's1', sport: 'run', start: 1792440000, name: 'Вечерний бег', share: 36 }],
+  })),
+
   profile: { hrMax: 184, hrRest: null, zones: [110, 129, 147, 160, 171, 184], heightCm: 178, birthYear: 1990, male: true, proteinGPerKg: 1.8, zonesDate: null, thresholdPaceS: 330 },
   readiness: {
     score: 51, level: 'yellow',
