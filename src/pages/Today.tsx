@@ -3,7 +3,7 @@ import { MedNotes, MedRow } from './Meds';
 import { Vital, pointsOf, fmtPts } from '../components/Readiness';
 import { useCallback, useEffect, useState } from 'react';
 import { CheckinCard, MorningPain } from '../components/Checkin';
-import { DupCards } from '../components/Workouts';
+import { DupCards, StravaGoneCards } from '../components/Workouts';
 import { DayPlanCard } from '../components/DayPlan';
 import { ShoeTodayCard } from '../components/Shoes';
 import type { Go } from '../lib/nav';
@@ -440,8 +440,10 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
         </section>
       )}
       <DupCards max={1} />
+      <StravaGoneCards />
       {body && body.pending[0] && <CheckinCard key={body.pending[0].id} a={body.pending[0]} areas={body.areas} suggest={shoe?.picks[0]?.id ?? null} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}
-      {body && <MorningPain b={body} today={s.today} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}
+      {/* 1.3.2 (owner): asked after the night is in (morning readiness frozen) or from 15:00, not at midnight. */}
+      {body && (s.readiness.frozen || new Date().getHours() >= 15) && <MorningPain b={body} today={s.today} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}
       {meds && meds.enabled !== false && (meds.items.some((m) => m.active) || (meds.notes?.length ?? 0) > 0) && (
         <section className="card" aria-label="Витамины и лекарства сегодня">
           <div className="between"><span className="label">Витамины и лекарства сегодня</span>{onMeds && <button type="button" className="linkbtn small" onClick={onMeds}>Все →</button>}</div>

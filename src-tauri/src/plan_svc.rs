@@ -1092,11 +1092,15 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
     }
     let from = add_days(&today, -6);
     materialize(conn, &today, 21, &rt, cap_week, false)?;
-    check_today(conn, &s, &today, t)?;
-    pain_check(conn, &today, t)?;
-    med_check(conn, &today)?;
-    lab_check(conn, &today)?;
-    {
+    // 1.3.2 (owner): the plan is checked once the night is in — today's readiness frozen after sleep
+    // (or 15:00 without a recorded night) — not at midnight, when the day has no readiness yet.
+    let morning_in = conn.query_row("SELECT 1 FROM readiness_log WHERE date = ?1", params![today], |_| Ok(())).is_ok()
+        || (crate::store::now() + tz).rem_euclid(86400) >= 15 * 3600;
+    if morning_in {
+        check_today(conn, &s, &today, t)?;
+        pain_check(conn, &today, t)?;
+        med_check(conn, &today)?;
+        lab_check(conn, &today)?;
         let by0 = acts_by_day(&acts, tz);
         unplanned_check(conn, &today, &by0, &rt, cap_week, s["day"]["usualLoad"].as_f64().unwrap_or(0.0))?;
     }

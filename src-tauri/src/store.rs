@@ -26,6 +26,57 @@ pub fn exists_strava(conn: &Connection, strava_id: i64) -> Option<(String, bool)
     .flatten()
 }
 
+/// 1.3.2: a workout edited in Strava after it was loaded (distance corrected, cropped, renamed,
+/// another sport). Returns true when something changed; the athlete's own marks (RPE, shoes, pain,
+/// notes, sets) are not touched. When the track changed, the streams are fetched again.
+pub fn update_from_strava(conn: &Connection, id: &str, p: &Parsed) -> Result<bool, String> {
+    type Row = (String, Option<String>, i64, Option<f64>, Option<f64>, Option<f64>, Option<f64>);
+    let old: Option<Row> = conn
+        .query_row(
+            "SELECT sport, name, start_utc, elapsed_s, moving_s, distance_m, elev_gain_m FROM activities WHERE id = ?1",
+            params![id],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?, r.get(6)?)),
+        )
+        .optional()
+        .map_err(err)?;
+    let Some((sport, name, start, el, mv, dist, elev)) = old else { return Ok(false) };
+    let diff = |a: Option<f64>, b: Option<f64>, tol: f64| match (a, b) {
+        (Some(x), Some(y)) => (x - y).abs() > tol,
+        (None, Some(_)) => true,
+        _ => false,
+    };
+    let track = diff(dist, p.distance_m, 5.0) || diff(el, p.elapsed_s, 2.0) || diff(mv, p.moving_s, 2.0) || (start - p.start_utc).abs() > 60;
+    let other = sport != p.sport || (p.name.is_some() && name != p.name) || diff(elev, p.elev_gain_m, 2.0);
+    if !track && !other {
+        return Ok(false);
+    }
+    conn.execute(
+        "UPDATE activities SET sport = ?2, sport_label = COALESCE(?3, sport_label), name = COALESCE(?4, name), start_utc = ?5,
+            elapsed_s = COALESCE(?6, elapsed_s), moving_s = COALESCE(?7, moving_s), distance_m = ?8, elev_gain_m = COALESCE(?9, elev_gain_m),
+            avg_hr = COALESCE(?10, avg_hr), max_hr = COALESCE(?11, max_hr), calories = COALESCE(?12, calories),
+            has_streams = CASE WHEN ?13 = 1 AND has_streams = 1 THEN 0 ELSE has_streams END, updated_at = datetime('now')
+         WHERE id = ?1",
+        params![id, p.sport, p.sport_label, p.name, p.start_utc, p.elapsed_s, p.moving_s, p.distance_m, p.elev_gain_m, p.avg_hr, p.max_hr, p.calories, track as i64],
+    )
+    .map_err(err)?;
+    // Loads are recalculated from the new figures.
+    conn.execute("DELETE FROM activity_metrics WHERE activity_id = ?1", params![id]).map_err(err)?;
+    conn.execute("DELETE FROM muscle_cache WHERE activity_id = ?1", params![id]).map_err(err)?;
+    Ok(true)
+}
+
+/// Counted Strava workouts that started since `from`: (id, Strava id, name, start, sport).
+pub fn strava_since(conn: &Connection, from: i64) -> Vec<(String, i64, Option<String>, i64, String)> {
+    let Ok(mut st) = conn.prepare("SELECT id, strava_id, name, start_utc, sport FROM activities WHERE strava_id IS NOT NULL AND hidden = 0 AND start_utc >= ?1") else {
+        return Vec::new();
+    };
+    let v = st
+        .query_map(params![from], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)))
+        .map(|r| r.flatten().collect())
+        .unwrap_or_default();
+    v
+}
+
 /// Finds a workout that starts within 2 minutes and lasts about as long.
 pub fn find_by_time(conn: &Connection, start: i64, elapsed: Option<f64>) -> Option<(String, bool)> {
     let mut st = conn

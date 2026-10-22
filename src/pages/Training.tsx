@@ -6,7 +6,7 @@ import {
 import { useDataChanged } from '../lib/events';
 import { SpecEditor } from '../components/Shoes';
 import { EQUIP, ExerciseCard, MUSCLE, bandKg, searchExercises, useExerciseLib } from '../components/Exercises';
-import { DeletedList, DupCards } from '../components/Workouts';
+import { DeletedList, DupCards, StravaGoneCards } from '../components/Workouts';
 import { IoTab } from './TrainingIo';
 import { HrBars, Workout } from './Workout';
 import { MuscleMap } from '../components/MuscleMap';
@@ -359,6 +359,7 @@ function AllTab({ onOpen }: { onOpen: (id: string) => void }) {
   return (
     <>
     <DupCards onOpen={onOpen} />
+    <StravaGoneCards onOpen={onOpen} />
     <section className="card" aria-label="Все тренировки">
       <div className="filters">
         <div role="group" aria-label="Вид спорта" className="row">

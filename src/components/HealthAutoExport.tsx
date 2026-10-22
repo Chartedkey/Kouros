@@ -66,9 +66,19 @@ function Switch({ st, onDone }: { st: HaeState; onDone: () => void }) {
   };
   if (!st.data.rows) return null;
   if (apple === 0 && onHae > 0) {
+    // 1.3.2: history loaded after the switch «с сегодняшнего дня» — offer to take it.
+    const froms = st.groups.filter((g) => g.current === 'HAE').map((g) => g.from).filter(Boolean).sort();
+    const later = froms.length > 0 && !!st.data.first && st.data.first < froms[0];
     return (
       <div className="note-ok" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <span>Apple Health сейчас приходит через Health Auto Export. freddy остаётся запасным путём: если телефон перестанет присылать данные, верни его одной кнопкой.</span>
+        <span>Apple Health сейчас приходит через Health Auto Export{froms.length ? ` (с ${ruDate(froms[0])})` : ''}. freddy остаётся запасным путём: если телефон перестанет присылать данные, верни его одной кнопкой.</span>
+        {later && (
+          <div className="stack" style={{ gap: 6 }}>
+            <span className="small">Загружена история с {ruDate(st.data.first!)} — раньше, чем Kouros начал брать Health Auto Export. Эти дни сейчас показываются из freddy.</span>
+            <button type="button" className="btn2" style={{ alignSelf: 'flex-start' }} disabled={busy} onClick={() => run('HAE', 'replace')}>Взять загруженное прошлое (с {ruDate(st.data.first!)})</button>
+            <span className="muted tiny">Готовность за эти дни пересчитается, нормы не сбросятся.</span>
+          </div>
+        )}
         <button type="button" className="linkbtn small" style={{ alignSelf: 'flex-start' }} disabled={busy} onClick={() => run('APPLE_HEALTH', 'keep')}>Вернуть Apple Health через freddy</button>
         {err && <div className="note-err">{err}</div>}
       </div>

@@ -1,7 +1,7 @@
 // Workout sources (0.17): the settings card, the «Две записи одной тренировки» cards, and the list of
 // deleted workouts.
 import { useCallback, useEffect, useState } from 'react';
-import { api, errText, sportOf, type DeletedWorkout, type DupGroup, type WorkoutSources } from '../lib/api';
+import { api, errText, sportOf, type DeletedWorkout, type DupGroup, type StravaGone, type WorkoutSources } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 
 const GROUP_RU: Record<string, string> = { run: 'бега', walk: 'ходьбы', strength: 'силовых', ride: 'велосипеда', other: 'остального' };
@@ -109,6 +109,37 @@ export function DupCards({ onOpen, max = 3 }: { onOpen?: (id: string) => void; m
           {err && <div className="note-err">{err}</div>}
         </section>
       ))}
+    </>
+  );
+}
+
+/** 1.3.2: a workout of the last week that Strava no longer has — delete it here too or keep it. */
+export function StravaGoneCards({ onOpen }: { onOpen?: (id: string) => void }) {
+  const [list, setList] = useState<StravaGone[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+  const load = useCallback(() => { api.stravaGone().then(setList).catch(() => {}); }, []);
+  useEffect(load, [load]);
+  useDataChanged(load);
+  if (!list.length) return null;
+  const decide = (id: string, del: boolean) => api.stravaGoneDecide(id, del).then(load).catch((e) => setErr(errText(e)));
+  return (
+    <>
+      {list.slice(0, 2).map((g) => {
+        const sp = sportOf(g.sport);
+        return (
+          <section key={g.id} className="card" aria-label="Тренировка удалена в Strava" style={{ borderColor: '#2f3a52' }}>
+            <span className="label">Тренировка удалена в Strava</span>
+            <span className="small"><span style={{ color: sp.color }}>{sp.name}</span>{g.name ? ` · ${g.name}` : ''} · {when(g.start)}</span>
+            <span className="muted small">В Strava её больше нет. Удалить и в Kouros? Она попадёт в «Удалённые», вернуть можно в любой момент.</span>
+            <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+              <button type="button" className="btn2" onClick={() => decide(g.id, true)}>Удалить и в Kouros</button>
+              <button type="button" className="linkbtn small" onClick={() => decide(g.id, false)}>Оставить</button>
+              {onOpen && <button type="button" className="linkbtn small" onClick={() => onOpen(g.id)}>открыть</button>}
+            </div>
+            {err && <div className="note-err">{err}</div>}
+          </section>
+        );
+      })}
     </>
   );
 }

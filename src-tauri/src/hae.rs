@@ -788,7 +788,7 @@ pub fn state(app: &AppHandle, conn: &Connection) -> Value {
         "waiting": waiting,
         "data": {"first": first, "last": last, "rows": rows},
         "coverage": cover,
-        "groups": crate::sources::GROUPS.iter().map(|g| json!({"key": g.0, "name": g.1, "current": crate::sources::current(conn, g.0)})).chain(std::iter::once(json!({"key": crate::sources::OTHER, "name": crate::sources::OTHER_NAME, "current": crate::sources::current(conn, crate::sources::OTHER)}))).collect::<Vec<_>>(),
+        "groups": crate::sources::GROUPS.iter().map(|g| json!({"key": g.0, "name": g.1, "current": crate::sources::current(conn, g.0), "from": crate::sources::current_from(conn, g.0)})).chain(std::iter::once(json!({"key": crate::sources::OTHER, "name": crate::sources::OTHER_NAME, "current": crate::sources::current(conn, crate::sources::OTHER), "from": crate::sources::current_from(conn, crate::sources::OTHER)}))).collect::<Vec<_>>(),
     })
 }
 

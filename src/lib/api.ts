@@ -321,6 +321,8 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'dups_pending': return [{ group: 'g1', date: '2026-10-18', sportGroup: 'run', records: [
       { id: 's1', sport: 'run', name: 'Вечерний бег', start: 1792440000, min: 48, km: 8.1, avgHr: 141, source: 'strava_api', sourceName: 'Strava', detail: 'пульс, темп и высота по секундам, трек GPS', counted: true },
       { id: 'h1', sport: 'run', name: 'Бег · Apple Watch', start: 1792440020, min: 48, km: 8.08, avgHr: 142, source: 'freddy:APPLE_HEALTH', sourceName: 'Apple Health · Apple Watch', detail: 'пульс по ходу (каждые ~15 с), без трека', counted: false }] }];
+    case 'strava_gone': return [] satisfies StravaGone[];
+    case 'strava_gone_decide': return null;
     case 'workouts_deleted': return [{ id: 'x1', sport: 'walk', name: 'Прогулка', start: 1792300000, min: 35, km: 3.1, sourceName: 'Strava', deletedTs: 1792400000 }];
     case 'workouts_save': case 'dup_decide': case 'workout_choose': case 'workouts_delete': case 'workout_restore': case 'workout_purge': return null;
     case 'body_state': return demoBody();
@@ -502,7 +504,7 @@ const demoHae = {
       running: this.enabled, error: null, lastPush: this.enabled ? Math.floor(Date.now() / 1000) - 600 : null, lastCheck: null, progress: null,
       lastImport: null, waiting: 0, data: this.enabled ? { first: '2026-10-01', last: '2026-10-22', rows: 48210 } : { first: null, last: null, rows: 0 },
       coverage: this.enabled ? [['Сон по фазам', 1, '2026-10-22'], ['HRV', 1, '2026-10-22'], ['Пульс', 1, '2026-10-22'], ['Пульс покоя', 1, '2026-10-22'], ['Дыхание во сне', 1, null], ['Кислород', 0, '2026-10-22'], ['Температура запястья', 0, '2026-10-22'], ['Шаги', 1, '2026-10-22'], ['Активные калории', 1, '2026-10-22'], ['VO₂max', 0, '2026-10-20'], ['Вес', 0, null], ['Еда', 0, '2026-10-22'], ['Вода', 0, '2026-10-22'], ['Кофеин', 0, '2026-10-21'], ['Беговая динамика', 0, '2026-10-21'], ['Ходьба', 0, '2026-10-21']].map(([name, imp, last], i) => ({ key: `m${i}`, name: name as string, important: !!imp, last: last as string | null })) : [],
-      groups: [['sleep', 'Сон'], ['hrv', 'HRV'], ['rhr', 'Пульс покоя'], ['vitals', 'Дыхание, SpO₂ и температура'], ['activity', 'Шаги, калории и VO₂max'], ['body', 'Вес и состав тела'], ['pulse', 'Пульс днём и стресс'], ['other', 'Питание, вода и остальное']].map(([key, name]) => ({ key, name, current: 'APPLE_HEALTH' })) };
+      groups: [['sleep', 'Сон'], ['hrv', 'HRV'], ['rhr', 'Пульс покоя'], ['vitals', 'Дыхание, SpO₂ и температура'], ['activity', 'Шаги, калории и VO₂max'], ['body', 'Вес и состав тела'], ['pulse', 'Пульс днём и стресс'], ['other', 'Питание, вода и остальное']].map(([key, name]) => ({ key, name, current: 'APPLE_HEALTH', from: '' })) };
   },
 };
 
@@ -611,8 +613,11 @@ export type HaeState = {
   lastImport: { at: number; how: string; stats: HaeImport } | null; waiting: number;
   data: { first: string | null; last: string | null; rows: number };
   coverage: { key: string; name: string; important: boolean; last: string | null }[];
-  groups: { key: string; name: string; current: string }[];
+  groups: { key: string; name: string; current: string; from: string }[];
 };
+
+// ---------- workouts deleted in Strava (1.3.2) ----------
+export type StravaGone = { id: string; name: string | null; start: number; sport: string };
 
 // ---------- workout sources (0.17) ----------
 export type WorkoutRecord = { id: string; sport: string; name: string | null; start: number; min: number; km: number | null; avgHr: number | null; source: string; sourceName: string; detail: string; counted: boolean };
@@ -990,6 +995,8 @@ export const api = {
   workoutsState: () => call<WorkoutSources>('workouts_state'),
   workoutsSave: (data: Partial<Pick<WorkoutSources, 'mode' | 'providers' | 'rules'>>) => call<null>('workouts_save', { data }),
   dupsPending: () => call<DupGroup[]>('dups_pending'),
+  stravaGone: () => call<StravaGone[]>('strava_gone'),
+  stravaGoneDecide: (id: string, del: boolean) => call<null>('strava_gone_decide', { id, delete: del }),
   dupDecide: (group: string, keep: string | null, remember: boolean) => call<null>('dup_decide', { group, keep, remember }),
   workoutChoose: (id: string) => call<null>('workout_choose', { id }),
   workoutsDelete: (ids: string[]) => call<null>('workouts_delete', { ids }),

@@ -312,6 +312,11 @@ pub fn current(conn: &Connection, group: &str) -> String {
     segments(&settings(conn), group).last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string())
 }
 
+/// Day the current source of a group starts from ("" = the whole history).
+pub fn current_from(conn: &Connection, group: &str) -> String {
+    segments(&settings(conn), group).last().map(|x| x.1.clone()).unwrap_or_default()
+}
+
 pub fn current_is_apple(conn: &Connection, group: &str) -> bool {
     segments(&settings(conn), group).last().map(|x| apple_like(&x.0)).unwrap_or(true)
 }
@@ -476,7 +481,9 @@ pub fn set_all(conn: &Connection, provider: &str, mode: &str) -> Result<(), Stri
     for g in GROUPS.iter().map(|g| g.0).chain(std::iter::once(OTHER)) {
         let cur = current(conn, g);
         // Only the Apple roads are swapped; a group taken from Garmin/Suunto stays as it is.
-        if apple_like(&cur) && !cur.eq_ignore_ascii_case(provider) {
+        // 1.3.2: «взять загруженное прошлое» — already on Health Auto Export from a later day.
+        let extend = mode == "replace" && is_hae(provider) && is_hae(&cur);
+        if apple_like(&cur) && (!cur.eq_ignore_ascii_case(provider) || extend) {
             set_one(conn, g, provider, mode)?;
         }
     }

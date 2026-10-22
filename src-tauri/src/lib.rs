@@ -848,6 +848,18 @@ fn workout_choose(id: String, app: AppHandle, st: State<'_, AppState>) -> Result
 }
 
 #[tauri::command]
+fn strava_gone(st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| Ok(workouts_svc::gone(c)))
+}
+
+#[tauri::command]
+fn strava_gone_decide(id: String, delete: bool, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| workouts_svc::gone_decide(c, &id, delete))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "workouts");
+    Ok(())
+}
+
+#[tauri::command]
 fn workouts_delete(ids: Vec<String>, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
     with_db(&st, |c| workouts_svc::delete(c, &ids))?;
     let _ = tauri::Emitter::emit(&app, "data-changed", "workouts");
@@ -1211,6 +1223,8 @@ pub fn run() {
             dup_decide,
             workout_choose,
             workouts_delete,
+            strava_gone,
+            strava_gone_decide,
             workout_restore,
             workout_purge,
             workouts_deleted,

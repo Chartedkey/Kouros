@@ -412,9 +412,50 @@ pub fn after_sync(conn: &mut Connection) -> Result<(), String> {
     Ok(())
 }
 
-fn today_changed(conn: &Connection) {
+pub fn today_changed(conn: &Connection) {
     let today = engine_svc::today(&engine_svc::profile(conn));
     let _ = conn.execute("DELETE FROM readiness_log WHERE date = ?1", params![today]);
+}
+
+// ---------- deleted in Strava (1.3.2) ----------
+
+fn setting_json(conn: &Connection, key: &str) -> Value {
+    db::get_setting(conn, key).and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_else(|| json!([]))
+}
+
+/// Workouts of the last week that Strava no longer lists. They are not removed silently: the
+/// athlete is asked once (`strava_gone`), «Оставить» remembers the answer (`strava_gone_keep`).
+pub fn mark_gone(conn: &Connection, missing: &[(String, i64, Option<String>, i64, String)]) -> usize {
+    let keep: Vec<String> = serde_json::from_value(setting_json(conn, "strava_gone_keep")).unwrap_or_default();
+    let mut list: Vec<Value> = setting_json(conn, "strava_gone").as_array().cloned().unwrap_or_default();
+    let ids: Vec<&String> = missing.iter().map(|m| &m.0).collect();
+    // Back in Strava (or answered) — no longer waiting.
+    list.retain(|v| v["id"].as_str().map(|id| ids.iter().any(|x| x.as_str() == id)).unwrap_or(false));
+    for (id, _, name, start, sport) in missing {
+        if keep.contains(id) || list.iter().any(|v| v["id"].as_str() == Some(id.as_str())) {
+            continue;
+        }
+        list.push(json!({"id": id, "name": name, "start": start, "sport": sport}));
+    }
+    let _ = db::set_setting(conn, "strava_gone", &Value::Array(list.clone()).to_string());
+    list.len()
+}
+
+pub fn gone(conn: &Connection) -> Value {
+    setting_json(conn, "strava_gone")
+}
+
+/// `delete` = also delete in Kouros (to «Удалённые», can be restored), else keep and don't ask again.
+pub fn gone_decide(conn: &Connection, id: &str, delete: bool) -> Result<(), String> {
+    let mut list: Vec<Value> = setting_json(conn, "strava_gone").as_array().cloned().unwrap_or_default();
+    list.retain(|v| v["id"].as_str() != Some(id));
+    db::set_setting(conn, "strava_gone", &Value::Array(list).to_string())?;
+    if delete {
+        return self::delete(conn, &[id.to_string()]);
+    }
+    let mut keep: Vec<String> = serde_json::from_value(setting_json(conn, "strava_gone_keep")).unwrap_or_default();
+    keep.push(id.to_string());
+    db::set_setting(conn, "strava_gone_keep", &serde_json::to_string(&keep).unwrap_or_default())
 }
 
 // ---------- settings and decisions ----------

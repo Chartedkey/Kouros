@@ -25,6 +25,10 @@ pub struct StravaSync {
     pub streams: usize,
     pub streams_left: usize,
     pub rate_limited: bool,
+    /// Workouts changed in Strava after they were loaded (1.3.2).
+    pub updated: usize,
+    /// Workouts of the last week that are gone from Strava (waiting for the athlete's answer).
+    pub gone: usize,
     /// No workouts yet and no explicit choice — the UI should ask first.
     pub needs_choice: bool,
 }
@@ -98,6 +102,39 @@ async fn strava_sync_inner(app: &AppHandle, full: bool) -> Result<StravaSync, St
         }
         tx.commit().map_err(|e| e.to_string())
     })?;
+    // 1.3.2: the last 7 days again — a distance corrected, a crop, a new name or sport in Strava
+    // keeps the same workout id, so it would never come back otherwise.
+    if !out.rate_limited {
+        let since = store::now() - 7 * 86400;
+        let (recent, limited) = if after <= since { (list.clone(), false) } else { strava::list_after(since).await? };
+        out.rate_limited |= limited;
+        let (updated, gone) = with_conn(app, |c| {
+            let mut n: usize = 0;
+            for (sid, p) in &recent {
+                if let Some((id, _)) = store::exists_strava(c, *sid) {
+                    if store::update_from_strava(c, &id, p)? {
+                        n += 1;
+                    }
+                }
+            }
+            // Gone from Strava: only when the list is complete.
+            let mut gone: usize = 0;
+            if !limited {
+                let ids: std::collections::BTreeSet<i64> = recent.iter().map(|x| x.0).collect();
+                let missing: Vec<_> = store::strava_since(c, since + 3600).into_iter().filter(|x| !ids.contains(&x.1)).collect();
+                gone = crate::workouts_svc::mark_gone(c, &missing);
+            }
+            Ok((n, gone))
+        })?;
+        out.updated = updated;
+        out.gone = gone;
+        if updated > 0 {
+            let _ = with_conn(app, |c| {
+                crate::workouts_svc::today_changed(c);
+                Ok(())
+            });
+        }
+    }
     // Sample streams: newest first, a limited number per run.
     if !out.rate_limited {
         let todo = with_conn(app, |c| Ok(store::strava_missing_streams(c, strava::streams_per_run())))?;
