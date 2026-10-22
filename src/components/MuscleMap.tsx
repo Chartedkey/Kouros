@@ -1,58 +1,60 @@
-// Muscle map: a simple own silhouette, front and back, groups coloured by how much load is still
-// "in" them against their usual level (from `engine_summary.muscleMap`).
-import { useState, type ReactNode } from 'react';
+// Muscle map (1.2): a detailed drawing (front and back, grey) with each muscle group tinted by how much
+// load is still "in" it against its usual level (from `engine_summary.muscleMap`). Assets in
+// public/muscles are built by tools/muscles/make.py: base.webp, one alpha mask per group, labels.png
+// (group index + 1 per pixel) to know which group was clicked.
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { sportOf, type MuscleGroupState } from '../lib/api';
 
-const COLOR: Record<string, string> = { fresh: '#4A6A8A', normal: '#3DDC97', loaded: '#F5B642', over: '#FF6B6B' };
-const WORD: Record<string, string> = { fresh: 'свежие', normal: 'в норме', loaded: 'нагружены', over: 'перегружены' };
-const BASE = '#1E232A';
-const LINE = '#2E343D';
+// Three colours for the athlete: fresh (fresh + normal), tired (loaded), overloaded (over).
+const COLOR: Record<string, string> = { fresh: '#3DDC97', normal: '#3DDC97', loaded: '#F5B642', over: '#FF6B6B' };
+const ALPHA: Record<string, number> = { fresh: 0.5, normal: 0.62, loaded: 0.92, over: 0.96 };
+const WORD: Record<string, string> = { fresh: 'свежие', normal: 'восстановились', loaded: 'утомлены', over: 'перегружены' };
+const LEGEND: [string, string][] = [['fresh', 'свежие'], ['loaded', 'утомлены'], ['over', 'перегружены']];
+// Same order as muscle_svc::GROUPS — the label map stores the index + 1.
+const KEYS = ['calves', 'quads', 'hams', 'glutes', 'hips', 'core', 'back', 'chest', 'shoulders', 'arms', 'knees', 'ankles'];
 
-type Shape = ['e', number, number, number, number] | ['c', number, number, number] | ['r', number, number, number, number, number];
-
-const FRONT: [string | null, Shape[]][] = [
-  [null, [['c', 100, 28, 18], ['r', 92, 45, 16, 12, 4], ['c', 42, 178, 7], ['c', 158, 178, 7], ['e', 84, 312, 9, 28], ['e', 116, 312, 9, 28], ['e', 80, 362, 11, 5], ['e', 120, 362, 11, 5]]],
-  ['shoulders', [['e', 62, 70, 16, 12], ['e', 138, 70, 16, 12]]],
-  ['chest', [['r', 66, 62, 33, 34, 10], ['r', 101, 62, 33, 34, 10]]],
-  ['arms', [['e', 50, 102, 10, 24], ['e', 150, 102, 10, 24], ['e', 44, 148, 8, 22], ['e', 156, 148, 8, 22]]],
-  ['core', [['r', 72, 98, 56, 62, 12]]],
-  ['hips', [['e', 86, 170, 12, 9], ['e', 114, 170, 12, 9]]],
-  ['quads', [['e', 84, 222, 15, 38], ['e', 116, 222, 15, 38]]],
-  ['knees', [['c', 84, 268, 9], ['c', 116, 268, 9]]],
-  ['ankles', [['e', 84, 346, 7, 7], ['e', 116, 346, 7, 7]]],
-];
-const BACK: [string | null, Shape[]][] = [
-  [null, [['c', 100, 28, 18], ['r', 92, 45, 16, 12, 4], ['c', 42, 178, 7], ['c', 158, 178, 7], ['c', 84, 268, 8], ['c', 116, 268, 8], ['e', 80, 362, 11, 5], ['e', 120, 362, 11, 5]]],
-  ['shoulders', [['e', 62, 70, 16, 12], ['e', 138, 70, 16, 12]]],
-  ['back', [['r', 68, 58, 64, 58, 14], ['r', 76, 118, 48, 40, 10]]],
-  ['arms', [['e', 50, 102, 10, 24], ['e', 150, 102, 10, 24], ['e', 44, 148, 8, 22], ['e', 156, 148, 8, 22]]],
-  ['hips', [['e', 70, 168, 6, 10], ['e', 130, 168, 6, 10]]],
-  ['glutes', [['e', 86, 180, 15, 14], ['e', 114, 180, 15, 14]]],
-  ['hams', [['e', 84, 230, 14, 32], ['e', 116, 230, 14, 32]]],
-  ['calves', [['e', 84, 302, 11, 26], ['e', 116, 302, 11, 26]]],
-  ['ankles', [['e', 84, 340, 5, 10], ['e', 116, 340, 5, 10]]],
-];
-
-function draw(s: Shape, fill: string, k: string, onClick?: () => void, sel?: boolean): ReactNode {
-  const common = { fill, stroke: sel ? '#f1f3f5' : LINE, strokeWidth: sel ? 2 : 1, onClick, style: onClick ? { cursor: 'pointer' } : undefined };
-  if (s[0] === 'e') return <ellipse key={k} cx={s[1]} cy={s[2]} rx={s[3]} ry={s[4]} {...common} />;
-  if (s[0] === 'c') return <circle key={k} cx={s[1]} cy={s[2]} r={s[3]} {...common} />;
-  return <rect key={k} x={s[1]} y={s[2]} width={s[3]} height={s[4]} rx={s[5]} {...common} />;
+function useLabels() {
+  const [lab, setLab] = useState<{ w: number; h: number; d: Uint8ClampedArray } | null>(null);
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+        const x = c.getContext('2d', { willReadFrequently: true }); if (!x) return;
+        x.drawImage(img, 0, 0);
+        setLab({ w: img.width, h: img.height, d: x.getImageData(0, 0, img.width, img.height).data });
+      } catch { /* no picking then */ }
+    };
+    img.src = 'muscles/labels.png';
+  }, []);
+  return lab;
 }
 
-function Figure({ parts, by, sel, onPick, title }: { parts: [string | null, Shape[]][]; by: Record<string, MuscleGroupState>; sel: string | null; onPick: (k: string) => void; title: string }) {
+function Body({ by, sel, onPick }: { by: Record<string, MuscleGroupState>; sel: string | null; onPick: (k: string | null) => void }) {
+  const lab = useLabels();
+  const ref = useRef<HTMLDivElement>(null);
+  const [hover, setHover] = useState<string | null>(null);
+  const at = (e: MouseEvent): string | null => {
+    const el = ref.current; if (!el || !lab) return null;
+    const r = el.getBoundingClientRect();
+    const x = Math.floor(((e.clientX - r.left) / r.width) * lab.w), y = Math.floor(((e.clientY - r.top) / r.height) * lab.h);
+    if (x < 0 || y < 0 || x >= lab.w || y >= lab.h) return null;
+    const v = lab.d[(y * lab.w + x) * 4];
+    return v > 0 ? KEYS[v - 1] ?? null : null;
+  };
+  const mask = (k: string) => ({ WebkitMaskImage: `url(muscles/m_${k}.png)`, maskImage: `url(muscles/m_${k}.png)` });
   return (
-    <div className="stack" style={{ gap: 4, alignItems: 'center', flex: '1 1 160px' }}>
-      <svg viewBox="0 0 200 372" width="100%" style={{ maxWidth: 220 }} aria-label={title}>
-        {parts.map(([k, shapes], i) =>
-          shapes.map((s, j) => {
-            const g = k ? by[k] : null;
-            const fill = k ? (g ? COLOR[g.state] : BASE) : BASE;
-            return draw(s, fill, `${i}-${j}`, k ? () => onPick(k) : undefined, k != null && k === sel);
-          }),
-        )}
-      </svg>
-      <span className="muted tiny">{title}</span>
+    <div ref={ref} className="mm-body" onClick={(e) => onPick(at(e))} onMouseMove={(e) => setHover(at(e))} onMouseLeave={() => setHover(null)}
+      style={{ cursor: hover ? 'pointer' : 'default' }} role="img" aria-label="Карта мышц спереди и сзади">
+      <img src="muscles/base.webp" alt="" draggable={false} />
+      {KEYS.map((k) => {
+        const g = by[k];
+        if (!g) return null;
+        return <div key={k} className="mm-tint" style={{ ...mask(k), background: COLOR[g.state], opacity: ALPHA[g.state] }} />;
+      })}
+      {(hover ?? sel) && <div className="mm-hi" style={mask((hover ?? sel)!)} />}
+      <span className="mm-cap" style={{ left: '25%' }}>спереди</span>
+      <span className="mm-cap" style={{ left: '75%' }}>сзади</span>
     </div>
   );
 }
@@ -67,13 +69,12 @@ export function MuscleMap({ groups, onOpen }: { groups: MuscleGroupState[]; onOp
       <div className="between">
         <span className="label">Карта мышц · что ещё не восстановилось</span>
         <span className="row tiny" style={{ gap: 10 }}>
-          {(['fresh', 'normal', 'loaded', 'over'] as const).map((k) => <span key={k} className="row" style={{ gap: 4 }}><span className="dot" style={{ background: COLOR[k] }} />{WORD[k]}</span>)}
+          {LEGEND.map(([k, w]) => <span key={k} className="row" style={{ gap: 4 }}><span className="dot" style={{ background: COLOR[k] }} />{w}</span>)}
         </span>
       </div>
       <div className="row" style={{ gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <Figure parts={FRONT} by={by} sel={sel} onPick={setSel} title="спереди" />
-        <Figure parts={BACK} by={by} sel={sel} onPick={setSel} title="сзади" />
-        <div className="stack" style={{ gap: 8, flex: '2 1 260px', minWidth: 0 }}>
+        <div style={{ flex: '3 1 420px', minWidth: 0 }}><Body by={by} sel={sel} onPick={setSel} /></div>
+        <div className="stack" style={{ gap: 8, flex: '2 1 240px', minWidth: 0 }}>
           {g ? (
             <>
               <b>{g.name} — <span style={{ color: COLOR[g.state] }}>{WORD[g.state]}</span></b>
@@ -92,7 +93,7 @@ export function MuscleMap({ groups, onOpen }: { groups: MuscleGroupState[]; onOp
           ) : (
             <>
               <span className="small">{hot.length ? `Больше всего нагружены: ${hot.slice(0, 3).map((x) => x.name.toLowerCase()).join(', ')}.` : 'Ничего не перегружено.'}</span>
-              <span className="muted small">Нажми на группу мышц — покажу, какие тренировки её нагрузили.</span>
+              <span className="muted small">Нажми на мышцу на рисунке — покажу, какие тренировки её нагрузили.</span>
             </>
           )}
           <span className="muted tiny" style={{ lineHeight: 1.5 }}>Оценка по тренировкам: дистанция и темп, подъёмы и особенно спуски (квадрицепсы и колени), упражнения в подходах. Нагрузка постепенно «выветривается» — примерно вдвое за сутки. Мышцы часы не измеряют, так что это ориентир, а не прибор.</span>

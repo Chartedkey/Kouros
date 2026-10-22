@@ -141,8 +141,11 @@ export function Tour({ go, tab, auto }: { go: (g: Go) => void; tab: string; auto
   const hole = box ?? { top: window.innerHeight / z / 2 - 140, left: vw / 2, width: 0, height: 0 };
   return (
     <div className={`tour${reduced() ? ' tour-still' : ''}`} role="dialog" aria-modal="true" aria-label="Обучение">
-      <div className={`tour-hole${box ? '' : ' none'}`} style={{ top: hole.top - 6, left: hole.left - 6, width: hole.width + 12, height: hole.height + 12 }} />
-      <div className={`tour-pop card${moving ? ' moving' : ''}`} style={{ width: W, left: (vw - W) / 2 }}>
+      <div className={`tour-hole${box ? '' : ' none'}`} style={box
+        ? { top: hole.top - 6, left: hole.left - 6, width: hole.width + 12, height: hole.height + 12 }
+        : { top: hole.top, left: hole.left, width: 0, height: 0, borderWidth: 0 }} />
+      {/* 1.1.2: placed from the top in interface px (divided by the zoom) — «bottom» drifted off-screen when the UI was scaled. */}
+      <div className={`tour-pop card${moving ? ' moving' : ''}`} style={{ width: W, left: (vw - W) / 2, top: window.innerHeight / z - 24, transform: 'translateY(-100%)' }}>
         <span className="muted tiny">Шаг {i + 1} из {STEPS.length}</span>
         <b style={{ fontSize: 17 }}>{st.title}</b>
         <span className="small" style={{ lineHeight: 1.55, color: 'var(--text-2)' }}>{st.text}</span>
