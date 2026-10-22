@@ -104,6 +104,8 @@ export function Tour({ go, tab, auto }: { go: (g: Go) => void; tab: string; auto
         if (b.height > room || b.top < TOP_SPACE) delta = b.top - TOP_SPACE;
         else if (b.top + b.height > vh - POP_SPACE) delta = b.top + b.height - (vh - POP_SPACE);
         if (Math.abs(delta) > 2) window.scrollBy({ top: delta * z, behavior: reduced() ? 'auto' : 'smooth' });
+        // Glide the highlight to where the card will be after the scroll, at the same time.
+        setBox({ ...b, top: b.top - delta });
         settle(el);
         return;
       }
