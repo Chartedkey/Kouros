@@ -7,6 +7,7 @@ permissions:
 jobs:
   render:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,9 +24,10 @@ jobs:
         run: |
           mkdir -p tools/anatomy/out
           SCRIPT=$(cat tools/anatomy/run.txt 2>/dev/null || echo probe.py)
-          python tools/anatomy/$SCRIPT /tmp/za/Z-Anatomy/Startup.blend > tools/anatomy/out/log.txt 2>&1 || (tail -50 tools/anatomy/out/log.txt; exit 0)
+          python -u tools/anatomy/$SCRIPT /tmp/za/Z-Anatomy/Startup.blend > tools/anatomy/out/log.txt 2>&1 || (tail -50 tools/anatomy/out/log.txt; exit 0)
           tail -80 tools/anatomy/out/log.txt
       - name: commit
+        if: always()
         run: |
           git config user.name "anatomy-bot"; git config user.email "bot@users.noreply.github.com"
           git add tools/anatomy/out && git commit -m "anatomy output [skip ci]" && git push || true

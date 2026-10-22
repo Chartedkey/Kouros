@@ -29,11 +29,17 @@ for lc in bpy.context.view_layer.layer_collection.children:
         unexclude(lc)
     else:
         lc.exclude = True
+drop = [o for o in bpy.data.objects if o.name not in want]
+for o in drop:
+    bpy.data.objects.remove(o, do_unlink=True)
+for _ in range(3):
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+print('left objects', len(bpy.data.objects), flush=True)
 for o in bpy.data.objects:
-    o.hide_render = o.name not in want
-    o.hide_viewport = o.name not in want
-    if o.name in want:
-        o.hide_set(False)
+    o.hide_render = False
+    o.hide_viewport = False
+    for m in list(o.modifiers):
+        o.modifiers.remove(m)
 
 def mat(name, rgb, rough):
     m = bpy.data.materials.new(name); m.use_nodes = True
@@ -62,10 +68,10 @@ c = (lo + hi) / 2; size = hi - lo
 
 sc.render.engine = 'CYCLES'
 sc.cycles.device = 'CPU'
-sc.cycles.samples = 48
+sc.cycles.samples = 24
 sc.cycles.use_denoising = True
 sc.render.film_transparent = True
-H = 1600
+H = 1200
 sc.render.resolution_y = H
 sc.render.resolution_x = int(H * (size.x * 1.12) / (size.z * 1.06))
 sc.render.resolution_percentage = 100
@@ -94,4 +100,4 @@ for side, sgn in (('front', -1), ('back', 1)):
     light('kl_rim', (c.x, c.y - sgn * s * 1.2, c.z + s * 0.5), 1500 * s * s, s * 0.6)
     sc.render.filepath = os.path.join(OUT, f'{side}.png')
     bpy.ops.render.render(write_still=True)
-    print('rendered', side)
+    print('rendered', side, flush=True)
