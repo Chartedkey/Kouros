@@ -34,6 +34,9 @@ def put(k,m):
     for kk in G: G[kk]&=~m
     G[k]|=m
 put('shoulders',grn&(yy<300))
+# whole deltoids (the drawing is coloured only partly at the top of the shoulder)
+put('shoulders',(poly([(250,222),(215,222),(185,245),(175,280),(180,320),(200,330),(225,300),(250,265)])|poly([(436,222),(471,222),(501,245),(511,280),(506,320),(486,330),(461,300),(436,265)])
+    |poly([(830,225),(790,225),(760,245),(748,280),(752,310),(775,300),(805,280),(835,255)])|poly([(1010,225),(1050,225),(1080,245),(1092,280),(1088,310),(1065,300),(1035,280),(1005,255)]))&body)
 put('arms',yel&front&(yy<440)&((xx<240)|(xx>440)))
 put('arms',red&front&(yy<560))
 put('quads',grn&front&(yy>500))
@@ -44,6 +47,9 @@ put('arms',red&back&(yy<580)&((xx<790)|(xx>1050)))
 put('glutes',yel&back&(yy>470)&(yy<660))
 put('hams',red&back&(yy>600))
 put('calves',grn&back&(yy>780))
+for k in G:
+    m=ndimage.binary_closing(G[k],iterations=4)
+    G[k]=ndimage.binary_fill_holes(m)&body
 for k,m in G.items(): print(k,m.sum())
 # grey base: luminance, recolour coloured areas to match nearby grey
 L=0.3*r+0.59*g+0.11*b

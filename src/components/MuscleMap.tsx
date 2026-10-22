@@ -5,11 +5,12 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { sportOf, type MuscleGroupState } from '../lib/api';
 
-// Three colours for the athlete: fresh (fresh + normal), tired (loaded), overloaded (over).
-const COLOR: Record<string, string> = { fresh: '#3DDC97', normal: '#3DDC97', loaded: '#F5B642', over: '#FF6B6B' };
-const ALPHA: Record<string, number> = { fresh: 0.5, normal: 0.62, loaded: 0.92, over: 0.96 };
-const WORD: Record<string, string> = { fresh: 'свежие', normal: 'восстановились', loaded: 'утомлены', over: 'перегружены' };
-const LEGEND: [string, string][] = [['fresh', 'свежие'], ['loaded', 'утомлены'], ['over', 'перегружены']];
+// For the athlete: in order (fresh + normal, grey), tired (loaded), overloaded (over).
+const COLOR: Record<string, string> = { fresh: '#8b939e', normal: '#8b939e', loaded: '#F5B642', over: '#FF6B6B' };
+// Owner's choice (1.2): fresh muscles stay grey — only what needs attention is coloured.
+const ALPHA: Record<string, number> = { fresh: 0, normal: 0, loaded: 0.92, over: 0.96 };
+const WORD: Record<string, string> = { fresh: 'в порядке', normal: 'в порядке', loaded: 'утомлены', over: 'перегружены' };
+const LEGEND: [string, string][] = [['fresh', 'в порядке'], ['loaded', 'утомлены'], ['over', 'перегружены']];
 // Same order as muscle_svc::GROUPS — the label map stores the index + 1.
 const KEYS = ['calves', 'quads', 'hams', 'glutes', 'hips', 'core', 'back', 'chest', 'shoulders', 'arms', 'knees', 'ankles'];
 
@@ -49,7 +50,7 @@ function Body({ by, sel, onPick }: { by: Record<string, MuscleGroupState>; sel: 
       <img src="muscles/base.webp" alt="" draggable={false} />
       {KEYS.map((k) => {
         const g = by[k];
-        if (!g) return null;
+        if (!g || !ALPHA[g.state]) return null;
         return <div key={k} className="mm-tint" style={{ ...mask(k), background: COLOR[g.state], opacity: ALPHA[g.state] }} />;
       })}
       {(hover ?? sel) && <div className="mm-hi" style={mask((hover ?? sel)!)} />}
