@@ -29,6 +29,11 @@ for lc in bpy.context.view_layer.layer_collection.children:
         unexclude(lc)
     else:
         lc.exclude = True
+for n in want:
+    o = bpy.data.objects[n]
+    mw = o.matrix_world.copy()
+    o.parent = None
+    o.matrix_world = mw
 drop = [o for o in bpy.data.objects if o.name not in want]
 for o in drop:
     bpy.data.objects.remove(o, do_unlink=True)
