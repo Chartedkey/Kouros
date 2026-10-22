@@ -195,3 +195,4 @@ pub fn sport_from_strava(t: &str) -> &'static str {
         _ => "other",
     }
 }
+pub mod hae;

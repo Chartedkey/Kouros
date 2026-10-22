@@ -29,6 +29,7 @@ mod drugs;
 mod catalog_svc;
 mod coach_svc;
 mod sources;
+mod hae;
 mod plan_svc;
 mod body_svc;
 mod workouts_svc;
@@ -964,6 +965,55 @@ fn sources_set(group: String, provider: String, mode: String, app: AppHandle, st
 }
 
 #[tauri::command]
+fn sources_set_all(provider: String, mode: String, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| sources::set_all(c, &provider, &mode))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "sources");
+    Ok(())
+}
+
+#[tauri::command]
+fn hae_state(app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| Ok(hae::state(&app, c)))
+}
+
+#[tauri::command]
+fn hae_set(patch: serde_json::Value, app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| hae::set(c, &patch))?;
+    if patch.get("enabled").is_some() || patch.get("port").is_some() || patch.get("newToken").is_some() {
+        hae::restart(&app);
+    }
+    with_db(&st, |c| Ok(hae::state(&app, c)))
+}
+
+fn hae_err(e: String) -> String {
+    if e == "locked" { "Kouros заблокирован — войди через Windows Hello и повтори".into() } else { e }
+}
+
+#[tauri::command]
+async fn hae_import_file(path: String, app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    guard(&st)?;
+    let a = app.clone();
+    let res = tauri::async_runtime::spawn_blocking(move || hae::import_path(&a, std::path::Path::new(&path), "file"))
+        .await
+        .map_err(|e| e.to_string())?
+        .map_err(hae_err)?;
+    Ok(serde_json::json!({"samples": res.samples, "first": res.first, "last": res.last, "metrics": res.metrics, "unknown": res.unknown.keys().collect::<Vec<_>>()}))
+}
+
+#[tauri::command]
+async fn hae_scan(app: AppHandle, st: State<'_, AppState>) -> Result<usize, String> {
+    guard(&st)?;
+    let a = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        hae::drain(&a);
+        hae::scan_folder(&a)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+    .map_err(hae_err)
+}
+
+#[tauri::command]
 fn sources_map_set(provider: String, canon: String, metric: Option<String>, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
     with_db(&st, |c| sources::map_set(c, &provider, &canon, metric.as_deref()))?;
     let _ = tauri::Emitter::emit(&app, "data-changed", "sources");
@@ -1040,6 +1090,7 @@ pub fn run() {
         .setup(|app| {
             init(app.handle());
             sync::start_background(app.handle().clone());
+            hae::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -1135,6 +1186,11 @@ pub fn run() {
             sources_preview,
             sources_set,
             sources_map_set,
+            sources_set_all,
+            hae_state,
+            hae_set,
+            hae_import_file,
+            hae_scan,
             plan_state,
             plan_decide,
             plan_check_choice,

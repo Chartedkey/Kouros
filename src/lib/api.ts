@@ -312,7 +312,11 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'nutrition_summary': return demoNutrition();
     case 'sources_state': return demoSources();
     case 'sources_preview': return { text: 'Garmin и Apple Health меряют HRV по-разному — цифры будут другого уровня. Норма HRV пересчитается заново.', historyFrom: '2024-03-01', appleHistory: false };
-    case 'sources_set': case 'sources_map_set': return null;
+    case 'sources_set': case 'sources_map_set': case 'sources_set_all': return null;
+    case 'hae_state': return demoHae.state();
+    case 'hae_set': Object.assign(demoHae, (args?.patch ?? {}) as object); return demoHae.state();
+    case 'hae_import_file': return { samples: 412530, first: '2025-10-01', last: '2026-10-18', metrics: 41, unknown: [] } satisfies HaeImport;
+    case 'hae_scan': return 0;
     case 'workouts_state': return { mode: 'both', providers: [], rules: {}, enabledTs: 1792400000, groups: [['run', 'Бег'], ['walk', 'Ходьба и походы'], ['strength', 'Силовые и тренировки'], ['ride', 'Велосипед'], ['other', 'Остальное']].map(([key, name]) => ({ key, name, rule: 'ask' })), available: [{ provider: 'APPLE_HEALTH', name: 'Apple Health' }], counts: { strava: 812, freddy: 56, pending: 1, deleted: 1 } };
     case 'dups_pending': return [{ group: 'g1', date: '2026-10-18', sportGroup: 'run', records: [
       { id: 's1', sport: 'run', name: 'Вечерний бег', start: 1792440000, min: 48, km: 8.1, avgHr: 141, source: 'strava_api', sourceName: 'Strava', detail: 'пульс, темп и высота по секундам, трек GPS', counted: true },
@@ -490,6 +494,17 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
   }
 }
 
+const demoHae = {
+  enabled: false, port: 8765, folder: '', newToken: false,
+  state(): HaeState {
+    const url = 'http://192.168.1.20:8765';
+    return { enabled: this.enabled, port: this.port, token: 'k7pm2xq9ra4fbn3t', folder: this.folder, ip: '192.168.1.20', url: `${url}/hae?key=k7pm2xq9ra4fbn3t`, checkUrl: `${url}/check?key=k7pm2xq9ra4fbn3t`,
+      running: this.enabled, error: null, lastPush: this.enabled ? Math.floor(Date.now() / 1000) - 600 : null, lastCheck: null, progress: null,
+      lastImport: null, waiting: 0, data: { first: null, last: null, rows: 0 },
+      groups: [['sleep', 'Сон'], ['hrv', 'HRV'], ['rhr', 'Пульс покоя'], ['vitals', 'Дыхание, SpO₂ и температура'], ['activity', 'Шаги, калории и VO₂max'], ['body', 'Вес и состав тела'], ['pulse', 'Пульс днём и стресс'], ['other', 'Питание, вода и остальное']].map(([key, name]) => ({ key, name, current: 'APPLE_HEALTH' })) };
+  },
+};
+
 function demoSources(): SourcesState {
   const g = (key: string, name: string, open = true): SourceGroup => ({
     key, name, open, current: 'APPLE_HEALTH', currentName: 'Apple Health', segs: [{ provider: 'APPLE_HEALTH', name: 'Apple Health', from: '' }], cut: null,
@@ -584,7 +599,18 @@ export type SourcesState = {
   groups: SourceGroup[]; known: { provider: string; name: string; connected: boolean }[];
   providers: { provider: string; name: string; metrics: number; first: string | null; last: string | null }[]; today: string;
 };
-export type SourcePreview = { text: string; historyFrom: string | null; appleHistory: boolean };
+export type SourcePreview = { text: string; historyFrom: string | null; appleHistory: boolean; sameData?: boolean };
+
+// ---------- Health Auto Export (1.3) ----------
+export type HaeImport = { samples: number; first: string | null; last: string | null; metrics: number; unknown: string[] };
+export type HaeState = {
+  enabled: boolean; port: number; token: string; folder: string; ip: string | null; url: string | null; checkUrl: string | null;
+  running: boolean; error: string | null; lastPush: number | null; lastCheck: number | null;
+  progress: { label: string; samples: number; first: string | null; last: string | null } | null;
+  lastImport: { at: number; how: string; stats: HaeImport } | null; waiting: number;
+  data: { first: string | null; last: string | null; rows: number };
+  groups: { key: string; name: string; current: string }[];
+};
 
 // ---------- workout sources (0.17) ----------
 export type WorkoutRecord = { id: string; sport: string; name: string | null; start: number; min: number; km: number | null; avgHr: number | null; source: string; sourceName: string; detail: string; counted: boolean };
@@ -954,6 +980,11 @@ export const api = {
   sourcesPreview: (group: string, provider: string) => call<SourcePreview>('sources_preview', { group, provider }),
   sourcesSet: (group: string, provider: string, mode: 'keep' | 'replace') => call<null>('sources_set', { group, provider, mode }),
   sourcesMapSet: (provider: string, canon: string, metric: string | null) => call<null>('sources_map_set', { provider, canon, metric }),
+  sourcesSetAll: (provider: string, mode: 'keep' | 'replace') => call<null>('sources_set_all', { provider, mode }),
+  haeState: () => call<HaeState>('hae_state'),
+  haeSet: (patch: { enabled?: boolean; port?: number; folder?: string; newToken?: boolean }) => call<HaeState>('hae_set', { patch }),
+  haeImportFile: (path: string) => call<HaeImport>('hae_import_file', { path }),
+  haeScan: () => call<number>('hae_scan'),
   workoutsState: () => call<WorkoutSources>('workouts_state'),
   workoutsSave: (data: Partial<Pick<WorkoutSources, 'mode' | 'providers' | 'rules'>>) => call<null>('workouts_save', { data }),
   dupsPending: () => call<DupGroup[]>('dups_pending'),

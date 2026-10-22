@@ -5,6 +5,7 @@ import {
 } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 import { DataSourcesCard } from '../components/DataSources';
+import { HaeCard } from '../components/HealthAutoExport';
 import { WorkoutSourcesCard } from '../components/Workouts';
 import { setZoom, useZoom, ZOOM_MAX, ZOOM_MIN } from '../lib/zoom';
 import { paceFromThreshold, zonesFromMax } from './TrainingParts';
@@ -91,7 +92,7 @@ function SyncTab({ goImport }: { goImport: () => void }) {
       <section className="card" aria-label="Источники данных">
         <div className="between" style={{ flexWrap: 'wrap' }}>
           <span className="label">Источники данных</span>
-          <span className="muted tiny">Тренировки — из Strava (и freddy, если включено), здоровье и питание — через freddy</span>
+          <span className="muted tiny">Тренировки — из Strava (и freddy, если включено), здоровье и питание — через freddy или Health Auto Export</span>
         </div>
         <div className="note-ok">
           Ключи хранятся в Диспетчере учётных данных Windows, а не в файлах. После сохранения Kouros их больше не показывает
@@ -132,6 +133,7 @@ function SyncTab({ goImport }: { goImport: () => void }) {
           );
         })}
       </section>
+      <HaeCard />
       <DataSourcesCard />
       <WorkoutSourcesCard />
     </>

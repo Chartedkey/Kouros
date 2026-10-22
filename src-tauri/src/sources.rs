@@ -12,6 +12,12 @@ use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 pub const APPLE: &str = "APPLE_HEALTH";
+/// Health Auto Export (1.3): Apple Health data straight from the iPhone, same metric names.
+pub const HAE: &str = "HAE";
+/// Everything not in a group (food, water, caffeine, alcohol, running and walking metrics…):
+/// Apple Health through freddy or through Health Auto Export.
+pub const OTHER: &str = "other";
+pub const OTHER_NAME: &str = "Питание, вода и остальное";
 
 /// Known sources (freddy provider code, name). Any other provider found in the data works too.
 pub const PROVIDERS: [(&str, &str); 4] = [(APPLE, "Apple Health"), ("GARMIN", "Garmin"), ("SUUNTO", "Suunto"), ("GOOGLE_HEALTH", "Fitbit (Google Health)")];
@@ -76,7 +82,31 @@ fn is_apple(p: &str) -> bool {
     p.is_empty() || p.to_uppercase().starts_with("APPLE")
 }
 
+fn is_hae(p: &str) -> bool {
+    p.eq_ignore_ascii_case(HAE)
+}
+
+/// Apple Health data by either road (freddy or Health Auto Export): same numbers, same norm.
+pub fn apple_like(p: &str) -> bool {
+    is_apple(p) || is_hae(p)
+}
+
+fn known_group(g: &str) -> bool {
+    g == OTHER || GROUPS.iter().any(|x| x.0 == g)
+}
+
+fn all_group_metrics() -> String {
+    GROUPS.iter().flat_map(|g| g.2.iter()).map(|m| q(m)).collect::<Vec<_>>().join(",")
+}
+
+fn has_hae(conn: &Connection) -> bool {
+    conn.query_row("SELECT 1 FROM health_metrics WHERE provider = ?1 LIMIT 1", params![HAE], |_| Ok(())).is_ok()
+}
+
 pub fn provider_name(p: &str) -> String {
+    if is_hae(p) {
+        return "Health Auto Export".into();
+    }
     PROVIDERS.iter().find(|x| x.0.eq_ignore_ascii_case(p)).map(|x| x.1.to_string()).unwrap_or_else(|| {
         let mut s = p.replace('_', " ").to_lowercase();
         if let Some(f) = s.get_mut(0..1) {
@@ -101,7 +131,7 @@ pub struct Cat {
 pub fn catalog(conn: &Connection) -> Vec<Cat> {
     let Ok(mut st) = conn.prepare(
         "SELECT provider, metric, coalesce(max(unit), ''), count(*), min(date), max(date), avg(num) FROM health_metrics
-         WHERE provider <> '' AND upper(provider) NOT LIKE 'APPLE%' GROUP BY provider, metric",
+         WHERE provider <> '' AND upper(provider) NOT LIKE 'APPLE%' AND provider <> 'HAE' GROUP BY provider, metric",
     ) else {
         return Vec::new();
     };
@@ -213,6 +243,9 @@ pub fn install_view(conn: &Connection) -> Result<(), String> {
     let cat = catalog(conn);
     let mut apple_where = vec!["(provider = '' OR upper(provider) LIKE 'APPLE%')".to_string()];
     let mut unions = Vec::new();
+    let hae_rows = |cond: &str, metrics: &str| {
+        format!("SELECT metric, date, ts, provider, device, source_id, source, num, txt, unit FROM health_metrics WHERE provider = {} AND {metrics} AND ({cond})", q(HAE))
+    };
     for (g, _, metrics, _) in GROUPS.iter() {
         let segs = segments(&cfg, g);
         if segs.len() == 1 && is_apple(&segs[0].0) {
@@ -223,7 +256,10 @@ pub fn install_view(conn: &Connection) -> Result<(), String> {
             Some(c) => apple_where.push(format!("NOT (metric IN ({list}) AND NOT ({c}))")),
             None => apple_where.push(format!("metric NOT IN ({list})")),
         }
-        let mut provs: Vec<String> = segs.iter().map(|s| s.0.clone()).filter(|p| !is_apple(p)).collect();
+        if let Some(c) = date_cond(&segs, HAE) {
+            unions.push(hae_rows(&c, &format!("metric IN ({list})")));
+        }
+        let mut provs: Vec<String> = segs.iter().map(|s| s.0.clone()).filter(|p| !apple_like(p)).collect();
         provs.sort();
         provs.dedup();
         for p in provs {
@@ -240,6 +276,18 @@ pub fn install_view(conn: &Connection) -> Result<(), String> {
             }
         }
     }
+    // Everything outside the groups: Apple through freddy or through Health Auto Export.
+    let segs = segments(&cfg, OTHER);
+    if !(segs.len() == 1 && is_apple(&segs[0].0)) {
+        let all = all_group_metrics();
+        match date_cond(&segs, APPLE) {
+            Some(c) => apple_where.push(format!("NOT (metric NOT IN ({all}) AND NOT ({c}))")),
+            None => apple_where.push(format!("metric IN ({all})")),
+        }
+        if let Some(c) = date_cond(&segs, HAE) {
+            unions.push(hae_rows(&c, &format!("metric NOT IN ({all})")));
+        }
+    }
     let mut sql = format!("SELECT metric, date, ts, provider, device, source_id, source, num, txt, unit FROM health_metrics WHERE {}", apple_where.join(" AND "));
     for u in unions {
         sql.push_str("\nUNION ALL\n");
@@ -250,10 +298,14 @@ pub fn install_view(conn: &Connection) -> Result<(), String> {
 
 /// Start of the current source if it replaced another one only from that date: the personal norm
 /// for this group is then built from that date on ("норма набирается").
+/// A switch between freddy and Health Auto Export is not a cut: both bring Apple's numbers.
 pub fn cut(conn: &Connection, group: &str) -> Option<String> {
     let segs = segments(&settings(conn), group);
-    let last = segs.last()?;
-    if segs.len() > 1 && !last.1.is_empty() { Some(last.1.clone()) } else { None }
+    let mut i = segs.len().checked_sub(1)?;
+    while i > 0 && apple_like(&segs[i].0) && apple_like(&segs[i - 1].0) {
+        i -= 1;
+    }
+    if i > 0 && !segs[i].1.is_empty() { Some(segs[i].1.clone()) } else { None }
 }
 
 pub fn current(conn: &Connection, group: &str) -> String {
@@ -261,7 +313,7 @@ pub fn current(conn: &Connection, group: &str) -> String {
 }
 
 pub fn current_is_apple(conn: &Connection, group: &str) -> bool {
-    segments(&settings(conn), group).last().map(|x| is_apple(&x.0)).unwrap_or(true)
+    segments(&settings(conn), group).last().map(|x| apple_like(&x.0)).unwrap_or(true)
 }
 
 /// All the cuts at once (group → date).
@@ -276,7 +328,7 @@ pub fn switches(conn: &Connection) -> Vec<Value> {
     for (g, name, _, _) in GROUPS.iter() {
         let segs = segments(&cfg, g);
         for w in segs.windows(2) {
-            if !w[1].1.is_empty() {
+            if !w[1].1.is_empty() && !(apple_like(&w[0].0) && apple_like(&w[1].0)) {
                 out.push(json!({"group": g, "name": name, "date": w[1].1, "from": provider_name(&w[0].0), "to": provider_name(&w[1].0)}));
             }
         }
@@ -286,6 +338,9 @@ pub fn switches(conn: &Connection) -> Vec<Value> {
 
 fn warning(group: &str, from: &str, to: &str) -> String {
     let (f, t) = (provider_name(from), provider_name(to));
+    if apple_like(from) && apple_like(to) {
+        return "Это те же данные Apple Health, только другой дорогой — цифры не изменятся, личная норма не пересчитывается.".into();
+    }
     match group {
         "hrv" => format!("{t} и {f} меряют HRV по-разному (разные методы и время замера) — цифры будут другого уровня, часто заметно выше или ниже. Норма HRV пересчитается заново."),
         "rhr" => format!("{t} считает пульс покоя по-своему — разница обычно 2–5 ударов. Норма пересчитается заново."),
@@ -307,12 +362,15 @@ pub fn state(conn: &Connection) -> Value {
     let maps: BTreeMap<String, BTreeMap<&str, (Cat, bool)>> = provs.iter().map(|p| (p.clone(), mapping(&cfg, &cat, p))).collect();
     let today = crate::engine_svc::today(&crate::engine_svc::profile(conn));
     let from60 = crate::engine::add_days(&today, -60);
-    let groups: Vec<Value> = GROUPS
+    let hae = has_hae(conn);
+    let apple_name = if hae { "Apple Health через freddy" } else { "Apple Health" };
+    let mut groups: Vec<Value> = GROUPS
         .iter()
         .map(|(g, name, metrics, open)| {
             let segs = segments(&cfg, g);
             let cur = segs.last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string());
-            let options: Vec<Value> = std::iter::once(json!({"provider": APPLE, "name": "Apple Health", "matched": metrics.len(), "of": metrics.len()}))
+            let options: Vec<Value> = std::iter::once(json!({"provider": APPLE, "name": apple_name, "matched": metrics.len(), "of": metrics.len()}))
+                .chain(hae.then(|| json!({"provider": HAE, "name": "Health Auto Export", "matched": metrics.len(), "of": metrics.len()})))
                 .chain(provs.iter().filter(|_| *open).map(|p| {
                     let m = &maps[p];
                     let of = targets().filter(|t| t.group == *g).count();
@@ -333,7 +391,7 @@ pub fn state(conn: &Connection) -> Value {
                     v
                 })
                 .unwrap_or_default();
-            let fields: Vec<Value> = if is_apple(&cur) {
+            let fields: Vec<Value> = if apple_like(&cur) {
                 Vec::new()
             } else {
                 let own: Vec<&Cat> = cat.iter().filter(|c| c.provider.eq_ignore_ascii_case(&cur)).collect();
@@ -356,6 +414,16 @@ pub fn state(conn: &Connection) -> Value {
             })
         })
         .collect();
+    let osegs = segments(&cfg, OTHER);
+    if hae || osegs.len() > 1 || !is_apple(&osegs[0].0) {
+        let cur = osegs.last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string());
+        groups.push(json!({
+            "key": OTHER, "name": OTHER_NAME, "open": false, "current": cur, "currentName": provider_name(&cur),
+            "segs": osegs.iter().map(|(p, f)| json!({"provider": p, "name": provider_name(p), "from": f})).collect::<Vec<_>>(),
+            "cut": Value::Null, "options": [{"provider": APPLE, "name": apple_name, "matched": 1, "of": 1}, {"provider": HAE, "name": "Health Auto Export", "matched": 1, "of": 1}],
+            "writers": [], "fields": [],
+        }));
+    }
     json!({
         "groups": groups,
         "known": PROVIDERS.iter().map(|(p, n)| json!({"provider": p, "name": n, "connected": is_apple(p) || provs.iter().any(|x| x.eq_ignore_ascii_case(p))})).collect::<Vec<_>>(),
@@ -372,7 +440,9 @@ pub fn preview(conn: &Connection, group: &str, provider: &str) -> Value {
     let cfg = settings(conn);
     let segs = segments(&cfg, group);
     let cur = segs.last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string());
-    let first: Option<String> = if is_apple(provider) {
+    let first: Option<String> = if is_hae(provider) {
+        hae_first(conn, group)
+    } else if is_apple(provider) {
         None
     } else {
         let cat = catalog(conn);
@@ -380,20 +450,61 @@ pub fn preview(conn: &Connection, group: &str, provider: &str) -> Value {
         targets().filter(|t| t.group == group).filter_map(|t| map.get(t.canon).map(|x| x.0.first.clone())).min()
     };
     let has_apple_history = is_apple(provider);
-    json!({"text": warning(group, &cur, provider), "historyFrom": first, "appleHistory": has_apple_history})
+    json!({"text": warning(group, &cur, provider), "historyFrom": first, "appleHistory": has_apple_history, "sameData": apple_like(&cur) && apple_like(provider)})
+}
+
+/// First day Health Auto Export has data for a group.
+fn hae_first(conn: &Connection, group: &str) -> Option<String> {
+    let cond = if group == OTHER {
+        format!("metric NOT IN ({})", all_group_metrics())
+    } else {
+        let g = GROUPS.iter().find(|g| g.0 == group)?;
+        format!("metric IN ({})", g.2.iter().map(|m| q(m)).collect::<Vec<_>>().join(","))
+    };
+    conn.query_row(&format!("SELECT min(date) FROM health_metrics WHERE provider = ?1 AND {cond}"), params![HAE], |r| r.get(0)).ok().flatten()
 }
 
 /// Switches a group. `mode`: "keep" — the new source from today, earlier days stay as they were;
 /// "replace" — the new source for the whole history (where it has data).
 pub fn set(conn: &Connection, group: &str, provider: &str, mode: &str) -> Result<(), String> {
-    if !GROUPS.iter().any(|g| g.0 == group) {
+    set_one(conn, group, provider, mode)?;
+    install_view(conn)
+}
+
+/// Every group at once (Health Auto Export instead of freddy, or back).
+pub fn set_all(conn: &Connection, provider: &str, mode: &str) -> Result<(), String> {
+    for g in GROUPS.iter().map(|g| g.0).chain(std::iter::once(OTHER)) {
+        let cur = current(conn, g);
+        // Only the Apple roads are swapped; a group taken from Garmin/Suunto stays as it is.
+        if apple_like(&cur) && !cur.eq_ignore_ascii_case(provider) {
+            set_one(conn, g, provider, mode)?;
+        }
+    }
+    install_view(conn)
+}
+
+fn set_one(conn: &Connection, group: &str, provider: &str, mode: &str) -> Result<(), String> {
+    if !known_group(group) {
         return Err("Неизвестная группа данных".into());
     }
     let mut cfg = settings(conn);
     let mut segs = segments(&cfg, group);
     let today = crate::engine_svc::today(&crate::engine_svc::profile(conn));
-    if mode == "replace" {
+    let cur = segs.last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string());
+    let mut cleared_from: Option<String> = None;
+    if mode == "replace" && is_hae(provider) && apple_like(&cur) {
+        // Health Auto Export where it has data, older days stay as they were.
+        let first = hae_first(conn, group).unwrap_or_else(|| today.clone());
+        segs.retain(|s| s.1 < first);
+        if segs.is_empty() {
+            segs.push((provider.to_string(), String::new()));
+        } else {
+            segs.push((provider.to_string(), first.clone()));
+        }
+        cleared_from = Some(first);
+    } else if mode == "replace" {
         segs = vec![(provider.to_string(), String::new())];
+        cleared_from = Some(String::new());
     } else if segs.last().map(|x| !x.0.eq_ignore_ascii_case(provider)).unwrap_or(true) {
         segs.retain(|s| s.1 < today);
         if segs.is_empty() {
@@ -413,15 +524,21 @@ pub fn set(conn: &Connection, group: &str, provider: &str, mode: &str) -> Result
     if let Some(f) = merged.first_mut() {
         f.1 = String::new();
     }
+    if !cfg["groups"].is_object() {
+        cfg["groups"] = json!({});
+    }
     cfg["groups"][group] = json!({"segs": merged.iter().map(|(p, f)| json!({"p": p, "from": f})).collect::<Vec<_>>()});
     db::set_setting(conn, "data_sources", &cfg.to_string())?;
-    // Frozen readiness is no longer right: today's always, the whole history when it was replaced.
-    if mode == "replace" {
-        let _ = conn.execute("DELETE FROM readiness_log", []);
-    } else {
-        let _ = conn.execute("DELETE FROM readiness_log WHERE date = ?1", params![today]);
+    // Frozen readiness is no longer right: today's always, the replaced days too.
+    match cleared_from {
+        Some(f) => {
+            let _ = conn.execute("DELETE FROM readiness_log WHERE date >= ?1", params![f]);
+        }
+        None => {
+            let _ = conn.execute("DELETE FROM readiness_log WHERE date = ?1", params![today]);
+        }
     }
-    install_view(conn)
+    Ok(())
 }
 
 /// Manual pick of another source's metric for an Apple metric (`metric` None = back to automatic,

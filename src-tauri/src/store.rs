@@ -549,8 +549,8 @@ pub fn latest_metrics(conn: &Connection, names: &[&str]) -> Result<Vec<MetricLat
     for n in names {
         let r = conn
             .query_row(
-                "SELECT metric, date, num, unit, device, (SELECT count(*) FROM health_metrics WHERE metric = ?1)
-                 FROM health_metrics WHERE metric = ?1 AND num IS NOT NULL ORDER BY date DESC, ts DESC LIMIT 1",
+                "SELECT metric, date, num, unit, device, (SELECT count(*) FROM hm WHERE metric = ?1)
+                 FROM hm WHERE metric = ?1 AND num IS NOT NULL ORDER BY date DESC, ts DESC LIMIT 1",
                 params![n],
                 |r| {
                     Ok(MetricLatest {

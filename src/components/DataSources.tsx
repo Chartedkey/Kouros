@@ -74,9 +74,10 @@ function Group({ g, onChanged }: { g: SourceGroup; onChanged: () => void }) {
           ))}
         </div>
       </div>
-      {!g.open && <span className="muted tiny">Пока только Apple Health: пульс по минутам и стресс Kouros считает из сырых замеров, а их другие источники во freddy не отдают.</span>}
+      {!g.open && g.key !== 'other' && <span className="muted tiny">Только Apple Health: пульс по минутам и стресс Kouros считает из сырых замеров, а их другие источники во freddy не отдают.</span>}
+      {g.key === 'other' && <span className="muted tiny">Еда YAZIO, вода и алкоголь Waterllama, кофеин, беговая динамика и походка — всё, что не вошло в группы выше.</span>}
       {g.cut && <span className="tiny" style={{ color: '#F5B642' }}>Норма считается с {ruDate(g.cut)} — по данным {g.currentName}.</span>}
-      {g.current === 'APPLE_HEALTH' && g.writers.length > 0 && (
+      {(g.current === 'APPLE_HEALTH' || g.current === 'HAE') && g.writers.length > 0 && (
         <span className="muted tiny" style={{ lineHeight: 1.5 }}>
           В Apple Health это пишут: {g.writers.map((w) => w.name).join(', ')}.{multi ? ' Несколько устройств — если одно из них часы другой марки (например, через Garmin Connect), лучше выбрать его источник напрямую.' : ''}
         </span>
@@ -88,12 +89,14 @@ function Group({ g, onChanged }: { g: SourceGroup; onChanged: () => void }) {
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <button type="button" className="btn" disabled={busy} onClick={() => apply('keep')}>С сегодняшнего дня</button>
             <button type="button" className="btn2" disabled={busy} onClick={() => apply('replace')}>
-              Заменить и историю{pv?.historyFrom ? ` (есть с ${ruDate(pv.historyFrom)})` : ''}
+              {pv?.sameData && pick === 'HAE' ? 'Заменить прошлое, где есть выгрузка' : 'Заменить и историю'}{pv?.historyFrom ? ` (есть с ${ruDate(pv.historyFrom)})` : ''}
             </button>
             <button type="button" className="linkbtn small" onClick={() => { setPick(null); setPv(null); }}>Отмена</button>
           </div>
           <span className="tiny" style={{ color: '#c9b78f', lineHeight: 1.5 }}>
-            «С сегодняшнего дня» — прошлые дни остаются как были, на графиках будет отметка смены, а норма первые 2 недели набирается заново. «Заменить и историю» — Kouros пересчитает прошлое по новому источнику там, где у него есть данные, и норма будет сразу.
+            {pv?.sameData
+              ? '«С сегодняшнего дня» — прошлые дни остаются как были. «Заменить прошлое» — дни, за которые есть данные нового пути, Kouros возьмёт оттуда и заново посчитает готовность за них. Норма в обоих случаях не сбрасывается.'
+              : '«С сегодняшнего дня» — прошлые дни остаются как были, на графиках будет отметка смены, а норма первые 2 недели набирается заново. «Заменить и историю» — Kouros пересчитает прошлое по новому источнику там, где у него есть данные, и норма будет сразу.'}
           </span>
         </div>
       )}
@@ -124,7 +127,7 @@ export function DataSourcesCard() {
         <span className="muted tiny">Тренировки — в карточке «Откуда брать тренировки» ниже</span>
       </div>
       <span className="muted small" style={{ lineHeight: 1.5 }}>
-        Kouros получает через freddy всё, что там подключено, и хранит данные всех источников. Здесь выбираешь, какой из них показывать и считать — для каждого вида данных отдельно. Еда, вода, кофеин и алкоголь — из Apple Health (YAZIO, Waterllama).
+        Kouros получает через freddy всё, что там подключено, и хранит данные всех источников. Здесь выбираешь, какой из них показывать и считать — для каждого вида данных отдельно. Еда, вода, кофеин и алкоголь — из Apple Health (YAZIO, Waterllama): через freddy или, если подключён, через Health Auto Export.
       </span>
       {st.providers.length > 0 && (
         <span className="small">Подключено во freddy, кроме Apple Health: {st.providers.map((p) => `${p.name} (${p.metrics} показ.${p.first ? `, с ${ruDate(p.first)}` : ''})`).join(', ')}.</span>
