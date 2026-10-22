@@ -1,0 +1,31 @@
+name: anatomy
+on:
+  push:
+    branches: [anatomy-draft]
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: libs
+        run: sudo apt-get update -q && sudo apt-get install -yq libxrender1 libxxf86vm1 libxfixes3 libxi6 libxkbcommon0 libsm6 libgl1 libegl1 >/dev/null
+      - name: bpy
+        run: pip install -q "bpy>=4.2,<5"
+      - name: z-anatomy
+        run: |
+          GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 https://github.com/Z-Anatomy/the-blend /tmp/za
+          cd /tmp/za && unzip -q Z-Anatomy.zip
+      - name: run
+        run: |
+          mkdir -p tools/anatomy/out
+          SCRIPT=$(cat tools/anatomy/run.txt 2>/dev/null || echo probe.py)
+          python tools/anatomy/$SCRIPT /tmp/za/Z-Anatomy/Startup.blend > tools/anatomy/out/log.txt 2>&1 || (tail -50 tools/anatomy/out/log.txt; exit 0)
+          tail -80 tools/anatomy/out/log.txt
+      - name: commit
+        run: |
+          git config user.name "anatomy-bot"; git config user.email "bot@users.noreply.github.com"
+          git add tools/anatomy/out && git commit -m "anatomy output [skip ci]" && git push || true
