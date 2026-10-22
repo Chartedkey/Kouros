@@ -1,0 +1,1977 @@
+[Scene Collection] objs=15 meshes=2
+  [1: Skeletal system] objs=2218 meshes=1244
+  [2: Muscular insertions] objs=705 meshes=705
+  [3: Joints] objs=593 meshes=480
+  [4: Muscular system] objs=894 meshes=789
+  [5: Cardiovascular system] objs=757 meshes=60
+  [6: Lymphoid organs] objs=276 meshes=220
+  [7: Nervous system & Sense organs] objs=842 meshes=460
+  [8: Visceral systems] objs=479 meshes=254
+  [9: Regions of human body] objs=343 meshes=299
+  [Reference lines, reference planes, movements] objs=54 meshes=52
+  [Cross section planes] objs=3 meshes=3
+  [Bonus collection] objs=1604 meshes=918
+    [Skeletal system] objs=0 meshes=0
+      [Axial skeleton] objs=294 meshes=216
+      [Appendicular skeleton] objs=134 meshes=129
+        [Skeleton of upper limbs] objs=0 meshes=0
+        [Skeleton of lower limbs] objs=0 meshes=0
+      [Cranium] objs=48 meshes=48
+        [Fontanelles] objs=0 meshes=0
+        [Calvaria] objs=0 meshes=0
+          [Diploe] objs=0 meshes=0
+          [Internal table of calvaria] objs=0 meshes=0
+        [Cranial base] objs=0 meshes=0
+          [Internal surface of cranial base] objs=0 meshes=0
+            [Posterior cranial fossa] objs=0 meshes=0
+          [External surface of cranial base] objs=0 meshes=0
+            [Bony palate] objs=0 meshes=0
+        [Orbit] objs=0 meshes=0
+          [Orbital cavity] objs=0 meshes=0
+            [Orbital margin] objs=0 meshes=0
+          [Lateral wall of orbit] objs=0 meshes=0
+          [Medial wall of orbit] objs=0 meshes=0
+        [Nasal cavity of cranium] objs=0 meshes=0
+          [Inferior nasal meatus of cranium] objs=0 meshes=0
+        [Bones of cranium] objs=0 meshes=0
+          [Parietal bone] objs=0 meshes=0
+            [Internal surface of parietal bone] objs=0 meshes=0
+            [External surface of parietal bone] objs=0 meshes=0
+          [Frontal bone] objs=17 meshes=14
+            [Squamous part of frontal bone] objs=2 meshes=1
+              [External surface of squamous part of frontal bone] objs=6 meshes=2
+                [Frontal part of orbital margin] objs=0 meshes=0
+              [Temporal surface of frontal bone] objs=6 meshes=2
+              [Internal surface of frontal bone] objs=5 meshes=2
+            [Nasal part of frontal bone] objs=5 meshes=2
+            [Orbital part of frontal bone] objs=4 meshes=1
+              [Orbital surface of frontal bone] objs=5 meshes=1
+            [Sinus of frontal bone] objs=4 meshes=2
+          [Occipital bone] objs=0 meshes=0
+            [Basilar part of occipital bone] objs=4 meshes=2
+            [Lateral part of occipital bone] objs=16 meshes=8
+            [Squamous part of occipital bone] objs=47 meshes=22
+          [Sphenoid bone] objs=10 meshes=5
+            [Body of sphenoid bone] objs=14 meshes=7
+              [Sella turcica] objs=12 meshes=6
+              [Sinus of sphenoid bone] objs=2 meshes=1
+            [Lesser wing] objs=6 meshes=3
+              [Anterior clinoid process] objs=0 meshes=0
+            [Greater wing] objs=30 meshes=15
+            [Pterygoid process] objs=6 meshes=3
+            [Vaginal process of sphenoid bone] objs=2 meshes=1
+            [Pterygoid hamulus] objs=4 meshes=2
+          [Temporal bone] objs=0 meshes=0
+            [Petrous part of temporal bone] objs=22 meshes=11
+              [Mastoid antrum] objs=0 meshes=0
+              [Apex of petrous part] objs=0 meshes=0
+                [Carotid canal] objs=0 meshes=0
+                [Musculotubal canal] objs=0 meshes=0
+              [Anterior surface of petrous part] objs=0 meshes=0
+              [Petrous ridge] objs=0 meshes=0
+              [Posterior surface of petrous part] objs=0 meshes=0
+              [Posterior border of petrous part] objs=0 meshes=0
+              [Inferior surface of petrous part] objs=0 meshes=0
+                [Jugular fossa] objs=0 meshes=0
+              [Facial canal] objs=0 meshes=0
+            [Tympanic part of temporal bone] objs=0 meshes=0
+            [Squamous part of temporal bone] objs=0 meshes=0
+              [Zygomatic process of temporal bone] objs=0 meshes=0
+              [Mandibular fossa] objs=0 meshes=0
+              [Articular tubercle] objs=0 meshes=0
+          [Ethmoid bone] objs=0 meshes=0
+            [Cribriform plate] objs=0 meshes=0
+            [Crista galli] objs=0 meshes=0
+            [Ethmoid labyrinth] objs=0 meshes=0
+              [Cells of ethmoid bone] objs=0 meshes=0
+          [Inferior nasal concha bone] objs=0 meshes=0
+          [Lacrimal bone] objs=0 meshes=0
+          [Nasal bone] objs=0 meshes=0
+          [Vomer] objs=0 meshes=0
+          [Maxilla] objs=4 meshes=2
+            [Body of maxilla] objs=0 meshes=0
+              [Orbital surface of maxilla] objs=0 meshes=0
+              [Anterior surface of maxilla] objs=0 meshes=0
+              [Infratemporal surface of maxilla] objs=0 meshes=0
+                [Alveolar foramina] objs=0 meshes=0
+              [Nasal surface of maxilla] objs=0 meshes=0
+                [Lacrimal groove of maxilla] objs=0 meshes=0
+            [Frontal process of maxilla] objs=0 meshes=0
+            [Palatine process] objs=0 meshes=0
+            [Alveolar process] objs=0 meshes=0
+            [Right maxilla] objs=16 meshes=16
+            [Left maxilla] objs=0 meshes=0
+          [Palatine bone] objs=0 meshes=0
+            [Perpendicular plate of palatine bone] objs=0 meshes=0
+            [Horizontal plate of palatine bone] objs=0 meshes=0
+          [Zygomatic bone] objs=0 meshes=0
+          [Accessory bones of cranium] objs=0 meshes=0
+      [Extracranial bones of head] objs=3 meshes=2
+        [Mandible] objs=45 meshes=30
+          [Body of mandible] objs=0 meshes=0
+            [Base of mandible] objs=0 meshes=0
+            [Alveolar part of mandible] objs=0 meshes=0
+          [Ramus of mandible] objs=0 meshes=0
+            [Angle of mandible] objs=0 meshes=0
+            [Inferior alveolar foramen] objs=0 meshes=0
+            [Condylar process] objs=0 meshes=0
+        [Hyoid bone] objs=6 meshes=3
+      [Auditory ossicles] objs=7 meshes=6
+        [Malleus] objs=24 meshes=12
+          [Head of malleus] objs=0 meshes=0
+        [Incus] objs=20 meshes=10
+          [Body of incus] objs=0 meshes=0
+          [Long limb of incus] objs=0 meshes=0
+            [Lenticular process of incus] objs=0 meshes=0
+        [Stapes] objs=20 meshes=10
+          [Head of stapes] objs=0 meshes=0
+      [Teeth] objs=31 meshes=28
+        [Anterior teeth] objs=12 meshes=12
+        [Posterior teeth] objs=55 meshes=36
+          [Molar tooth] objs=0 meshes=0
+        [Tooth] objs=0 meshes=0
+          [Crown of tooth] objs=0 meshes=0
+            [Vestibular surface of tooth] objs=0 meshes=0
+            [Approximal surface of tooth] objs=0 meshes=0
+          [Root of tooth] objs=0 meshes=0
+          [Pulp cavity] objs=0 meshes=0
+            [Root canal] objs=0 meshes=0
+          [Dental pulp] objs=0 meshes=0
+        [Superior teeth] objs=14 meshes=14
+        [Inferior teeth] objs=14 meshes=14
+      [Nasal cartilages] objs=0 meshes=0
+        [Major alar cartilage] objs=0 meshes=0
+          [Medial crus of major alar cartilage] objs=0 meshes=0
+        [Nasal septal cartilage] objs=0 meshes=0
+      [Cartilages of ear] objs=0 meshes=0
+        [Auricular cartilage] objs=0 meshes=0
+        [Cartilage of external acoustic meatus] objs=0 meshes=0
+        [Cartilage of auditory tube] objs=0 meshes=0
+      [Laryngeal cartilages] objs=0 meshes=0
+        [Epiglottic cartilage] objs=0 meshes=0
+        [Thyroid cartilage] objs=6 meshes=3
+          [Lamina of thyroid cartilage] objs=12 meshes=6
+        [Cricoid cartilage] objs=2 meshes=1
+          [Lamina of cricoid cartilage] objs=6 meshes=3
+        [Arytenoid cartilage] objs=12 meshes=6
+          [Base of arythenoid cartilage] objs=14 meshes=7
+          [Anterolateral surface of arytenoid cartilage] objs=20 meshes=10
+        [Minor laryngeal cartilage] objs=0 meshes=0
+      [Vertebral column] objs=98 meshes=89
+        [Primary curvatures] objs=0 meshes=0
+        [Secondary curvatures] objs=0 meshes=0
+        [Bones of vertebral column] objs=0 meshes=0
+          [Vertebra] objs=0 meshes=0
+            [Vertebral body] objs=6 meshes=3
+            [Vertebral arch] objs=4 meshes=2
+              [Lamina of vertebral arch] objs=4 meshes=2
+            [Transverse process] objs=6 meshes=3
+            [Superior articular process of vertebra] objs=4 meshes=2
+            [Inferior articular process of vertebra] objs=4 meshes=2
+          [Cervical vertebrae] objs=10 meshes=8
+            [Cervical vertebra] objs=12 meshes=6
+            [Atlas] objs=14 meshes=7
+              [Lateral mass] objs=8 meshes=4
+            [Axis] objs=0 meshes=0
+              [Dens axis] objs=0 meshes=0
+            [Vertebra C6] objs=0 meshes=0
+          [Thoracic vertebrae] objs=23 meshes=17
+            [Thoracic vertebra] objs=0 meshes=0
+            [Lower thoracic vertebra] objs=0 meshes=0
+          [Lumbar vertebrae] objs=16 meshes=10
+            [Lumbar vertebra] objs=0 meshes=0
+          [Sacrum] objs=0 meshes=0
+            [Base of sacrum] objs=0 meshes=0
+            [Lateral part of sacrum] objs=0 meshes=0
+            [Pelvic surface of sacrum] objs=0 meshes=0
+            [Dorsal surface of sacrum] objs=0 meshes=0
+              [Sacral canal] objs=0 meshes=0
+          [Coccyx] objs=8 meshes=4
+      [Thoracic skeleton] objs=91 meshes=73
+        [Bones of thorax] objs=0 meshes=0
+          [Ribs] objs=28 meshes=24
+            [True ribs] objs=0 meshes=0
+              [First rib] objs=0 meshes=0
+              [Second rib] objs=0 meshes=0
+            [False ribs] objs=12 meshes=10
+              [Floating ribs] objs=5 meshes=4
+            [Supernumerary ribs] objs=0 meshes=0
+            [Rib] objs=4 meshes=2
+              [Head of rib] objs=12 meshes=6
+              [Neck of rib] objs=8 meshes=4
+              [Body of rib] objs=12 meshes=6
+                [Tubercle of rib] objs=8 meshes=4
+          [Sternum] objs=15 meshes=8
+            [Manubrium of sternum] objs=4 meshes=2
+          [Accessory bones of thorax] objs=0 meshes=0
+        [Costal cartilages] objs=21 meshes=20
+      [Bones of upper limb] objs=24 meshes=17
+        [Bones of pectoral girdle] objs=7 meshes=5
+          [Scapula] objs=0 meshes=0
+            [Costal surface of scapula] objs=0 meshes=0
+            [Posterior surface of scapula] objs=0 meshes=0
+              [Spine of scapula] objs=0 meshes=0
+            [Acromion] objs=0 meshes=0
+            [Superior border of scapula] objs=0 meshes=0
+            [Lateral angle of scapula] objs=0 meshes=0
+              [Glenoid process of scapula] objs=0 meshes=0
+          [Clavicle] objs=0 meshes=0
+            [Sternal end] objs=12 meshes=6
+            [Body of clavicle] objs=8 meshes=4
+            [Acromial end] objs=8 meshes=4
+              [Tuberosity for coracoclavicular ligament] objs=12 meshes=6
+        [Bones of free part of upper limb] objs=0 meshes=0
+          [Humerus] objs=0 meshes=0
+            [Intertubercular sulcus] objs=0 meshes=0
+            [Body of humerus] objs=0 meshes=0
+              [Anterolateral surface of humerus] objs=0 meshes=0
+              [Lateral border of humerus] objs=0 meshes=0
+              [Posterior surface of humerus] objs=0 meshes=0
+              [Medial border of humerus] objs=0 meshes=0
+            [Condyle of humerus] objs=0 meshes=0
+            [Medial epicondyle of humerus] objs=0 meshes=0
+          [Radius] objs=0 meshes=0
+            [Head of radius] objs=0 meshes=0
+            [Body of radius] objs=0 meshes=0
+              [Lateral surface of radius] objs=0 meshes=0
+              [Anterior border of radius] objs=0 meshes=0
+          [Ulna] objs=0 meshes=0
+            [Coronoid proces of ulna] objs=0 meshes=0
+            [Body of ulna] objs=0 meshes=0
+            [Head of ulna] objs=0 meshes=0
+          [Bones of hand] objs=0 meshes=0
+            [Carpal bones] objs=0 meshes=0
+              [Scaphoid bone] objs=0 meshes=0
+              [Trapezium bone] objs=0 meshes=0
+              [Hamate bone] objs=0 meshes=0
+              [Accessory carpal bones] objs=0 meshes=0
+            [Metacarpal bones] objs=0 meshes=0
+              [Metacarpal bone] objs=0 meshes=0
+              [Third metacarpal bone] objs=0 meshes=0
+            [Phalanges of hand] objs=0 meshes=0
+              [Phalanx of hand] objs=0 meshes=0
+                [Head of phalanx of hand] objs=0 meshes=0
+              [Distal phalanx of hand] objs=0 meshes=0
+      [Bony pelvis] objs=15 meshes=4
+        [Conjugate diameters] objs=0 meshes=0
+      [Bones of lower limb] objs=89 meshes=73
+        [Bones of pelvic girdle] objs=0 meshes=0
+          [Hip bone] objs=0 meshes=0
+            [Acetabulum] objs=0 meshes=0
+            [Ilium] objs=0 meshes=0
+              [Body of ilium] objs=0 meshes=0
+              [Ala of ilium] objs=0 meshes=0
+                [Iliac crest] objs=0 meshes=0
+                  [Outer lip of iliac crest] objs=0 meshes=0
+              [Gluteal surface of ilium] objs=0 meshes=0
+              [Sacropelvic surface of ilium] objs=0 meshes=0
+            [Ischium] objs=0 meshes=0
+              [Ramus of ischium] objs=0 meshes=0
+            [Pubis] objs=0 meshes=0
+              [Body of pubis] objs=0 meshes=0
+              [Superior pubic ramus] objs=0 meshes=0
+        [Bones of free lower limb] objs=72 meshes=67
+          [Femur] objs=0 meshes=0
+            [Head of femur] objs=0 meshes=0
+            [Greater trochanter] objs=0 meshes=0
+            [Intertrochanteric crest] objs=0 meshes=0
+            [Body of femur] objs=0 meshes=0
+              [Linea aspera] objs=0 meshes=0
+            [Medial condyle of femur] objs=0 meshes=0
+            [Lateral condyle of femur] objs=0 meshes=0
+          [Sesamoid bones of knee] objs=0 meshes=0
+            [Patella] objs=0 meshes=0
+          [Tibia] objs=0 meshes=0
+            [Tibial plateau] objs=0 meshes=0
+              [Superior articular surfaces of tibia] objs=0 meshes=0
+              [Intercondylar surfaces of tibia] objs=0 meshes=0
+                [Intercondylar eminence] objs=0 meshes=0
+            [Lateral condyle of tibia] objs=0 meshes=0
+            [Body of tibia] objs=0 meshes=0
+              [Posterior surface of tibia] objs=0 meshes=0
+            [Medial malleolus] objs=0 meshes=0
+          [Fibula] objs=0 meshes=0
+            [Head of fibula] objs=0 meshes=0
+            [Body of fibula] objs=0 meshes=0
+              [Medial surface of fibula] objs=0 meshes=0
+            [Lateral malleolus] objs=0 meshes=0
+          [Bones of foot] objs=0 meshes=0
+            [Tarsal bones] objs=0 meshes=0
+              [Talus] objs=16 meshes=8
+                [Head of talus] objs=16 meshes=8
+                [Neck of talus] objs=8 meshes=4
+                [Body of talus] objs=0 meshes=0
+                  [Trochlea of talus] objs=8 meshes=4
+                  [Lateral malleolar facet] objs=8 meshes=4
+                  [Posterior process of talus] objs=16 meshes=8
+              [Calcaneus] objs=20 meshes=10
+                [Calcaneal tuberosity] objs=12 meshes=6
+                [Sustentaculum tali] objs=8 meshes=4
+              [Navicular bone] objs=4 meshes=2
+              [Cuboid bone] objs=8 meshes=4
+              [Accessory tarsal bone] objs=0 meshes=0
+            [Metatarsal bones] objs=0 meshes=0
+              [Metatarsal bone] objs=12 meshes=6
+              [First metatarsal bone] objs=4 meshes=2
+              [Fifth metatarsal bone] objs=4 meshes=2
+            [Phalanges of foot] objs=4 meshes=2
+              [Phalanx of foot] objs=8 meshes=4
+                [Head of phalanx of foot] objs=8 meshes=4
+              [Distal phalanx of foot] objs=0 meshes=0
+      [Cartilages] objs=31 meshes=31
+    [Muscular insertions] objs=0 meshes=0
+      [Axial insertions] objs=0 meshes=0
+        [Insertions of scalene anterior] objs=0 meshes=0
+        [Insertions of Scalenus medius and posterior] objs=0 meshes=0
+        [Insertions of diaphragm] objs=0 meshes=0
+        [Insertions of internal abdominal oblique] objs=0 meshes=0
+        [Insertions of levatores longi costarum] objs=0 meshes=0
+        [Insertions of longissimus thoracis] objs=0 meshes=0
+        [Insertions of pectoralis major] objs=0 meshes=0
+        [Insertions of sternocleidomastoid] objs=0 meshes=0
+        [Insertions of temporalis muscle] objs=0 meshes=0
+        [Insertions of masseter] objs=0 meshes=0
+        [Insertions of buccinator muscle] objs=0 meshes=0
+        [Insertions of procerus muscle] objs=0 meshes=0
+        [Insertions of pectoralis minor muscle] objs=0 meshes=0
+        [Insertions of rectus abdominis muscle] objs=0 meshes=0
+        [Insertions of external abdominal oblique muscle] objs=0 meshes=0
+        [Insertions of serratus posterior inferior muscle] objs=0 meshes=0
+        [Insertions of serratus posterior superior muscle] objs=0 meshes=0
+        [Insertions of Sternohyoid muscle] objs=0 meshes=0
+        [Insertions of internal abdominal oblique muscle] objs=0 meshes=0
+        [Insertions of transverse abdominal muscle] objs=0 meshes=0
+        [Insertions of pterygoid muscles] objs=0 meshes=0
+        [Insertions of thyrohyoid muscle] objs=0 meshes=0
+        [Insertions of geniohyoid muscle] objs=0 meshes=0
+        [Insertions of rectus anterior capitis] objs=0 meshes=0
+        [Insertions of rectus posterior minor muscle] objs=0 meshes=0
+        [Insertions of rectus posterior major muscle] objs=0 meshes=0
+        [Insertions of facial muscles] objs=0 meshes=0
+        [Insertions of obliquus inferior capitis] objs=0 meshes=0
+        [Insertions of serratus posterior] objs=0 meshes=0
+      [Appendicular insertions] objs=0 meshes=0
+        [Insertions of upper limbs] objs=0 meshes=0
+          [Insertions of brachialis mucle] objs=0 meshes=0
+          [Insertions of deltoid muscle] objs=0 meshes=0
+          [Insertions of teres minor muscle] objs=0 meshes=0
+          [Insertions of infraspinatus muscle] objs=0 meshes=0
+          [Insertions of supraspinatus muscle] objs=0 meshes=0
+          [Insertions of trapezius muscle] objs=0 meshes=0
+          [Insertions of triceps brachii] objs=0 meshes=0
+          [Insertions of teres major muscle] objs=0 meshes=0
+          [Insertions of subscapularis muscle] objs=0 meshes=0
+          [Insertions of serratus anterior muscle] objs=0 meshes=0
+          [Insertions of omohyoid muscle] objs=0 meshes=0
+          [Insertions of pronator teres muscle] objs=0 meshes=0
+          [Insertions of coracoradialis muscle] objs=0 meshes=0
+          [Insertions of biceps brachii muscle] objs=0 meshes=0
+          [Insertions of pronator quadratus muscle] objs=0 meshes=0
+          [Insertions of anconeus muscle] objs=0 meshes=0
+          [Insertions of brachioradialis muscle] objs=0 meshes=0
+          [Insertions of flexor pollicis longus muscle] objs=0 meshes=0
+          [Insertions of flexor carpi ulnaris muscle] objs=0 meshes=0
+          [Insertions of extensor carpi ulnaris] objs=0 meshes=0
+          [Insertions of supinator muscle] objs=0 meshes=0
+          [Insertions of extensor pollicis brevis] objs=0 meshes=0
+          [Insertions of extensor pollicis longus] objs=0 meshes=0
+          [Insertions of abductor pollicis longus] objs=0 meshes=0
+          [Insertions of extensor digitorum indicis] objs=0 meshes=0
+          [Insertions of extensor radialis longus] objs=0 meshes=0
+          [Insertions of rhomboid muscles] objs=0 meshes=0
+          [Insertions of latissimus dorsi mucle] objs=0 meshes=0
+        [Insertions of lower limbs] objs=0 meshes=0
+          [Insertions of Iliopsoas muscle] objs=0 meshes=0
+          [Insertions of gluteus medius muscle] objs=0 meshes=0
+          [Insertions of quadratus femoris muscle] objs=0 meshes=0
+          [Insertions of biceps femoris muscle] objs=0 meshes=0
+          [Insertions of adductor muscles of hip] objs=0 meshes=0
+          [Insertions of semimenbranosus muscle] objs=0 meshes=0
+          [Insertions of gluteus maximus muscle] objs=0 meshes=0
+          [Insertions of semitendinosus muscle] objs=0 meshes=0
+          [Insertions of obturator internus muscle] objs=0 meshes=0
+          [Insertions of obturator externus muscle] objs=0 meshes=0
+          [Insertions of gemellus muscles] objs=0 meshes=0
+          [Insertions of tibialis anterior muscle] objs=0 meshes=0
+          [Insertions of triceps surae] objs=0 meshes=0
+          [Insertions of popliteus muscle] objs=0 meshes=0
+          [Insertions of sartorius muscle] objs=0 meshes=0
+          [Insertions of gracilis muscle] objs=0 meshes=0
+          [Insertions of extensor digitorum longus of foot] objs=0 meshes=0
+          [Insertions of extensor hallucis brevis] objs=0 meshes=0
+          [Insertions of flexor digitorum brevis] objs=0 meshes=0
+          [Insertions of flexor digitorum longus] objs=0 meshes=0
+          [Insertions of flexor hallucis longus] objs=0 meshes=0
+          [Insertions of adductor hallucis brevis] objs=0 meshes=0
+          [Insertions of plantar interossei muscle] objs=0 meshes=0
+          [Insertions of fibularis brevis muscle] objs=0 meshes=0
+          [Insertions of gluteal muscles] objs=0 meshes=0
+          [Insertions of tibialis posterior muscle] objs=0 meshes=0
+          [Insertions of extensor hallucis longus muscle] objs=0 meshes=0
+          [Insertions of fibularis tertius muscle] objs=0 meshes=0
+          [Insertions of long plantar ligament] objs=0 meshes=0
+    [Arthrology] objs=0 meshes=0
+      [Joints] objs=0 meshes=0
+        [Fibrous joints] objs=13 meshes=1
+          [Syndesmoses] objs=4 meshes=2
+          [Sutures] objs=8 meshes=4
+        [Cartilaginous joints] objs=0 meshes=0
+          [Synchondroses] objs=0 meshes=0
+        [Synovial joint] objs=0 meshes=0
+          [Articular cavity] objs=0 meshes=0
+          [Articular capsule] objs=0 meshes=0
+            [Synovial membrane of articular capsule] objs=0 meshes=0
+          [Articular fibrocartilage] objs=0 meshes=0
+          [Accessory ligaments] objs=0 meshes=0
+        [Diarthrosis] objs=0 meshes=0
+          [Cylindrical joints] objs=0 meshes=0
+      [Joints of skull] objs=0 meshes=0
+        [Cranial fibrous joints] objs=0 meshes=0
+          [Cranial syndesmosis] objs=8 meshes=8
+            [Ligaments of auricle] objs=0 meshes=0
+          [Cranial sutures] objs=0 meshes=0
+          [Dento-alveolar syndesmosis] objs=0 meshes=0
+        [Cranial cartilaginous joints] objs=0 meshes=0
+          [Cranial synchondroses] objs=0 meshes=0
+        [Cranial synovial joints] objs=0 meshes=0
+          [Temporomandibular joint] objs=6 meshes=6
+          [Atlanto-occipital joint] objs=0 meshes=0
+      [Joints of auditory ossicles] objs=0 meshes=0
+        [Fibrous joints of auditory ossicles] objs=0 meshes=0
+          [Ligaments of auditory ossicles] objs=0 meshes=0
+        [Articulations of auditory ossicles] objs=0 meshes=0
+      [Laryngeal joints] objs=0 meshes=0
+        [Fibrous joints of larynx] objs=1 meshes=1
+          [Thyrohyoid membrane] objs=3 meshes=3
+          [Ligaments of epiglottis] objs=0 meshes=0
+          [Fibro-elastic membrane of larynx] objs=0 meshes=0
+            [Quadrangular membrane] objs=2 meshes=2
+            [Conus elasticus] objs=0 meshes=0
+        [Synovial joints of larynx] objs=0 meshes=0
+          [Cricothyroid joint] objs=0 meshes=0
+          [Crico-arythenoid joint] objs=2 meshes=2
+      [Joints of vertebral column] objs=0 meshes=0
+        [Fibrous joints of vertebral column] objs=10 meshes=10
+        [Cartilaginous joints of vertebral column] objs=0 meshes=0
+          [Intervertebral symphysis] objs=0 meshes=0
+            [Intervertebral disc] objs=47 meshes=47
+          [Sacrococcygeal joint] objs=0 meshes=0
+        [Synovial joints of vertebral column] objs=0 meshes=0
+          [Median atlanto-axial joint] objs=0 meshes=0
+            [Cruciform ligament] objs=0 meshes=0
+              [Longitudinal bands of cruciform ligament] objs=0 meshes=0
+      [Thoracic joints] objs=0 meshes=0
+        [Fibrous joints of thorax] objs=4 meshes=4
+        [Cartilaginous joints of thorax] objs=0 meshes=0
+          [Cartilaginous joints of sternum] objs=0 meshes=0
+        [Synovial joints of thorax] objs=0 meshes=0
+          [Costovertebral joints] objs=0 meshes=0
+            [Joint of head of rib] objs=4 meshes=4
+            [Costotransverse joint] objs=2 meshes=2
+          [Sternochondral joints] objs=0 meshes=0
+          [Interchondral joints] objs=0 meshes=0
+      [Joints of upper limb] objs=0 meshes=0
+        [Joints of pectoral girdle] objs=0 meshes=0
+          [Fibrous joints of pectoral girdle] objs=6 meshes=6
+          [Synovial joints of pectoral girdle] objs=0 meshes=0
+            [Acromioclavicular joint] objs=6 meshes=6
+              [Coracoclavicular ligament] objs=4 meshes=4
+            [Sternoclavicular joint] objs=12 meshes=12
+        [Joints of free upper limb] objs=0 meshes=0
+          [Fibrous joints of free upper limb] objs=0 meshes=0
+            [Radio-ulnar syndesmoses] objs=2 meshes=2
+          [Synovial joints of free upper limb] objs=0 meshes=0
+            [Glenohumeral joint] objs=8 meshes=8
+              [Glenohumeral ligaments] objs=6 meshes=6
+            [Elbow joint] objs=10 meshes=10
+            [Distal radio-ulnar joint] objs=8 meshes=8
+            [Radiocarpal joint] objs=8 meshes=8
+              [Palmar radiocarpal ligament] objs=4 meshes=4
+              [Palmar ulnocarpal ligament] objs=8 meshes=8
+            [Joints of hand] objs=24 meshes=24
+              [Intercarpal joints] objs=2 meshes=2
+                [Dorsal intercarpal ligaments] objs=4 meshes=4
+                [Palmar intercarpal ligaments] objs=18 meshes=18
+                [Interosseus intercarpal ligaments] objs=10 meshes=10
+                [Pisiform joint] objs=4 meshes=4
+              [Carpometacarpal joints] objs=4 meshes=4
+              [Intermetacarpal joints] objs=6 meshes=6
+              [Metacarpophalangeal joints] objs=6 meshes=6
+              [Interphalangeal joints of hand] objs=8 meshes=8
+      [Joints of lower limb] objs=0 meshes=0
+        [Joints of pelvic girdle] objs=0 meshes=0
+          [Fibrous joints of pelvic girdle] objs=4 meshes=4
+            [Obturator membrane] objs=2 meshes=2
+            [Sacrotuberous ligament] objs=2 meshes=2
+          [Cartilaginous joints of pelvic girdle] objs=2 meshes=2
+            [Pubic symphysis] objs=4 meshes=4
+          [Synovial joints of pelvic girdle] objs=0 meshes=0
+            [Sacro-iliac joint] objs=6 meshes=6
+        [Joints of free lower limb] objs=0 meshes=0
+          [Fibrous joints of free lower limb] objs=2 meshes=2
+            [Tibiofibular syndesmosis] objs=6 meshes=6
+          [Synovial joints of free lower limb] objs=0 meshes=0
+            [Hip joint] objs=16 meshes=16
+              [Iliofemoral ligament] objs=4 meshes=4
+            [Knee joint] objs=24 meshes=24
+              [Medial meniscus] objs=4 meshes=4
+              [Lateral meniscus] objs=6 meshes=6
+              [Infrapatellar synovial fold] objs=0 meshes=0
+              [Tibial collateral ligament] objs=4 meshes=4
+            [Superior tibiofibular joint] objs=6 meshes=6
+            [Ankle joint] objs=0 meshes=0
+              [Medial collateral ligament] objs=6 meshes=6
+              [Lateral collateral ligament] objs=6 meshes=6
+            [Joints of foot] objs=0 meshes=0
+              [Intertarsal joints] objs=0 meshes=0
+                [Subtalar joint] objs=10 meshes=10
+                [Transverse tarsal joint] objs=2 meshes=2
+                  [Bifurcate ligament] objs=4 meshes=4
+                  [Talocalcaneonavicular joint] objs=4 meshes=4
+                  [Calcaneocuboid joint] objs=4 meshes=4
+                [Cuneonavicular joint] objs=4 meshes=4
+                [Cuneocuboid joint] objs=6 meshes=6
+                [Cuboidonavicular joint] objs=4 meshes=4
+                [Intercuneiform joints] objs=6 meshes=6
+              [Tarsometatarsal joints] objs=6 meshes=6
+              [Intermetatarsal joints] objs=8 meshes=8
+              [Metatarsophalangeal joints] objs=8 meshes=8
+              [Interphalangeal joints of foot] objs=10 meshes=10
+    [Muscular system] objs=0 meshes=0
+      [Superficial muscles] objs=120 meshes=120
+      [Muscles] objs=509 meshes=509
+        [Muscle] objs=0 meshes=0
+          [Attachment] objs=0 meshes=0
+        [Tendon] objs=0 meshes=0
+      [Fascia] objs=57 meshes=56
+        [Fascia of muscles] objs=0 meshes=0
+        [Fascia of body cavities] objs=0 meshes=0
+          [Extraperitoneal fascia] objs=0 meshes=0
+      [Synovial bursae] objs=0 meshes=0
+        [Synovial bursa] objs=0 meshes=0
+      [Tendon sheaths] objs=41 meshes=38
+      [Cranial part of muscular system] objs=0 meshes=0
+        [Muscles of head] objs=102 meshes=91
+          [Extra-ocular muscles] objs=0 meshes=0
+            [Lateral rectus muscle] objs=0 meshes=0
+            [Superior oblique muscle] objs=0 meshes=0
+          [Superficial muscles of head] objs=0 meshes=0
+            [Epicranius muscle] objs=0 meshes=0
+              [Occipitofrontalis muscle] objs=0 meshes=0
+            [Facial muscles] objs=36 meshes=35
+              [Nasalis muscle] objs=0 meshes=0
+              [Orbicularis oculi muscle] objs=0 meshes=0
+                [Palpebral part of orbicularis ocule] objs=0 meshes=0
+              [Orbiculari oris muscle] objs=0 meshes=0
+            [Extrinsic auricular muscles] objs=0 meshes=0
+          [Intrinsic auricular muscles] objs=0 meshes=0
+          [Muscles of auditory ossicles] objs=0 meshes=0
+          [Masticatory muscles] objs=0 meshes=0
+            [Masseter] objs=0 meshes=0
+            [Medial pterygoid muscle] objs=0 meshes=0
+            [Lateral pterygoid muscle] objs=0 meshes=0
+          [Muscles of tongue] objs=0 meshes=0
+            [Hyoglossus muscle] objs=0 meshes=0
+          [Muscles of soft palate] objs=0 meshes=0
+            [Palatopharyngeus muscle] objs=0 meshes=0
+        [Fascia of head] objs=0 meshes=0
+          [Temporal fascia] objs=0 meshes=0
+            [Deep layer of temporal fascia] objs=0 meshes=0
+        [Bursae of head] objs=0 meshes=0
+      [Cervical part of muscular system] objs=0 meshes=0
+        [Muscles of neck] objs=69 meshes=63
+          [Sternocleidomastoid muscle] objs=0 meshes=0
+          [Suprahyoid muscles] objs=0 meshes=0
+            [Digastric muscle] objs=0 meshes=0
+          [Infrahyoid muscles] objs=0 meshes=0
+            [Omohyoid muscle] objs=0 meshes=0
+          [Pharyngeal muscles] objs=11 meshes=10
+            [Superior pharyngeal constrictor] objs=0 meshes=0
+            [Middle pharyngeal constrictor] objs=0 meshes=0
+            [Inferior pharyngeal constrictor] objs=0 meshes=0
+          [Laryngeal muscles] objs=16 meshes=15
+            [Cricothyroid muscle] objs=0 meshes=0
+            [Thyro-arythenoid muscle] objs=0 meshes=0
+            [Oblique arythenoid muscle] objs=0 meshes=0
+        [Cervical fascia] objs=0 meshes=0
+          [Superficial investing cervical fascia] objs=0 meshes=0
+          [Visceral cervical fascia] objs=0 meshes=0
+          [Deep investing cervical fascia] objs=0 meshes=0
+        [Cervical bursae] objs=0 meshes=0
+      [Dorsal part of muscular system] objs=0 meshes=0
+        [Thoracolumbar fascia] objs=0 meshes=0
+          [Posterior layer of thoracolumbar fascia] objs=0 meshes=0
+        [Epaxial muscles] objs=0 meshes=0
+          [Suboccipital muscles] objs=9 meshes=8
+          [Erector spinae] objs=22 meshes=18
+            [Iliocostalis muscles] objs=0 meshes=0
+              [Tendon sheath of upper limb] objs=0 meshes=0
+                [Carpal tendon sheath] objs=0 meshes=0
+                  [Palmar carpal tendon sheaths] objs=0 meshes=0
+                  [Dorsal carpal tendon sheaths] objs=0 meshes=0
+                [Tendon sheaths of digits of hand] objs=0 meshes=0
+                  [Fibrous sheaths of digits of hand] objs=0 meshes=0
+                  [Synovial sheaths of digits of hand] objs=0 meshes=0
+                    [Vincula tendinum of hand] objs=0 meshes=0
+            [Longissimus muscles] objs=0 meshes=0
+              [Longissimus thoracis muscle] objs=0 meshes=0
+              [Erector spinae aponeurosis] objs=0 meshes=0
+            [Spinalis muscles] objs=0 meshes=0
+          [Spinotransversales muscles] objs=0 meshes=0
+            [Splenius muscles] objs=0 meshes=0
+          [Transversospinal muscles] objs=16 meshes=12
+            [Multifidus muscles] objs=0 meshes=0
+            [Semispinalis muscles] objs=0 meshes=0
+            [Rotatores] objs=2 meshes=2
+              [Rotatores thoracis] objs=0 meshes=0
+          [Interspinales muscles] objs=0 meshes=0
+          [Intertransversarii muscles] objs=0 meshes=0
+        [Hypaxial muscles of back] objs=26 meshes=23
+          [Trapezius muscle] objs=7 meshes=6
+          [Lateral intertransversarii lumborum muscles] objs=0 meshes=0
+      [Thoracic part of muscular system] objs=0 meshes=0
+        [Pectoralis major muscle] objs=6 meshes=6
+      [Abdominal part of muscular system] objs=25 meshes=21
+        [Muscles of abdomen] objs=16 meshes=15
+          [Rectus abdominis muscle] objs=0 meshes=0
+            [Rectus sheath] objs=0 meshes=0
+          [External abdominal oblique muscle] objs=0 meshes=0
+            [Inguinal ligament] objs=0 meshes=0
+          [Superficial inguinal ring] objs=0 meshes=0
+          [Internal abdominal oblique muscle] objs=0 meshes=0
+          [Transversus abdominis muscle] objs=0 meshes=0
+          [Linea alba] objs=0 meshes=0
+        [Fascia of abdomen] objs=0 meshes=0
+          [Endo-abdominal fascia] objs=0 meshes=0
+            [Iliopsoas fascia] objs=0 meshes=0
+            [Transversalis fascia] objs=0 meshes=0
+            [Diaphragmatic fascia] objs=0 meshes=0
+      [Pelvic part of muscular system] objs=0 meshes=0
+        [Muscles of pelvis] objs=0 meshes=0
+          [Postnatal septum] objs=0 meshes=0
+          [Pelvic diaphragm] objs=0 meshes=0
+            [Levator ani] objs=0 meshes=0
+          [Perineal muscles] objs=0 meshes=0
+            [Muscles of urogenital triangle] objs=0 meshes=0
+              [Superficial perineal space] objs=0 meshes=0
+              [Deep perineal space] objs=0 meshes=0
+            [Muscle of anal triangle] objs=0 meshes=0
+              [External anal sphincter] objs=0 meshes=0
+        [Pelvic fasciae] objs=0 meshes=0
+          [Parietal pelvic fascia] objs=0 meshes=0
+            [Obturator fascia] objs=0 meshes=0
+            [Superior fascia of pelvic diaphragm] objs=0 meshes=0
+          [Perineal membrane] objs=0 meshes=0
+          [Ischio-anal fossa] objs=0 meshes=0
+      [Muscular system of upper limb] objs=0 meshes=0
+        [Muscles of upper limb] objs=131 meshes=116
+          [Scapulohumeral muscles] objs=0 meshes=0
+            [Deltoid muscle] objs=6 meshes=6
+            [Rotator cuff muscles] objs=9 meshes=8
+          [Anterior compartment of arm] objs=10 meshes=8
+            [Biceps brachii muscle] objs=0 meshes=0
+          [Posterior compartment of arm] objs=8 meshes=6
+            [Triceps brachii muscle] objs=0 meshes=0
+          [Anterior compartment of forearm] objs=25 meshes=22
+            [Superficial part of anterior compartment of forearm] objs=0 meshes=0
+              [Pronator teres] objs=0 meshes=0
+              [Flexor carpi ulnaris] objs=0 meshes=0
+              [Flexor digitorum superficialis] objs=0 meshes=0
+            [Deep part of anterior compartment of forearm] objs=0 meshes=0
+          [Posterior compartment of forearm] objs=29 meshes=26
+            [Superficial part of posterior compartment of forearm] objs=0 meshes=0
+              [Extensor digitorum] objs=0 meshes=0
+                [Extensor expansion of hand] objs=0 meshes=0
+              [Extensor carpi ulnaris] objs=0 meshes=0
+            [Deep part of posterior compartment of forearm] objs=0 meshes=0
+              [Supinator] objs=0 meshes=0
+          [Muscles of hand] objs=25 meshes=24
+            [Flexor pollicis brevis] objs=0 meshes=0
+            [Adductor pollicis] objs=0 meshes=0
+        [Fascia of upper limb] objs=6 meshes=6
+          [Antebrachial fascia] objs=0 meshes=0
+        [Bursae of upper limb] objs=0 meshes=0
+      [Muscular system of lower limb] objs=0 meshes=0
+        [Muscles of lower limb] objs=182 meshes=159
+          [Iliopsoas muscle] objs=0 meshes=0
+          [Superficial gluteal muscles] objs=9 meshes=8
+          [Deep gluteal muscles] objs=12 meshes=11
+          [Anterior compartment of thigh] objs=15 meshes=14
+            [Sartorius muscle] objs=0 meshes=0
+            [Quadriceps femoris muscle] objs=0 meshes=0
+              [Retcus femoris muscle] objs=0 meshes=0
+              [Tendon of quadriceps femoris muscle] objs=0 meshes=0
+          [Medial compartment of thigh] objs=13 meshes=12
+          [Posterior compartment of thigh] objs=10 meshes=9
+            [Biceps femoris muscle] objs=0 meshes=0
+          [Anterior compartment of leg] objs=11 meshes=10
+            [Extensor digitorum longus] objs=0 meshes=0
+              [Extensor expansion of foot] objs=0 meshes=0
+          [Lateral compartment of leg] objs=5 meshes=4
+          [Posterior compartment of leg] objs=21 meshes=18
+            [Superficial part of posterior compartment of leg] objs=0 meshes=0
+              [Triceps surae muscle] objs=0 meshes=0
+                [Gastrocnemius muscle] objs=0 meshes=0
+                [Soleus muscle] objs=0 meshes=0
+            [Deep part of posterior compartment of leg] objs=0 meshes=0
+          [Muscles of foot] objs=33 meshes=30
+            [Flexor hallucis brevis] objs=0 meshes=0
+            [Adductor hallucis] objs=0 meshes=0
+            [Abductor digiti minimi of foot] objs=0 meshes=0
+        [Fascia of lower limb] objs=0 meshes=0
+          [Fascia lata] objs=0 meshes=0
+          [Femoral sheath] objs=0 meshes=0
+          [Saphenous hiatus] objs=0 meshes=0
+            [Falciform margin of saphenous hiatus] objs=0 meshes=0
+          [Plantar aponeurosis] objs=0 meshes=0
+        [Bursae of lower limb] objs=0 meshes=0
+        [Tendon sheaths of lower limb] objs=0 meshes=0
+          [Anterior tarsal tendon sheaths] objs=0 meshes=0
+          [Tibial tarsal tendon sheaths] objs=0 meshes=0
+          [Fibular tarsal tendon sheaths] objs=0 meshes=0
+          [Tendon sheaths of toes] objs=0 meshes=0
+            [Fibrous sheaths of toes] objs=0 meshes=0
+            [Synovial sheaths of toes] objs=0 meshes=0
+      [Bursae] objs=78 meshes=78
+    [Cardiovascular system] objs=0 meshes=0
+      [Vessels] objs=0 meshes=0
+        [Blood vessels'] objs=0 meshes=0
+          [Arteries'] objs=0 meshes=0
+          [Veins'] objs=0 meshes=0
+        [Lymphatic vessels'] objs=0 meshes=0
+        [Vessel'] objs=0 meshes=0
+      [Vascular plexuses] objs=0 meshes=0
+      [Pulmonary vessels] objs=0 meshes=0
+        [Pulmonary arteries] objs=30 meshes=1
+          [Pulmonary trunk'] objs=0 meshes=0
+          [Right pulonary artery'] objs=14 meshes=0
+          [Left pulmonary artery'] objs=13 meshes=0
+            [Superior lobar artery of left lung'] objs=0 meshes=0
+            [Inferior lobar artery of left lung'] objs=0 meshes=0
+        [Pulmonary veins] objs=21 meshes=0
+          [Right superior pulmonary vein'] objs=6 meshes=0
+          [Right inferior pulmonary vein'] objs=4 meshes=0
+          [Left superior pulmonary vein'] objs=12 meshes=0
+            [Lingular vein of left lung'] objs=0 meshes=0
+          [Left inferior pulmonary vein'] objs=4 meshes=0
+      [Cardiac vessels] objs=0 meshes=0
+        [Arteries of heart] objs=7 meshes=0
+          [Right coronary artery] objs=0 meshes=0
+          [Left coronary artery] objs=0 meshes=0
+        [Cardiac veins] objs=7 meshes=0
+      [Systemic arteries] objs=405 meshes=1
+        [Aorta] objs=208 meshes=0
+          [Aortic arch] objs=0 meshes=0
+            [Brachiocephalic trunk'] objs=0 meshes=0
+          [Descending aorta] objs=0 meshes=0
+            [Thoracic aorta'] objs=0 meshes=0
+            [Abdominal aorta'] objs=0 meshes=0
+              [Inferior phrenic artery'] objs=0 meshes=0
+              [Lumbar arteries'] objs=0 meshes=0
+              [Coeliac trunk'] objs=0 meshes=0
+                [Left gastric artery'] objs=0 meshes=0
+                [Common hepatic artery'] objs=0 meshes=0
+                  [Gastroduodenal artery'] objs=0 meshes=0
+                    [Posterior superior pancreaticoduodenal artery'] objs=0 meshes=0
+                    [Right gastro-omental artery'] objs=0 meshes=0
+                    [Anterior superior pancreaticoduodenal artery'] objs=0 meshes=0
+                  [Proper hepatic artery'] objs=0 meshes=0
+                    [Right hepatic artery'] objs=0 meshes=0
+                    [Left hepatic artery'] objs=0 meshes=0
+                [Splenic artery'] objs=0 meshes=0
+                  [Pancreatic branches of splenic artery'] objs=0 meshes=0
+                    [Dorsal pancreatic artery'] objs=0 meshes=0
+                  [Splenic branches of splenic artery'] objs=0 meshes=0
+                    [Left gastro-omental artery'] objs=0 meshes=0
+              [Superior mesenteric artery'] objs=0 meshes=0
+                [Inferior pancreaticoduodenal artery'] objs=0 meshes=0
+                [Ileocolic artery'] objs=0 meshes=0
+              [Renal artery'] objs=0 meshes=0
+                [Anterior branch of renal artery'] objs=0 meshes=0
+                [Posterior branch of renal artery'] objs=0 meshes=0
+                [Intrarenal arteries'] objs=0 meshes=0
+              [Ovarian artery'] objs=0 meshes=0
+              [Testicular artery'] objs=0 meshes=0
+              [Inferior mesenteric artery'] objs=0 meshes=0
+                [Left colic artery'] objs=0 meshes=0
+          [Aortic bifurcation] objs=0 meshes=0
+            [Median sacral artery'] objs=0 meshes=0
+            [Common iliac artery'] objs=0 meshes=0
+              [Internal iliac artery'] objs=0 meshes=0
+                [Posterior division of internal iliac artery'] objs=0 meshes=0
+                  [Iliolumbar artery'] objs=0 meshes=0
+                  [Lateral sacral arteries'] objs=0 meshes=0
+                  [Superior gluteal artery'] objs=0 meshes=0
+                [Anterior division of internal iliac artery'] objs=0 meshes=0
+                  [Umbilical artery'] objs=0 meshes=0
+                  [Obturator artery'] objs=0 meshes=0
+                  [Inferior vesical artery'] objs=0 meshes=0
+                  [Uterine artery'] objs=0 meshes=0
+                  [Vaginal artery'] objs=0 meshes=0
+                  [Middle anorectal artery'] objs=0 meshes=0
+                  [Internal pudendal artery'] objs=0 meshes=0
+                  [Inferior gluteal artery'] objs=0 meshes=0
+              [External iliac artery'] objs=0 meshes=0
+                [Inferior epigastric artery'] objs=0 meshes=0
+                  [Pubic branch of inferior epigastric artery'] objs=0 meshes=0
+                [Deep circumflex iliac artery'] objs=0 meshes=0
+        [Common carotid artery] objs=126 meshes=0
+          [External carotid artery] objs=0 meshes=0
+            [Superior thyroid artery] objs=0 meshes=0
+            [Ascending pharyngeal artery] objs=0 meshes=0
+            [Lingual artery] objs=0 meshes=0
+            [Facial artery] objs=0 meshes=0
+              [Superior labial artery'] objs=0 meshes=0
+            [Occipital artery] objs=0 meshes=0
+            [Posterior auricular artery] objs=0 meshes=0
+              [Posterior tympanic artery] objs=0 meshes=0
+            [Superficial temporal artery] objs=0 meshes=0
+            [Maxillary artery] objs=0 meshes=0
+              [Infra-orbital artery'] objs=0 meshes=0
+                [Middle superior alveolar artery'] objs=0 meshes=0
+                [Anterior superior alveolar artery'] objs=0 meshes=0
+          [Internal carotid artery] objs=0 meshes=0
+            [Ophtalmic artery'] objs=0 meshes=0
+              [Central retinal artery'] objs=0 meshes=0
+              [Lacrimal artery'] objs=0 meshes=0
+              [Short posterior ciliary arteries'] objs=0 meshes=0
+              [Long posterior ciliary arteries'] objs=0 meshes=0
+              [Muscular arteries'] objs=0 meshes=0
+              [Anterior ethmoidal artery'] objs=0 meshes=0
+              [Posterior ethmoidal artery'] objs=0 meshes=0
+              [Medial palpebral arteries'] objs=0 meshes=0
+            [Anterior cerebral artery'] objs=0 meshes=0
+              [Callosomarginal artery'] objs=0 meshes=0
+              [Pericallosal artery'] objs=0 meshes=0
+            [Middle cerebral artery'] objs=0 meshes=0
+        [Cerebral arterial circle] objs=0 meshes=0
+          [Anterior communicating artery'] objs=0 meshes=0
+          [Posterior communicating artery'] objs=0 meshes=0
+        [Arteries of spinal cord] objs=0 meshes=0
+          [Anterior spinal artery'] objs=0 meshes=0
+          [Spinal arterial branches'] objs=0 meshes=0
+            [Spinal arterial branch'] objs=0 meshes=0
+              [Radicular arteries'] objs=0 meshes=0
+                [Segmental medullary artery'] objs=0 meshes=0
+        [Subclavian artery] objs=0 meshes=0
+          [Vertebral artery'] objs=21 meshes=0
+            [Basilar artery'] objs=0 meshes=0
+              [Anterior inferior cerebellar artery'] objs=0 meshes=0
+                [Labyrinthine artery'] objs=0 meshes=0
+                  [Common cochlear artery'] objs=0 meshes=0
+              [Posterior cerebellar artery'] objs=0 meshes=0
+          [Internal thoracic artery'] objs=0 meshes=0
+            [Perforating branches of internal thoracic artery'] objs=0 meshes=0
+          [Thyrocervical trunk'] objs=0 meshes=0
+          [Costocervical trunk'] objs=0 meshes=0
+            [Supreme intercostal artery'] objs=0 meshes=0
+              [First posterior intercostal artery'] objs=0 meshes=0
+              [Second posterior intercostal artery'] objs=0 meshes=0
+          [Axillary artery'] objs=0 meshes=0
+            [Thoraco-acromial artery'] objs=0 meshes=0
+            [Lateral thoracic artery'] objs=0 meshes=0
+            [Subscapular artery'] objs=0 meshes=0
+            [Brachial artery'] objs=0 meshes=0
+              [Deep brachial artery'] objs=0 meshes=0
+              [Radial artery'] objs=0 meshes=0
+                [Dorsal carpal branch of radial artery'] objs=0 meshes=0
+                  [Dorsal carpal anastomosis'] objs=0 meshes=0
+                    [Dorsal metacarpal arteries'] objs=0 meshes=0
+                [Deep palmar arch'] objs=0 meshes=0
+                  [Palmar metacarpal arteries'] objs=0 meshes=0
+              [Ulnar artery'] objs=0 meshes=0
+                [Ulnar recurrent artery'] objs=0 meshes=0
+                [Common interosseus artery'] objs=0 meshes=0
+                [Superficial palmar arch'] objs=0 meshes=0
+        [Femoral artery] objs=0 meshes=0
+          [Deep external pudendal artery'] objs=0 meshes=0
+          [Descending genicular artery'] objs=0 meshes=0
+          [Deep femoral artery'] objs=0 meshes=0
+            [Medial circumflex femoral artery'] objs=0 meshes=0
+            [Lateral circumflex femoral artery'] objs=0 meshes=0
+            [Perforating femoral arteries'] objs=0 meshes=0
+          [Popliteal artery'] objs=0 meshes=0
+            [Anterior tibial artery'] objs=0 meshes=0
+              [Dorsalis pedis artery'] objs=0 meshes=0
+                [Arcuate artery'] objs=0 meshes=0
+                  [Dorsal metatarsal artery'] objs=0 meshes=0
+            [Posterior tibial artery'] objs=0 meshes=0
+              [Fibular artery'] objs=0 meshes=0
+                [Lateral malleolar branch of fibular artery'] objs=0 meshes=0
+              [Medial plantar artery'] objs=0 meshes=0
+              [Lateral plantar artery'] objs=0 meshes=0
+                [Plantar arch'] objs=0 meshes=0
+                  [Plantar metatarsal arteries'] objs=0 meshes=0
+                    [Common plantar digital arteries'] objs=0 meshes=0
+      [Systemic veins] objs=221 meshes=3
+        [Superior vena cava'] objs=0 meshes=0
+          [Azygos vein'] objs=0 meshes=0
+            [Arch of azygos vein'] objs=0 meshes=0
+            [Accessory hemi-azygos vein'] objs=0 meshes=0
+            [Hemi-azygos vein'] objs=0 meshes=0
+          [Brachiocephalic vein'] objs=0 meshes=0
+            [Vertebral vein'] objs=0 meshes=0
+            [Internal thoracic veins'] objs=0 meshes=0
+            [Right brachiocephalic vein'] objs=0 meshes=0
+            [Left brachiocephalic vein'] objs=0 meshes=0
+              [Inferior thyroid vein'] objs=0 meshes=0
+                [Unpaired thyroid venous plexus'] objs=0 meshes=0
+              [Left superior intercostal vein'] objs=0 meshes=0
+        [Internal jugular vein'] objs=0 meshes=0
+          [Pharyngeal venous plexus'] objs=0 meshes=0
+          [Lingual vein'] objs=0 meshes=0
+            [Vena comitans of hypoglossal nerve'] objs=0 meshes=0
+          [Superior thyroid vein'] objs=0 meshes=0
+          [Common facial vein'] objs=0 meshes=0
+            [Facial vein'] objs=0 meshes=0
+            [Anterior division of retromandibular vein'] objs=0 meshes=0
+              [Retromandibular vein'] objs=0 meshes=0
+                [Maxillary veins'] objs=0 meshes=0
+                  [Pterygoid venous plexus'] objs=0 meshes=0
+        [Cranial veins'] objs=0 meshes=0
+          [Dural venous sinuses'] objs=0 meshes=0
+            [Sigmoid sinus'] objs=0 meshes=0
+              [Transverse sinus'] objs=0 meshes=0
+                [Confluence of sinuses'] objs=0 meshes=0
+            [Inferior petrosal sinus'] objs=0 meshes=0
+              [Cavernous sinus'] objs=0 meshes=0
+                [Intercavernous sinus'] objs=0 meshes=0
+          [Diploic veins'] objs=0 meshes=0
+          [Emissary veins'] objs=0 meshes=0
+          [Orbital veins'] objs=0 meshes=0
+            [Superior ophtalmic vein'] objs=0 meshes=0
+              [Central retinal vein'] objs=0 meshes=0
+              [Episcleral vein'] objs=0 meshes=0
+          [Veins of brain'] objs=0 meshes=0
+        [Veins of cerebral column'] objs=0 meshes=0
+          [Intervertebral veins'] objs=0 meshes=0
+            [Radicular veins'] objs=0 meshes=0
+            [Anterior internal vertebral venous plexus'] objs=0 meshes=0
+          [External vertebral venous plexuses'] objs=0 meshes=0
+        [Subclavian vein'] objs=0 meshes=0
+          [External jugular vein'] objs=0 meshes=0
+            [Anterior jugular vein'] objs=0 meshes=0
+          [Axillary vein'] objs=0 meshes=0
+            [Cephalic vein'] objs=0 meshes=0
+              [Dorsal venous network of hand'] objs=0 meshes=0
+            [Subscapular vein'] objs=0 meshes=0
+            [Thoraco-epigastric vein'] objs=0 meshes=0
+            [Basilic vein'] objs=0 meshes=0
+            [Brachial veins'] objs=0 meshes=0
+              [Ulnar veins'] objs=0 meshes=0
+              [Radial veins'] objs=0 meshes=0
+        [Inferior vena cava'] objs=0 meshes=0
+          [Hepatic veins'] objs=0 meshes=0
+          [Right suprarenal vein'] objs=0 meshes=0
+          [Right renal vein'] objs=0 meshes=0
+            [Inrarenal veins of kidney'] objs=0 meshes=0
+          [Left renal vein'] objs=0 meshes=0
+            [Intrarenal veins of left kidney'] objs=0 meshes=0
+            [Left suprarenal vein'] objs=0 meshes=0
+            [Left testicular vein'] objs=0 meshes=0
+          [Right testicular vein'] objs=0 meshes=0
+          [Common iliac vein'] objs=0 meshes=0
+            [Internal iliac vein'] objs=0 meshes=0
+              [Vesical veins'] objs=0 meshes=0
+              [Veins of prostate'] objs=0 meshes=0
+            [External iliac vein'] objs=0 meshes=0
+              [Inferior epigastric vein'] objs=0 meshes=0
+        [Femoral vein'] objs=0 meshes=0
+          [Great saphenous vein'] objs=0 meshes=0
+            [External pudendal veins'] objs=0 meshes=0
+          [Deep femoral vein'] objs=0 meshes=0
+          [Popliteal vein'] objs=0 meshes=0
+            [Anterior tibial veins'] objs=0 meshes=0
+            [Posterior tibial veins'] objs=0 meshes=0
+              [Lateral plantar veins'] objs=0 meshes=0
+                [Plantar venous arch'] objs=0 meshes=0
+            [Small saphenous vein'] objs=0 meshes=0
+              [Dorsal venous arch of foot'] objs=0 meshes=0
+                [Dorsal metatarsal veins of foot'] objs=0 meshes=0
+        [Hepatic portal vein'] objs=0 meshes=0
+          [Branches of hepatic portal vein'] objs=0 meshes=0
+            [Right branch of hepatic portal vein'] objs=0 meshes=0
+            [Left branch of hepatic partal vein'] objs=0 meshes=0
+              [Transverse part of left branch of hepatic portal vein'] objs=0 meshes=0
+              [Umbilical part of left branch of hepatic poratl vein'] objs=0 meshes=0
+          [Tributaries of hepatic portal vein'] objs=0 meshes=0
+      [Great lymphatic vessels] objs=0 meshes=0
+        [Right lymphatic duct'] objs=0 meshes=0
+        [Thoracic duct'] objs=0 meshes=0
+          [Cervical part of thoracic duct'] objs=0 meshes=0
+          [Thoracic part of thoracic duct'] objs=0 meshes=0
+          [Abdominal part of thoracic duct'] objs=0 meshes=0
+      [Heart] objs=18 meshes=17
+        [Apex of heart] objs=0 meshes=0
+        [Epicardium] objs=0 meshes=0
+        [Myocardium] objs=0 meshes=0
+          [Conducting system of heart] objs=0 meshes=0
+            [Atrioventricular bundle] objs=0 meshes=0
+              [Left bundle branch] objs=0 meshes=0
+        [Cardiac septa] objs=0 meshes=0
+          [Interatrial septum] objs=0 meshes=0
+          [Interventricular septum] objs=0 meshes=0
+        [Valvular complex of heart] objs=0 meshes=0
+          [Fibrous skeleton of heart] objs=0 meshes=0
+            [Central fibrous body of heart] objs=0 meshes=0
+            [Inferior pyramid space] objs=0 meshes=0
+          [Right atrioventricular valve] objs=0 meshes=0
+          [Left atrioventricular valve] objs=0 meshes=0
+          [Root of aorta] objs=0 meshes=0
+            [Aortic valve] objs=0 meshes=0
+            [Aortic sinuses] objs=0 meshes=0
+          [Root pulmonary trunk] objs=0 meshes=0
+            [Pulmonary valve] objs=0 meshes=0
+            [Sinuses of pulmonary trunk] objs=0 meshes=0
+        [Right atrium] objs=0 meshes=0
+          [Right auricle of heart] objs=0 meshes=0
+          [Smoot part of riht atrium] objs=0 meshes=0
+            [Sinus of venae cavea] objs=0 meshes=0
+            [Vestibule of right atrioventricular valve] objs=0 meshes=0
+        [Right ventricle] objs=0 meshes=0
+          [Trabecular part of right ventricle] objs=0 meshes=0
+            [Papillary muscles of right ventricle] objs=0 meshes=0
+            [Trabecular carnae of right ventricle] objs=0 meshes=0
+              [Septomarginal trabecula] objs=0 meshes=0
+        [Left atrium] objs=0 meshes=0
+          [Left auricle of heart] objs=0 meshes=0
+          [Smooth part of left atrium] objs=0 meshes=0
+            [Sinus of pulmonary veins] objs=0 meshes=0
+        [Left ventricle] objs=0 meshes=0
+          [Trabecular part of left ventricle] objs=0 meshes=0
+            [Papillary muscles of left ventricle] objs=0 meshes=0
+            [Trabeculae carnae of left ventricle] objs=0 meshes=0
+    [Nervous system] objs=1 meshes=0
+      [Central nervous system] objs=213 meshes=152
+        [Meninges] objs=21 meshes=7
+          [Dura] objs=2 meshes=0
+            [Cranial dura] objs=5 meshes=1
+              [Tentorium cerebelli] objs=2 meshes=2
+            [Spinal dura] objs=8 meshes=1
+          [Leptomeninges] objs=0 meshes=0
+            [Arachnoid] objs=0 meshes=0
+              [Cranial arachnoid] objs=0 meshes=0
+                [Cranial subarachnoid cisterns] objs=0 meshes=0
+              [Spinal arachnoid] objs=0 meshes=0
+            [Pia] objs=0 meshes=0
+              [Cranial pia] objs=2 meshes=2
+              [Spinal pia] objs=0 meshes=0
+        [Brain] objs=172 meshes=140
+          [Cerebrum] objs=124 meshes=106
+            [Cerebral hemisphere] objs=4 meshes=3
+            [Telencephalon] objs=166 meshes=152
+              [Cerebral lobes] objs=0 meshes=0
+              [Interlobular sulci] objs=20 meshes=19
+              [Frontal lobe] objs=44 meshes=43
+                [Inferior frontal gyrus] objs=6 meshes=6
+              [Parietal lobe] objs=16 meshes=15
+                [Inferior parietal lobe] objs=4 meshes=4
+              [Occipital lobe] objs=20 meshes=19
+              [Temporal lobe] objs=24 meshes=23
+                [Superior temporal gyrus] objs=6 meshes=6
+                [Occipitotemporal gyri] objs=4 meshes=4
+              [Insula] objs=4 meshes=3
+              [Limbic lobe] objs=12 meshes=11
+                [Limbic gyrus] objs=0 meshes=0
+                  [Subcallosal area] objs=0 meshes=0
+                  [Fornicate gyrus] objs=8 meshes=8
+                [Hippocampus] objs=2 meshes=2
+              [Pallium] objs=0 meshes=0
+                [Cerebral cortex] objs=0 meshes=0
+                  [Allocortex] objs=0 meshes=0
+                  [Neocortex] objs=0 meshes=0
+              [Basal forebrain] objs=1 meshes=1
+                [Olfactory structures] objs=0 meshes=0
+                [Magnocellular nuclei of basal forebrain] objs=0 meshes=0
+                [Amygdaloid body] objs=2 meshes=2
+                [Ventral striatum] objs=0 meshes=0
+              [Corpus striatum] objs=2 meshes=1
+                [Dorsal striatum] objs=4 meshes=3
+                  [Caudate nucleus] objs=2 meshes=2
+                [Lentiform nucleus] objs=0 meshes=0
+                [Globus pallidus] objs=2 meshes=2
+              [White matter of telencephalon] objs=6 meshes=5
+                [Internal capsule] objs=2 meshes=2
+                  [Anterior limb of internal capsule] objs=0 meshes=0
+                  [Posterior limb of internal capsule] objs=0 meshes=0
+                  [Retrolentiform limb of internal capsule] objs=0 meshes=0
+                  [Sublentiform limb of internal capsule] objs=0 meshes=0
+                [Association fibres of telencephalon] objs=0 meshes=0
+                  [Short association fibres] objs=0 meshes=0
+                  [Long association fibres] objs=0 meshes=0
+                [Commissural fibres of telencephalon] objs=3 meshes=2
+                  [Corpus callosum] objs=1 meshes=1
+                    [Radiation of corpus callosum] objs=0 meshes=0
+                  [Anterior commissure] objs=1 meshes=1
+                [Projection fibers of telencephalon] objs=0 meshes=0
+                  [Corticopontine fibres] objs=0 meshes=0
+                  [Corticonuclear fibres] objs=0 meshes=0
+                  [Corticomesencephalic fibres] objs=0 meshes=0
+                  [Fornix] objs=2 meshes=2
+                    [Column of fornix] objs=0 meshes=0
+              [Lateral ventricle] objs=2 meshes=2
+              [Walls of lateral ventricle] objs=2 meshes=1
+                [Septum pellucidum] objs=1 meshes=1
+                [Choroid plexus of lateral ventricle] objs=0 meshes=0
+            [Diencephalon] objs=21 meshes=19
+              [Habenula] objs=1 meshes=1
+              [Optic tract] objs=2 meshes=2
+              [Infundibulum of hypothalamus] objs=0 meshes=0
+              [Epithalamus] objs=0 meshes=0
+              [Thalamus] objs=2 meshes=2
+                [Medial nuclei of thalamus] objs=0 meshes=0
+                [Thalamic medullary laminae] objs=0 meshes=0
+                [Lateral nuclei of thalamus] objs=0 meshes=0
+                  [Ventral nuclei of thalamus] objs=0 meshes=0
+                    [Ventroposterior complex] objs=0 meshes=0
+                  [Dorsal nuclei of thalamus] objs=0 meshes=0
+                [Nuclei of geniculate bodies] objs=0 meshes=0
+              [Prethalamus] objs=0 meshes=0
+              [Subthalamus] objs=0 meshes=0
+              [Preoptic area] objs=0 meshes=0
+              [Hypothalamus] objs=1 meshes=1
+                [Anterior hypothalamic zone] objs=0 meshes=0
+                [Intermediate hypothalamic area] objs=0 meshes=0
+                [Posterior hypothalamic area] objs=0 meshes=0
+              [Pretectum] objs=0 meshes=0
+              [Prerubral tegmentum] objs=0 meshes=0
+              [White matter of diencephalon] objs=5 meshes=4
+                [Supra-optic commissures] objs=0 meshes=0
+                [Hypothalamohypophysial tract] objs=0 meshes=0
+              [Third ventricle] objs=1 meshes=1
+              [Walls of third ventricle] objs=0 meshes=0
+                [Periventricular organs of third ventricle] objs=0 meshes=0
+            [Left cerebral hemisphere] objs=73 meshes=73
+            [Right cerebal hemisphere] objs=73 meshes=73
+          [Cerebellum] objs=39 meshes=34
+            [Body of cerebellum] objs=0 meshes=0
+              [Posterior lobe of cerebellum] objs=0 meshes=0
+            [Hemisphere of cerebellum] objs=0 meshes=0
+              [Wing of central lobule] objs=0 meshes=0
+              [Anterior quadrangular lobule] objs=0 meshes=0
+              [Semlunar lobules] objs=0 meshes=0
+            [Vermis of cerebellum] objs=0 meshes=0
+              [Central lobule] objs=0 meshes=0
+              [Culmen] objs=0 meshes=0
+            [Grey matter of cerebellum] objs=0 meshes=0
+              [Cerebellar nuclei] objs=0 meshes=0
+                [Dentate nucleus] objs=0 meshes=0
+            [White matter of cerebellum] objs=0 meshes=0
+            [Cerebellar peduncles] objs=2 meshes=1
+              [Superior cerebellar peduncle] objs=2 meshes=2
+              [Middle cerebellar peduncle] objs=0 meshes=0
+              [Inferior cerebellar peduncle] objs=0 meshes=0
+                [Restiform body] objs=0 meshes=0
+          [Brainstem] objs=44 meshes=33
+            [Nuclei of cranial nerve] objs=0 meshes=0
+            [White matter of brainstem] objs=0 meshes=0
+              [Trigeminal lemniscus] objs=0 meshes=0
+              [Central tegmental tract] objs=0 meshes=0
+            [Midbrain] objs=4 meshes=4
+              [Cerebral peduncle] objs=0 meshes=0
+                [Base of peduncle] objs=0 meshes=0
+                  [Substancia nigra] objs=0 meshes=0
+                [Tegmentum of midbrain] objs=0 meshes=0
+                  [Grey matter of tegmentum of midbrain] objs=2 meshes=2
+                    [Oculomotor complex] objs=4 meshes=4
+                  [Reticular formation of midbrain] objs=0 meshes=0
+                  [White matter of tegmentum of midbrain] objs=0 meshes=0
+                    [Tegmental decussations] objs=0 meshes=0
+              [Central mesencephalic structures] objs=1 meshes=1
+              [Tectum of midbrain] objs=0 meshes=0
+                [Superior colliculus] objs=2 meshes=2
+                [Inferior colliculus] objs=2 meshes=2
+            [Pons] objs=2 meshes=2
+              [Basilar part of pons] objs=0 meshes=0
+              [Tegmentum of pons] objs=0 meshes=0
+                [Grey matter of pontine tegmentum] objs=6 meshes=6
+                  [Vestibular nuclei] objs=2 meshes=2
+                  [Pontine central grey matter] objs=0 meshes=0
+                [Pontine reticular formation] objs=0 meshes=0
+                [White matter of pontine tectum] objs=0 meshes=0
+                  [Raphe of pons] objs=0 meshes=0
+                    [Pontine raphe nuclei] objs=0 meshes=0
+            [Fourth ventricle] objs=1 meshes=1
+            [Rhomboid fossa] objs=0 meshes=0
+            [Roof of fourth ventricle] objs=0 meshes=0
+              [Superior medullary velum] objs=0 meshes=0
+            [Medulla oblongata] objs=9 meshes=7
+              [Grey matter of medulla oblongata] objs=1 meshes=1
+                [Spinal nucleus of trigeminal nerve] objs=0 meshes=0
+                [Perihypoglossal nuclei] objs=0 meshes=0
+                [Inferior olivary complex] objs=0 meshes=0
+                  [Principal inferior olivary nucleus] objs=0 meshes=0
+              [Medullary reticular formation] objs=0 meshes=0
+              [White matter of medulla oblongata] objs=0 meshes=0
+                [Raphe of medulla oblongata] objs=0 meshes=0
+                  [Raphe nuclei of medulla oblongata] objs=0 meshes=0
+                [Pyramidal tract] objs=0 meshes=0
+        [Spinal cord] objs=0 meshes=0
+          [Grey matter of spinal cord] objs=0 meshes=0
+            [Posterior horn of spinal cord] objs=0 meshes=0
+              [Head of posterior horn] objs=0 meshes=0
+            [Intermediate zone of spinal cord] objs=0 meshes=0
+              [Central intermediate substance] objs=0 meshes=0
+              [Lateral intermediate substance] objs=0 meshes=0
+              [Lateral horn of spinal cord] objs=0 meshes=0
+            [Anterior horn of spinal cord] objs=2 meshes=2
+          [White matter of spinal cord] objs=0 meshes=0
+            [Posterior funiculus] objs=0 meshes=0
+            [Lateral funiculus] objs=0 meshes=0
+            [Anterolateral fasciculus] objs=0 meshes=0
+              [Spinothalamic tracts] objs=0 meshes=0
+              [Spinomesencephalic tracts] objs=0 meshes=0
+            [Anterior funiculus] objs=0 meshes=0
+          [Central structures of spinal cord] objs=1 meshes=0
+            [Spinal area X] objs=0 meshes=0
+        [Neo-cortex] objs=126 meshes=126
+      [Peripheral nervous system] objs=273 meshes=10
+        [Nerves] objs=249 meshes=3
+          [Sensory nerve] objs=0 meshes=0
+          [Mixed nerve] objs=0 meshes=0
+          [Spinal nerve] objs=0 meshes=0
+            [Trunk of spinal nerve] objs=0 meshes=0
+              [Anterior ramus of spinal nerve] objs=0 meshes=0
+              [Posterior ramus of spinal nerve] objs=0 meshes=0
+          [Nerve] objs=0 meshes=0
+            [Nerve fascicle] objs=0 meshes=0
+        [Root of nerves] objs=0 meshes=0
+          [Root of nerve] objs=0 meshes=0
+        [Ganglia] objs=0 meshes=0
+          [Sensory ganglia] objs=0 meshes=0
+          [Autonomic ganglia] objs=0 meshes=0
+        [Nervus plexuses] objs=0 meshes=0
+          [Autonomic plexus] objs=0 meshes=0
+            [Perivascular plexus] objs=0 meshes=0
+        [Cranial nerves] objs=56 meshes=5
+          [Terminal nerve] objs=0 meshes=0
+          [Olfactory nerve (I)] objs=2 meshes=0
+          [Optic nerve (II)] objs=2 meshes=0
+            [Inner sheath of optic nerve] objs=0 meshes=0
+          [Oculomotor nerve (III)] objs=18 meshes=16
+            [Inferior branch of oculomotor nerve] objs=0 meshes=0
+          [Trigeminal nerve (V)] objs=42 meshes=20
+            [Sensory root of trigeminal nerve] objs=2 meshes=2
+            [Ophtalmic nerve] objs=0 meshes=0
+              [Frontal nerve] objs=0 meshes=0
+                [Supra-orbital nerve] objs=0 meshes=0
+              [Nasociliary nerve] objs=0 meshes=0
+                [Anterior ethmoidal nerve] objs=0 meshes=0
+                  [Internal nasal branches of anterior ethmoidal nerve] objs=0 meshes=0
+                [Infratrochlear nerve] objs=0 meshes=0
+            [Maxillary nerve] objs=0 meshes=0
+              [Nasopalatine nerve] objs=0 meshes=0
+              [Greater palatine nerve] objs=0 meshes=0
+              [Lesser palatine nerve] objs=0 meshes=0
+              [Zygomatic nerve] objs=0 meshes=0
+                [Zygomaticotemporal nerve] objs=0 meshes=0
+              [Superior dental plexus] objs=0 meshes=0
+              [Infra-orbital nerve] objs=0 meshes=0
+            [Mandibular nerve] objs=0 meshes=0
+              [Anterior division of mandibular nerve] objs=0 meshes=0
+                [Deep temporal nerves] objs=0 meshes=0
+                [Buccal nerve] objs=0 meshes=0
+              [Posterior division of mandibular nerve] objs=0 meshes=0
+                [Auriculotemporal nerve] objs=0 meshes=0
+                [Lingual nerve] objs=0 meshes=0
+                [Inferior alveolar nerve] objs=0 meshes=0
+                  [Inferior dental plexus] objs=0 meshes=0
+                  [Mental nerve] objs=0 meshes=0
+          [Facial nerve (VII)] objs=57 meshes=46
+            [Sensory root of facial nerve] objs=0 meshes=0
+            [Greater petrosal nerve] objs=0 meshes=0
+            [Chorda tympani] objs=2 meshes=0
+            [Facial nerve proper] objs=0 meshes=0
+              [Posterior auricular nerve] objs=0 meshes=0
+              [Parotid plexus] objs=0 meshes=0
+          [Vestibulocochlear nerve (VIII)] objs=4 meshes=0
+            [Vestibular nerve] objs=1 meshes=0
+              [Superior branch of vestibular nerve] objs=0 meshes=0
+              [Inferior branch of vestibular nerve] objs=0 meshes=0
+            [Cochlear nerve] objs=1 meshes=1
+          [Glossopharyngeal nerve (IX)] objs=2 meshes=0
+            [Tympanic nerve] objs=0 meshes=0
+              [Tympanic plexus] objs=0 meshes=0
+          [Vagus nerve (X)] objs=2 meshes=0
+            [Pharyngeal branch of vagus nerve] objs=0 meshes=0
+            [Superior laryngeal nerve] objs=0 meshes=0
+            [Recurrent laryngeal nerve] objs=0 meshes=0
+          [Accessory nerve (XI)] objs=10 meshes=8
+          [Hypoglossal nerve (XII)] objs=15 meshes=4
+        [Spinal nerves] objs=2 meshes=1
+          [Cervical nerves] objs=4 meshes=1
+            [Posterior rami of cervical nerves] objs=0 meshes=0
+            [Anterior rami of cervical nerves] objs=0 meshes=0
+          [Cervical plexus] objs=2 meshes=1
+            [Deep branches of cervical plexus] objs=0 meshes=0
+              [Ansa cervicalis] objs=0 meshes=0
+              [Phrenic nerve] objs=0 meshes=0
+            [Superficial branches of cervical plexus] objs=0 meshes=0
+          [Brachial plexus] objs=2 meshes=1
+            [Supraclavicular part of brachial plexus] objs=5 meshes=1
+              [Superior trunk of brachial plexus] objs=6 meshes=0
+              [Middle trunk of brachial plexus] objs=6 meshes=0
+              [Inferior trunk of brachial plexus] objs=8 meshes=0
+            [Supraclavicular branches of brachial plexus] objs=8 meshes=0
+              [Long thoracic nerve] objs=4 meshes=2
+              [Dorsal scapular nerve] objs=8 meshes=6
+              [Suprascapular nerve] objs=6 meshes=4
+              [Subclavian nerve] objs=4 meshes=2
+            [Infraclavicular part of brachial plexus] objs=12 meshes=1
+            [Branches of lateral cord of brachial plexus] objs=2 meshes=1
+              [Lateral pectoral nerve] objs=8 meshes=6
+              [Musculocutaneous nerve] objs=12 meshes=8
+            [Branches of posterior cord of brachial plexus] objs=2 meshes=1
+              [Subscapular nerves] objs=0 meshes=0
+              [Radial nerve] objs=30 meshes=14
+                [Deep branch of radial nerve] objs=4 meshes=0
+                [Superficial branch of radial nerve] objs=4 meshes=0
+              [Axillary nerve] objs=14 meshes=8
+            [Branches of medial cord of brachial plexus] objs=4 meshes=1
+              [Medial antebrachial cutaneous nerve] objs=6 meshes=0
+              [Ulnar nerve] objs=40 meshes=22
+                [Dorsal branch of ulnar nerve] objs=4 meshes=0
+                [Superficial branch of ulnar nerve] objs=4 meshes=0
+                  [Common palmar digital branches of ulnar nerve] objs=2 meshes=0
+            [Median nerve] objs=44 meshes=30
+              [Common palmar digital branches of median nerve] objs=2 meshes=0
+          [Thoracic nerves] objs=2 meshes=1
+            [Posterior rami of thoracic nerves] objs=0 meshes=0
+            [Anterior rami of thoracic nerves] objs=0 meshes=0
+              [Intercostal nerves] objs=2 meshes=0
+                [Intercostal nerve] objs=0 meshes=0
+                  [Lateral cuaneous branch of intercostal nerve] objs=0 meshes=0
+                    [Lateral pectoral cutaneous branch of intercostal nerve] objs=0 meshes=0
+                  [Anterior cutaneous branch of intercostal nerve] objs=0 meshes=0
+                    [Anterior pectoral cutaneous branch of intercostal nerve] objs=0 meshes=0
+              [Subcostal nerve] objs=0 meshes=0
+          [Lumbar nerves] objs=2 meshes=1
+            [Posterior rami of lumbar nerves] objs=2 meshes=1
+            [Anterior rami of lumbar nerves] objs=2 meshes=1
+              [Iliohypogastric nerve] objs=2 meshes=0
+              [Ilio-inguinal nerve] objs=2 meshes=0
+              [Lumbosacral trunk] objs=0 meshes=0
+          [Sacral nerves] objs=0 meshes=0
+            [Posterior rami of sacral nerves] objs=0 meshes=0
+            [Anterior rami of sacral nerves] objs=0 meshes=0
+          [Coccygeal nerve] objs=0 meshes=0
+          [Lumbosacral plexus] objs=76 meshes=1
+            [Lumbar plexus] objs=28 meshes=1
+              [Branches of posterior part of lumbar plexus] objs=6 meshes=1
+                [Femoral nerve] objs=18 meshes=14
+                  [Saphenous nerve] objs=12 meshes=0
+              [Branches of anterior part of lumbar plexus] objs=8 meshes=1
+                [Genitofemoral nerve] objs=0 meshes=0
+                [Obturator nerve] objs=16 meshes=10
+                  [Anterior branch of obturator nerve] objs=2 meshes=0
+                  [Posterior branch of obturator nerve] objs=2 meshes=0
+            [Sacral plexus] objs=2 meshes=1
+              [Branches of posterior part of sacral plexus] objs=0 meshes=0
+              [Branches of anterior part of sacral plexus] objs=0 meshes=0
+                [Pudendal nerve] objs=0 meshes=0
+                  [Perineal nerve] objs=0 meshes=0
+                    [Superficial branch of perineal nerve] objs=0 meshes=0
+                    [Deep branch of perineal nerve] objs=0 meshes=0
+              [Posterior femoral cutaneous nerve] objs=0 meshes=0
+              [Sciatic nerve] objs=112 meshes=70
+                [Common fibular nerve] objs=6 meshes=4
+                  [Superficial fibular nerve] objs=12 meshes=4
+                  [Deep fibular nerve] objs=20 meshes=14
+                [Tibial nerve] objs=28 meshes=26
+                  [Medial sural cutaneous nerve] objs=0 meshes=0
+                    [Sural nerve] objs=0 meshes=0
+                  [Medial plantar nerve] objs=14 meshes=8
+                    [Common plantar digital branches of medial plantar nerve] objs=0 meshes=0
+                  [Lateral plantar nerve] objs=22 meshes=16
+                    [Superficial branch of lateral plantar nerve] objs=0 meshes=0
+                      [Common plantar digital branches of lateral plantar nerve] objs=0 meshes=0
+            [Coccygeal plexus] objs=0 meshes=0
+        [Automatic division of peripheral nervous system] objs=0 meshes=0
+          [Thoracolumbar part of autonomic division] objs=0 meshes=0
+            [Sympathetic trunk] objs=6 meshes=2
+              [Paravertebral ganglia] objs=0 meshes=0
+                [Ganglia of sympathetic trunk] objs=0 meshes=0
+                  [Cervical ganglia] objs=0 meshes=0
+            [Sympathetic nerves] objs=0 meshes=0
+              [Thoracic visceral nerves] objs=0 meshes=0
+              [Lesser thoracic splanchnic nerve] objs=0 meshes=0
+            [Prevertebral ganglia] objs=0 meshes=0
+            [Perivascular plexuses] objs=0 meshes=0
+              [Internal carotid plexus] objs=0 meshes=0
+              [External carotid plexus] objs=0 meshes=0
+          [Craniosacral part of autonomic division] objs=0 meshes=0
+            [Cranial part] objs=0 meshes=0
+              [Ciliary ganglion] objs=0 meshes=0
+              [Pterygopalatine ganglion] objs=0 meshes=0
+              [Submandibular ganglion] objs=0 meshes=0
+              [Otic ganglion] objs=0 meshes=0
+            [Vagal part of autonomic division] objs=0 meshes=0
+              [Anterior vagal trunk] objs=0 meshes=0
+                [Anterior gastric branches] objs=0 meshes=0
+                [Hepatic branches] objs=0 meshes=0
+              [Posterior vagal trunk] objs=0 meshes=0
+                [Posterior gastric branches] objs=0 meshes=0
+            [Sacral part of autonomic division] objs=0 meshes=0
+          [Visceral part of autonomic division] objs=0 meshes=0
+            [Thoracic plexuses] objs=0 meshes=0
+              [Cardiac plexus] objs=0 meshes=0
+            [Abdominal plexuses] objs=0 meshes=0
+              [Phrenic plexus] objs=0 meshes=0
+              [Coeliac plexus] objs=0 meshes=0
+              [Renal plexus] objs=0 meshes=0
+              [Inferior mesenteric plexus] objs=0 meshes=0
+            [Pelvic plexuses] objs=0 meshes=0
+              [Inferior hypogastric plexus] objs=0 meshes=0
+                [Rectal plexus] objs=0 meshes=0
+                [Uterovaginal plexus] objs=0 meshes=0
+                [Prostatic plexus] objs=0 meshes=0
+            [Enteric plexus] objs=0 meshes=0
+      [Sense organs] objs=27 meshes=18
+        [Olfactory organ] objs=0 meshes=0
+          [Olfactory part of nasal mucosa] objs=0 meshes=0
+        [Eye*] objs=16 meshes=12
+          [Eyeball] objs=0 meshes=0
+            [Fibrous layer of eyeball] objs=0 meshes=0
+              [Cornea] objs=0 meshes=0
+              [Sclera] objs=0 meshes=0
+            [Vascular layer of eyeball] objs=0 meshes=0
+              [Iris] objs=0 meshes=0
+                [Inner zone of iris] objs=0 meshes=0
+              [Ciliary body] objs=1 meshes=0
+                [Corona ciliaris] objs=0 meshes=0
+                [Ciliary muscle] objs=0 meshes=0
+            [Inner layer of eyeball] objs=0 meshes=0
+              [Retina] objs=0 meshes=0
+                [Nonvisual retina] objs=0 meshes=0
+                [Optic part of retina] objs=0 meshes=0
+                  [Neural layer of optical retina] objs=0 meshes=0
+                    [Macula] objs=0 meshes=0
+                      [Fovea centralis] objs=0 meshes=0
+              [Intraocular part of optic nerve] objs=0 meshes=0
+                [Optic disc] objs=0 meshes=0
+            [Anterior segment of eyeball] objs=0 meshes=0
+              [Anterior chamber of eyeball] objs=0 meshes=0
+              [Ciliary zonule] objs=1 meshes=0
+              [Lens] objs=0 meshes=0
+                [Anterior surface of lens] objs=0 meshes=0
+                [Posterior surface of lens] objs=0 meshes=0
+            [Posterior segment of eyeball] objs=0 meshes=0
+              [Postremal chamber of eyeball] objs=0 meshes=0
+              [Vitreous body] objs=0 meshes=0
+          [Accessory visual structures] objs=2 meshes=2
+            [Eyelids] objs=0 meshes=0
+            [Conjunctiva] objs=0 meshes=0
+            [Lacrimal apparatus] objs=11 meshes=10
+              [Lacrimal gland] objs=2 meshes=2
+              [Lacrimal papilla] objs=0 meshes=0
+              [Lacrimal canliculus] objs=4 meshes=4
+              [Lacrimal sac] objs=2 meshes=2
+              [Nasolacrimal duct] objs=2 meshes=2
+        [Ear] objs=0 meshes=0
+          [External ear] objs=0 meshes=0
+            [Auricle] objs=0 meshes=0
+            [External acoustic meatus] objs=0 meshes=0
+            [Tympanic membrane] objs=2 meshes=2
+          [Middle ear] objs=0 meshes=0
+            [Tympanic cavity] objs=0 meshes=0
+              [Epitympanic recess] objs=0 meshes=0
+              [Tympanic cavity proper] objs=0 meshes=0
+              [Recesses of tympanic membrane] objs=0 meshes=0
+            [Walls of tympanic cavity] objs=0 meshes=0
+              [Jugular wall of tympanic cavity] objs=0 meshes=0
+              [Carotid wall of tympanic cavity] objs=0 meshes=0
+              [Labyrinthine wall of tympanic cavity] objs=0 meshes=0
+                [Promontory of tympanic cavity] objs=0 meshes=0
+                [Cochlear window] objs=0 meshes=0
+              [Mastoid wall of tympanic cavity] objs=0 meshes=0
+                [Aditus to mastoid antrum] objs=0 meshes=0
+              [Membranous wall of tympanic cavity] objs=0 meshes=0
+            [Auditory tube] objs=0 meshes=0
+              [Bony part of auditory tube] objs=0 meshes=0
+              [Cartilaginous part of auditory tube] objs=0 meshes=0
+              [Mucosa of auditory tube] objs=0 meshes=0
+          [Internal ear] objs=0 meshes=0
+            [Bony labyrinth] objs=0 meshes=0
+              [Perilymphatic space] objs=0 meshes=0
+                [Perilymphatic duct] objs=0 meshes=0
+              [Vestibule] objs=18 meshes=10
+                [Elliptical recess] objs=0 meshes=0
+              [Walls of vestibule] objs=0 meshes=0
+                [Maculae cribrosae] objs=0 meshes=0
+              [Semicircular canals] objs=0 meshes=0
+                [Anterior semicircular canal] objs=0 meshes=0
+                [Posterior semicircular canal] objs=0 meshes=0
+                [Common bony limb] objs=0 meshes=0
+                [Lateral semicircular canal] objs=0 meshes=0
+              [Cochlea] objs=8 meshes=5
+              [Walls of cochlea] objs=0 meshes=0
+                [Osseus spiral lamina] objs=0 meshes=0
+                  [Tympanic lamella] objs=0 meshes=0
+                [Modiolous of cochlea] objs=0 meshes=0
+              [Internal acoustic meatus] objs=0 meshes=0
+                [Fundus of internal acoustic meatus] objs=0 meshes=0
+                  [Inferior vestibular area] objs=0 meshes=0
+                  [Cochlear area] objs=0 meshes=0
+            [Membranous labyrinth] objs=0 meshes=0
+              [Endolymphatic space] objs=0 meshes=0
+              [Vestibular labyrinth] objs=0 meshes=0
+                [Utricule] objs=0 meshes=0
+                [Saccule] objs=0 meshes=0
+                [Utriculosaccural duct] objs=0 meshes=0
+                [Semicircular duct] objs=0 meshes=0
+                  [Anterior semicircular duct] objs=0 meshes=0
+                    [Anterior membranous ampulla] objs=0 meshes=0
+                  [Posterior semicircular duct] objs=0 meshes=0
+                    [Posterior membranous ampulla] objs=0 meshes=0
+                  [Common membranous limb] objs=0 meshes=0
+                  [Lateral semicircular duct] objs=0 meshes=0
+                    [Lateral membranous ampulla] objs=0 meshes=0
+              [Cochlear duct] objs=0 meshes=0
+                [External wall of cochlear duct] objs=0 meshes=0
+                [Spiral membrane] objs=0 meshes=0
+        [Gustatory organ] objs=0 meshes=0
+    [Visceral systems] objs=0 meshes=0
+      [Digestive system] objs=87 meshes=78
+        [Mouth] objs=14 meshes=10
+          [Internal surface of cheek] objs=0 meshes=0
+          [Palate] objs=0 meshes=0
+            [Soft palate] objs=0 meshes=0
+          [Mucosa of mouth] objs=0 meshes=0
+          [Gingiva] objs=0 meshes=0
+          [Oral cavity] objs=0 meshes=0
+          [Salivary glands] objs=0 meshes=0
+            [Major salivary glands] objs=0 meshes=0
+              [Parotid gland] objs=0 meshes=0
+              [Sublingual gland] objs=0 meshes=0
+              [Submandibular gland] objs=0 meshes=0
+            [Minor salivary glands] objs=0 meshes=0
+          [Tongue] objs=0 meshes=0
+            [Dorsum of tongue] objs=0 meshes=0
+              [Posterior part of tongue] objs=0 meshes=0
+                [Foramen caecum of tongue] objs=0 meshes=0
+            [Inferior surface of tongue] objs=0 meshes=0
+            [Mucosa of tongue] objs=0 meshes=0
+            [Lingual papillae] objs=0 meshes=0
+        [Fauces] objs=0 meshes=0
+          [Palatoglossal arch] objs=0 meshes=0
+          [Palatopharyngeal arch] objs=0 meshes=0
+          [Tonsillar fossa] objs=0 meshes=0
+        [Pharynx] objs=0 meshes=0
+          [Submucosa of pharynx] objs=0 meshes=0
+          [Nasopharynx] objs=0 meshes=0
+            [Vault of pharynx] objs=0 meshes=0
+            [Torus tubaris] objs=0 meshes=0
+          [Oropharynx] objs=0 meshes=0
+          [Laryngopharynx] objs=0 meshes=0
+          [Peripharyngeal space] objs=0 meshes=0
+        [Digestive canal] objs=11 meshes=9
+          [Oesophagus] objs=1 meshes=0
+            [Muscular layer of oesophagus] objs=0 meshes=0
+            [Thoracic part of oesophagus] objs=0 meshes=0
+            [Abdominal part of oesophagus] objs=0 meshes=0
+          [Stomach] objs=0 meshes=0
+            [Lesser curvature of stomach] objs=0 meshes=0
+            [Muscular layer of stomach] objs=0 meshes=0
+            [Mucosa of stomach] objs=0 meshes=0
+            [Cardia] objs=0 meshes=0
+            [Fundus of stomach] objs=0 meshes=0
+              [Fornix of stomach] objs=0 meshes=0
+            [Body of stomach] objs=0 meshes=0
+            [Pyloric part] objs=0 meshes=0
+              [Pylorus] objs=0 meshes=0
+          [Small intestine] objs=0 meshes=0
+            [Muscular layer of small intestine] objs=0 meshes=0
+            [Mucosa of small intestine] objs=0 meshes=0
+            [Duodenum] objs=0 meshes=0
+              [Superior part of duodenum] objs=0 meshes=0
+            [Ileum] objs=0 meshes=0
+          [Large intestine] objs=0 meshes=0
+            [Mucosa of large intestine] objs=0 meshes=0
+            [Caecum] objs=0 meshes=0
+              [Ileal orifice] objs=0 meshes=0
+              [Vermiform appendix] objs=0 meshes=0
+            [Colon] objs=0 meshes=0
+              [Muscular layer of colon] objs=0 meshes=0
+                [Longitudinal muscular layer of colon] objs=0 meshes=0
+                  [Taeniae coli] objs=0 meshes=0
+            [Rectum] objs=0 meshes=0
+              [Lateral flexures of rectum] objs=0 meshes=0
+              [Muscular layer of rectum] objs=0 meshes=0
+          [Anal canal] objs=0 meshes=0
+        [Liver] objs=8 meshes=8
+          [Diaphragmatic surface of liver] objs=0 meshes=0
+            [Superior surface of liver] objs=0 meshes=0
+            [Bare area of liver] objs=0 meshes=0
+          [Visceral surface of liver] objs=0 meshes=0
+            [Main portal fissure] objs=0 meshes=0
+            [Umbilical fissure] objs=0 meshes=0
+          [Inferior border of liver] objs=0 meshes=0
+          [Left lobe of liver] objs=0 meshes=0
+          [Caudate lobe] objs=0 meshes=0
+          [Portal tract] objs=0 meshes=0
+          [Left part of liver] objs=0 meshes=0
+            [Left lateral division of liver] objs=0 meshes=0
+            [Left medial division of liver] objs=0 meshes=0
+          [Posterior part of liver] objs=0 meshes=0
+          [Right part of liver] objs=0 meshes=0
+            [Right medial division of liver] objs=0 meshes=0
+            [Right lateral division of liver] objs=0 meshes=0
+        [Gallbladder] objs=0 meshes=0
+          [Mucosa of gallblader] objs=0 meshes=0
+        [Extrahepatic bile ducts] objs=0 meshes=0
+          [Common hepatic duct] objs=0 meshes=0
+            [Right hepatic duct] objs=0 meshes=0
+            [Left hepatic duct] objs=0 meshes=0
+          [Cystic duct] objs=0 meshes=0
+          [Bile duct] objs=0 meshes=0
+            [Pancreatic part of bile duct] objs=0 meshes=0
+              [Sphincter of bile duct] objs=0 meshes=0
+            [Intramural part of bile duct] objs=0 meshes=0
+              [Hepatopancreatic ampulla] objs=0 meshes=0
+        [Pancreas] objs=0 meshes=0
+          [Head of pancreas] objs=0 meshes=0
+          [Body of pancreas] objs=0 meshes=0
+          [Pancreatic duct] objs=0 meshes=0
+      [Respiratory system] objs=41 meshes=13
+        [Nose] objs=0 meshes=0
+          [Nasal septum] objs=0 meshes=0
+          [Lateral wall of nasal cavity] objs=0 meshes=0
+            [Semilunar hiatus] objs=0 meshes=0
+            [Mucosa of nasal cavity] objs=0 meshes=0
+          [Roof of nasal cavity] objs=0 meshes=0
+          [Nasal cavity] objs=0 meshes=0
+            [Middle nasal meatus] objs=0 meshes=0
+        [Paranasal sinuses] objs=0 meshes=0
+          [Ethmoid cells] objs=0 meshes=0
+        [Larynx] objs=0 meshes=0
+          [Epiglottis] objs=0 meshes=0
+          [Ary-epiglottic fold] objs=0 meshes=0
+          [Glottis] objs=0 meshes=0
+          [Laryngeal cavity] objs=0 meshes=0
+            [Laryngeal inlet] objs=0 meshes=0
+            [Laryngeal ventricle] objs=0 meshes=0
+            [Rima glottidis] objs=0 meshes=0
+        [Tracheobronchial tree] objs=0 meshes=0
+          [Trachea] objs=0 meshes=0
+            [Fibromusculocartilaginous layer of trachea] objs=0 meshes=0
+          [Bronchi] objs=29 meshes=1
+            [Intrapulmonary bronchi] objs=0 meshes=0
+            [Bronchus] objs=0 meshes=0
+            [Right main bronchus] objs=0 meshes=0
+              [Right superior lobar bronchus] objs=0 meshes=0
+              [Intermediate bronchus] objs=0 meshes=0
+                [Middle lobar bronchus] objs=0 meshes=0
+                [Right inferior lobar bronchus] objs=0 meshes=0
+            [Left main bronchus] objs=0 meshes=0
+              [Left superior lobar bronchus] objs=0 meshes=0
+              [Left inferior lobar bronchus] objs=0 meshes=0
+        [Lungs] objs=5 meshes=5
+          [Medial surface of lung] objs=0 meshes=0
+          [Lobe of lung] objs=0 meshes=0
+            [Bronchopulmonary segment] objs=0 meshes=0
+          [Right lung] objs=0 meshes=0
+            [Superior lobe of right lung] objs=0 meshes=0
+            [Middle lobe of right lung] objs=0 meshes=0
+            [Inferior lobe of right lung] objs=0 meshes=0
+          [Left lung] objs=0 meshes=0
+            [Superior lobe of left lung] objs=0 meshes=0
+              [Lingula of left lung] objs=0 meshes=0
+            [Inferior lobe of left lung] objs=0 meshes=0
+      [Thoracic cavity] objs=0 meshes=0
+        [Pleural cavity] objs=0 meshes=0
+          [Pleural recesses] objs=0 meshes=0
+        [Pleura] objs=0 meshes=0
+          [Parietal pleura] objs=0 meshes=0
+        [Mediastinum] objs=0 meshes=0
+          [Inferior mediastinum] objs=0 meshes=0
+            [Anterior mediastinum] objs=0 meshes=0
+              [Sternopericardial ligaments] objs=0 meshes=0
+            [Middle mediastinum] objs=0 meshes=0
+              [Pericardium] objs=0 meshes=0
+                [Serous pericardium] objs=0 meshes=0
+                [Pericardial sac] objs=0 meshes=0
+                [Pericardial cavity] objs=0 meshes=0
+            [Posterior mediastinum] objs=0 meshes=0
+      [Urinary system] objs=9 meshes=6
+        [Kidney] objs=0 meshes=0
+          [Medial border of kidney] objs=0 meshes=0
+          [Kidney lobe] objs=0 meshes=0
+            [Cortex of kidney lobe] objs=0 meshes=0
+            [Renal pyramid] objs=0 meshes=0
+              [Renal papilla] objs=0 meshes=0
+                [Cribriform area] objs=0 meshes=0
+          [Renal pelvis] objs=0 meshes=0
+            [Major calices] objs=0 meshes=0
+        [Ureter] objs=0 meshes=0
+        [Urinary bladder] objs=0 meshes=0
+          [Muscular layer of bladder] objs=0 meshes=0
+            [Trigonal muscles] objs=0 meshes=0
+            [Detrusor vesicae] objs=0 meshes=0
+              [Bladder neck part of detrusor vesicae] objs=0 meshes=0
+          [Mucosa of bladder] objs=0 meshes=0
+            [Trigone of bladder] objs=0 meshes=0
+        [Urethra] objs=0 meshes=0
+          [Female urethra] objs=0 meshes=0
+            [Intramural part of female urethra] objs=0 meshes=0
+            [Membranous part of female urethra] objs=0 meshes=0
+            [Muscular layer of female urethra] objs=0 meshes=0
+            [Mucosa of female urethra] objs=0 meshes=0
+            [Para-urethral glands of female urethra] objs=0 meshes=0
+          [Male urethra] objs=0 meshes=0
+            [Intramural part of male urethra] objs=0 meshes=0
+            [Prostatic urethra] objs=0 meshes=0
+              [Seminal colliculus] objs=0 meshes=0
+            [Membranous part of male urthra] objs=0 meshes=0
+            [Spongy urethra] objs=0 meshes=0
+            [Muscular layer of male urethra] objs=0 meshes=0
+            [Mucosa of male urethra] objs=0 meshes=0
+            [Para-urthral glands of male urethra] objs=0 meshes=0
+      [Genital systems'] objs=19 meshes=15
+        [Female genital system'] objs=0 meshes=0
+          [Female internal genitalia'] objs=0 meshes=0
+            [Ovary'] objs=0 meshes=0
+            [Uterine tube'] objs=0 meshes=0
+            [Uterus'] objs=0 meshes=0
+            [Vagina'] objs=0 meshes=0
+            [Epoophoron'] objs=0 meshes=0
+              [Longitudinal duct of epoophoron'] objs=0 meshes=0
+            [Paroophoron'] objs=0 meshes=0
+          [Female external genitalia'] objs=0 meshes=0
+            [Vulva'] objs=0 meshes=0
+            [Clitoris'] objs=0 meshes=0
+        [Male genital system'] objs=0 meshes=0
+          [Male internal genitalia'] objs=0 meshes=0
+          [Male external genitalia'] objs=0 meshes=0
+            [Penis'] objs=0 meshes=0
+            [Scrotum'] objs=0 meshes=0
+      [Abdominopelvic cavity] objs=0 meshes=0
+        [Peritoneal cavity] objs=0 meshes=0
+          [Omental bursa] objs=0 meshes=0
+          [Abdominal recesses of peritoneal cavity] objs=0 meshes=0
+            [Subhepatic space] objs=0 meshes=0
+          [Pelvic recesses of peritoneal cavity] objs=0 meshes=0
+        [Peritoneum] objs=0 meshes=0
+          [Parietal peritoneum] objs=0 meshes=0
+        [Peritoneal structures] objs=3 meshes=3
+          [Mesentery] objs=0 meshes=0
+          [Mesocolon] objs=0 meshes=0
+          [Lesser omentum] objs=0 meshes=0
+          [Greater omentum] objs=0 meshes=0
+          [Peritoneal ligaments of liver] objs=0 meshes=0
+            [Coronary ligament] objs=0 meshes=0
+          [Posterior parietal peritoneal structures] objs=0 meshes=0
+            [Suspensory muscle of duodenum] objs=0 meshes=0
+          [Anterior parietal peritoneal structures] objs=0 meshes=0
+          [Pelvic peritoneal structures] objs=0 meshes=0
+            [Broad ligament of uterus] objs=0 meshes=0
+        [Visceral fascia of abdominopelvic cavity] objs=0 meshes=0
+          [Abdominal visceral fascia] objs=0 meshes=0
+          [Pelvic visceral fascia] objs=0 meshes=0
+        [Extraperitoneal space] objs=0 meshes=0
+          [Retroperitoneal space] objs=0 meshes=0
+            [Retroperitoneal fascia] objs=0 meshes=0
+              [Renal fascia] objs=0 meshes=0
+          [Infraperitoneal space] objs=0 meshes=0
+            [Pelvic extraperitoneal fascia] objs=0 meshes=0
+              [Parametrium] objs=0 meshes=0
+            [Smooth muscles of infraperitoneal space] objs=0 meshes=0
+              [Recto-urethral muscles] objs=0 meshes=0
+      [Lymphoid system] objs=54 meshes=54
+        [Primary lymphoid organs] objs=0 meshes=0
+          [Thymus] objs=0 meshes=0
+            [Lobe of thymus] objs=0 meshes=0
+              [Lobules of thymus] objs=0 meshes=0
+        [Secondary lymphoid organs] objs=0 meshes=0
+          [Spleen] objs=0 meshes=0
+            [Visceral surface of spleen] objs=0 meshes=0
+            [Splenic pulp] objs=0 meshes=0
+          [Pharyngeal lymphoid ring] objs=0 meshes=0
+            [Lingual tonsil] objs=0 meshes=0
+            [Palatine tonsil] objs=0 meshes=0
+            [Pharyngeal tonsil] objs=0 meshes=0
+            [Tubal tonsil] objs=0 meshes=0
+          [Lymph nodes] objs=0 meshes=0
+            [Lymph node] objs=0 meshes=0
+            [Lymph nodes of head] objs=0 meshes=0
+              [Deep parotid nodes] objs=0 meshes=0
+              [Facial nodes] objs=0 meshes=0
+            [Lymph nodes of neck] objs=0 meshes=0
+              [Anterior cervical nodes] objs=0 meshes=0
+                [Deep anterior cervical nodes] objs=0 meshes=0
+                  [Infrahyoid nodes] objs=0 meshes=0
+              [Lateral cervical nodes] objs=0 meshes=0
+                [Superior deep lateral cervical nodes] objs=0 meshes=0
+                [Inferior deep lateral cervical nodes] objs=0 meshes=0
+            [Lymph nodes of upper limb] objs=0 meshes=0
+              [Axillary nodes] objs=0 meshes=0
+              [Cubital nodes] objs=0 meshes=0
+            [Thoracic lymph nodes] objs=0 meshes=0
+              [Parietal thoracic lymph nodes] objs=0 meshes=0
+              [Mediastinal lymph nodes] objs=0 meshes=0
+                [Tracheobronchial nodes] objs=0 meshes=0
+              [Pulmonary lymph nodes] objs=0 meshes=0
+            [Abdominal lymph nodes] objs=0 meshes=0
+              [Parietal lymph nodes] objs=0 meshes=0
+                [Left lumbar nodes] objs=0 meshes=0
+                [Right lumbar nodes] objs=0 meshes=0
+              [Visceral lymph nodes] objs=0 meshes=0
+                [Pyloric nodes] objs=0 meshes=0
+                [Pancreatic nodes] objs=0 meshes=0
+                [Pancreaticoduodenal nodes] objs=0 meshes=0
+                [Hepatic nodes] objs=0 meshes=0
+                [Superior mesenteric nodes] objs=0 meshes=0
+                [Inferior mesenteric nodes] objs=0 meshes=0
+            [Pelvic lymph nodes] objs=0 meshes=0
+              [Parietal pelvic lymph nodes] objs=0 meshes=0
+                [Common iliac nodes] objs=0 meshes=0
+                [External iliac nodes] objs=0 meshes=0
+                [Internal iliac nodes] objs=0 meshes=0
+                  [Gluteal nodes] objs=0 meshes=0
+              [Visceral pelvic lymph nodes] objs=0 meshes=0
+                [Paravesical nodes] objs=0 meshes=0
+            [Lymph nodes of lower limb] objs=0 meshes=0
+              [Inguinal lymph nodes] objs=0 meshes=0
+                [Superficial inguinal nodes] objs=0 meshes=0
+                [Deep inguinal nodes] objs=0 meshes=0
+              [Popliteal lymph nodes] objs=0 meshes=0
+      [Endocrine glands] objs=8 meshes=8
+        [Hypophysis] objs=0 meshes=0
+          [Adenohypophysis] objs=0 meshes=0
+          [Neurohypophysis] objs=0 meshes=0
+        [Thyroid gland] objs=0 meshes=0
+          [Lobe of thyroid gland] objs=0 meshes=0
+        [Parathyroid glands] objs=0 meshes=0
+        [Suprarenal gland] objs=0 meshes=0
+        [Paraganglia] objs=0 meshes=0
+    [Regions of human body] objs=0 meshes=0
+      [Regions of head] objs=2 meshes=1
+        [Regions of epicranium] objs=8 meshes=8
+          [Frontal region] objs=4 meshes=4
+        [Auricular region] objs=44 meshes=43
+          [Concha of auricle] objs=6 meshes=6
+        [Regions of face] objs=20 meshes=17
+          [Orbital region] objs=8 meshes=5
+          [Nasal region] objs=9 meshes=5
+          [Oral region] objs=12 meshes=11
+      [Regions of neck] objs=4 meshes=3
+        [Anterior region of neck] objs=2 meshes=1
+          [Suprahyoid region] objs=6 meshes=5
+          [Infrahyoid region] objs=6 meshes=5
+        [Sternocleidomastoid region] objs=6 meshes=5
+        [Lateral region of neck] objs=4 meshes=4
+      [Regions of thorax] objs=6 meshes=4
+        [Anterior region of thorax] objs=6 meshes=6
+          [Pectoral region] objs=6 meshes=6
+      [Regions of abdomen] objs=10 meshes=9
+        [Epigastric region] objs=2 meshes=2
+        [Umbilical region] objs=4 meshes=4
+      [Regions of perineum] objs=4 meshes=3
+        [Anal region] objs=2 meshes=2
+      [Regions of upper limb] objs=4 meshes=3
+        [Axillary region] objs=0 meshes=0
+        [Brachial region] objs=2 meshes=2
+          [Anterior region of arm] objs=6 meshes=6
+        [Cubital region] objs=4 meshes=3
+          [Anterior region of elbow] objs=4 meshes=4
+        [Antebrachial region] objs=10 meshes=9
+        [Carpal region] objs=8 meshes=7
+        [Region of hand] objs=2 meshes=2
+          [Palm] objs=2 meshes=2
+          [Region of digits of hand] objs=4 meshes=4
+      [Regions of lower limb] objs=4 meshes=3
+        [Gluteal region] objs=4 meshes=4
+        [Femoral region] objs=2 meshes=2
+          [Anterior region of thigh] objs=4 meshes=4
+        [Knee region] objs=2 meshes=2
+          [Posterior region of knee] objs=4 meshes=4
+        [Leg region] objs=4 meshes=3
+          [Posterior region of leg] objs=2 meshes=2
+        [Talocrural region] objs=2 meshes=2
+          [Posterior region of ankle] objs=8 meshes=8
+        [Regions of foot] objs=8 meshes=8
+          [Sole] objs=6 meshes=6
+            [Longitudinal arch of foot] objs=4 meshes=4
+          [Metatarsal region] objs=4 meshes=4
+          [Region of digits of foot] objs=4 meshes=4
+      [Integument] objs=0 meshes=0
+        [Skin] objs=0 meshes=0
+          [Dermis] objs=0 meshes=0
+            [Papillary layer] objs=0 meshes=0
+            [Reticular layer] objs=0 meshes=0
+        [Skin appendages] objs=0 meshes=0
+          [Hairs] objs=7 meshes=6
+          [Nail] objs=4 meshes=4
+            [Nail plate] objs=4 meshes=4
+          [Skin glands] objs=0 meshes=0
+            [Sweat glands] objs=0 meshes=0
+        [Subcutaneous tissue] objs=0 meshes=0
+          [Fatty layer of subcutaneous tissue] objs=0 meshes=0
+          [Subcutaneous tissue of abdomen] objs=0 meshes=0
+          [Subcutaneous tissue of peritoneum] objs=0 meshes=0
+      [Main divisions] objs=0 meshes=0
+        [Head] objs=1434 meshes=877
+          [Neurocranial part of head] objs=0 meshes=0
+            [Helix] objs=0 meshes=0
+            [Antihelix] objs=0 meshes=0
+          [Face] objs=0 meshes=0
+            [External nose] objs=0 meshes=0
+            [Mouth'] objs=0 meshes=0
+        [Neck] objs=257 meshes=189
+        [Trunk] objs=1159 meshes=692
+          [Thorax] objs=209 meshes=135
+          [Abdomen] objs=92 meshes=81
+          [Pelvis] objs=22 meshes=15
+          [Anterior trunk] objs=0 meshes=0
+          [Back] objs=200 meshes=178
+          [Regions of trunk] objs=42 meshes=42
+        [Left lower limb] objs=448 meshes=311
+        [Right lower limb] objs=509 meshes=341
+        [Left upper limb] objs=322 meshes=219
+        [Right upper limb] objs=381 meshes=249
+        [Left hand] objs=42 meshes=42
+          [Metacarpal bones of left hand] objs=0 meshes=0
+        [Right hand] objs=96 meshes=96
+          [Metacarpal bones of right hand] objs=0 meshes=0
+        [Left foot] objs=96 meshes=56
+        [Right foot] objs=304 meshes=187
+    [Reference lines, planes & movements'] objs=0 meshes=0
+      [General terms] objs=14 meshes=14
+      [Reference planes] objs=0 meshes=0
+        [Longitudinal planes] objs=0 meshes=0
+          [Sagittal planes] objs=3 meshes=3
+        [Transverse planes] objs=1 meshes=1
+      [Reference lines] objs=8 meshes=8
+      [Movements] objs=11 meshes=11
+      [Orientations] objs=14 meshes=14
+TOTAL MESH 4569
+Quadriceps ['Quadriceps femoris muscle.el', 'Quadriceps femoris muscle.er']
+Rectus femoris ['Rectus femoris muscle.l', 'Rectus femoris muscle.r', 'Rectus femoris muscle.ol', 'Rectus femoris muscle.or']
+Vastus ['Vastus intermedius muscle.l', 'Vastus intermedius muscle.ol', 'Vastus intermedius muscle.or', 'Vastus intermedius muscle.r', 'Vastus lateralis muscle.l', 'Vastus lateralis muscle.ol', 'Vastus lateralis muscle.or', 'Vastus lateralis muscle.r']
+Gastrocnemius ['Lateral head of gastrocnemius.l', 'Lateral head of gastrocnemius.ol', 'Lateral head of gastrocnemius.or', 'Lateral head of gastrocnemius.r', 'Lateral subtendinous bursa of gastrocnemius muscle.l', 'Lateral subtendinous bursa of gastrocnemius muscle.r', 'Medial head of gastrocnemius.l', 'Medial head of gastrocnemius.ol']
+Gluteus ['Gluteus maximus muscle.el', 'Gluteus maximus muscle.er', 'Gluteus maximus muscle.l', 'Gluteus maximus muscle.ol', 'Gluteus maximus muscle.or', 'Gluteus maximus muscle.r', 'Gluteus medius muscle.el', 'Gluteus medius muscle.er']
+Pectoralis ['(Abdominal part of pectoralis major muscle).l', '(Abdominal part of pectoralis major muscle).ol', '(Abdominal part of pectoralis major muscle).or', '(Abdominal part of pectoralis major muscle).r', 'Clavicular head of pectoralis major muscle.l', 'Clavicular head of pectoralis major muscle.r', 'Pectoralis major muscle.el', 'Pectoralis major muscle.er']
+Deltoid ['Acromial part of deltoid muscle.l', 'Acromial part of deltoid muscle.ol', 'Acromial part of deltoid muscle.or', 'Acromial part of deltoid muscle.r', 'Clavicular part of deltoid muscle.l', 'Clavicular part of deltoid muscle.ol', 'Clavicular part of deltoid muscle.or', 'Clavicular part of deltoid muscle.r']
+Biceps ['Biceps brachii muscle.el', 'Biceps brachii muscle.er', 'Biceps brachii muscle.j', 'Biceps femoris muscle.el', 'Biceps femoris muscle.er', 'Inferior subtendinous bursa of biceps femoris muscle.l', 'Inferior subtendinous bursa of biceps femoris muscle.r', 'Long head of biceps brachii.l']
+Latissimus ['Latissimus dorsi muscle.el', 'Latissimus dorsi muscle.er', 'Latissimus dorsi muscle.l', 'Latissimus dorsi muscle.ol', 'Latissimus dorsi muscle.or', 'Latissimus dorsi muscle.r']
+Trapezius ['Ascending part of trapezius muscle.el', 'Ascending part of trapezius muscle.er', 'Ascending part of trapezius muscle.l', 'Ascending part of trapezius muscle.ol', 'Ascending part of trapezius muscle.or', 'Ascending part of trapezius muscle.r', 'Descending part of trapezius muscle.l', 'Descending part of trapezius muscle.ol']
+Rectus abdominis ['Rectus abdominis muscle.l', 'Rectus abdominis muscle.r', 'Rectus abdominis muscle.el', 'Rectus abdominis muscle.er', 'Rectus abdominis muscle.ol', 'Rectus abdominis muscle.or']
+Skin []
+skin []
+SCENES ['Scene'] ENGINE BLENDER_EEVEE_NEXT
+Read blend: "/tmp/za/Z-Anatomy/Startup.blend"
+Warning: region type 5 missing in space type "Text" (id: 9) - removing region
+scripts disabled for "/tmp/za/Z-Anatomy/Startup.blend", skipping 'z-anatomy.py'
+Dependency cycle detected:
+  CUOesophagus/GEOMETRY_EVAL() depends on
+  OBOesophagus-profile/TRANSFORM_FINAL() via 'Curve Bevel Transform'
+  OBOesophagus-profile/TRANSFORM_SIMULATION_INIT() via 'Simulation -> Final Transform'
+  OBOesophagus-profile/TRANSFORM_EVAL() via 'Transform Eval -> Simulation Init'
+  OBOesophagus-profile/TRANSFORM_PARENT() via 'Eval'
+  OBOesophagus-profile/TRANSFORM_LOCAL() via 'ObLocal -> ObParent'
+  OBOesophagus-profile/TRANSFORM_INIT() via 'Transform Init'
+  OBOesophagus/GEOMETRY_EVAL() via 'Curve Follow Parent'
+  OBOesophagus/MODIFIER(Solidify) via 'modifier stack order'
+  OBOesophagus/GEOMETRY_EVAL_INIT() via 'Modifier'
+  CUOesophagus/GEOMETRY_EVAL_DONE() via 'Object Geometry Base Data'
+  CUOesophagus/GEOMETRY_EVAL() via 'ObData Geom Eval Done'
+Detected 1 dependency cycles
