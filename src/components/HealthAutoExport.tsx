@@ -117,7 +117,7 @@ function Coverage({ st }: { st: HaeState }) {
           Не приходит: {missing.map((c) => c.name.toLowerCase()).join(', ')}. Проверь, что в автоматизации выбраны все показатели, а на iPhone у Health Auto Export есть доступ к ним: Настройки → Здоровье → Доступ к данным и устройства → Health Auto Export → «Включить все».
         </span>
       )}
-      <span className="muted tiny">«—» — такие данные не приходили (например, нет весов или не ведёшь еду) — это не ошибка.</span>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>«—» — не приходило. Если эти данные у тебя есть в Здоровье, проверь доступ Health Auto Export: Настройки → Здоровье → Доступ к данным и устройства → Health Auto Export.</span>
     </div>
   );
 }
