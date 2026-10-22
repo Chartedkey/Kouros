@@ -3,6 +3,7 @@
 import bpy, sys, math, os
 from mathutils import Vector
 bpy.ops.wm.open_mainfile(filepath=sys.argv[-1])
+print('opened', flush=True)
 sc = bpy.context.scene
 OUT = os.path.join(os.path.dirname(__file__), 'out')
 SKIP = ('.ol', '.or', '.el', '.er', '.ot', '.et')
@@ -68,6 +69,7 @@ for n in want:
     for v in o.bound_box:
         w = o.matrix_world @ Vector(v)
         lo = Vector(map(min, lo, w)); hi = Vector(map(max, hi, w))
+print('materials done', flush=True)
 print('bounds', tuple(round(x, 3) for x in lo), tuple(round(x, 3) for x in hi))
 c = (lo + hi) / 2; size = hi - lo
 

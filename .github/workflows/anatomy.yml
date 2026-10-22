@@ -24,7 +24,13 @@ jobs:
         run: |
           mkdir -p tools/anatomy/out
           SCRIPT=$(cat tools/anatomy/run.txt 2>/dev/null || echo probe.py)
-          python -u tools/anatomy/$SCRIPT /tmp/za/Z-Anatomy/Startup.blend > tools/anatomy/out/log.txt 2>&1 || (tail -50 tools/anatomy/out/log.txt; exit 0)
+          python -u tools/anatomy/$SCRIPT /tmp/za/Z-Anatomy/Startup.blend > tools/anatomy/out/log.txt 2>&1 &
+          P=$!
+          while kill -0 $P 2>/dev/null; do
+            sleep 45
+            echo "::notice::$(free -m | awk '/Mem/{print "mem used "$3" of "$2" MB"}') | $(grep -v '^Fra\|Sample' tools/anatomy/out/log.txt | tail -2 | tr '\n' ' ' | cut -c1-200)"
+          done
+          wait $P || true
           tail -80 tools/anatomy/out/log.txt
       - name: commit
         if: always()
