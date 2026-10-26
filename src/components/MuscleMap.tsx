@@ -89,7 +89,8 @@ export function MuscleMap({ groups, missing = [], onOpen }: { groups: MuscleGrou
           </button>
         );
       })}
-XX, minWidth: 0 }}><Body by={by} sel={sel} onPick={setSel} /></div>
+      <div className="row" style={{ gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ flex: '3 1 420px', minWidth: 0 }}><Body by={by} sel={sel} onPick={setSel} /></div>
         <div className="stack" style={{ gap: 8, flex: '2 1 240px', minWidth: 0 }}>
           {g ? (
             <>
