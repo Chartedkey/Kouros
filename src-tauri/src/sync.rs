@@ -250,7 +250,7 @@ async fn freddy_sync_inner(app: &AppHandle, full: bool) -> Result<FreddySync, St
         Ok((p, d))
     })?;
     let mut done = done;
-    let todo: Vec<String> = provs.into_iter().filter(|p| !done.contains(p)).collect();
+    let todo: Vec<String> = provs.into_iter().filter(|p| !done.contains(p) && p != crate::sources::MANUAL).collect();
     for p in todo {
         let mut cursor: Option<String> = None;
         let mut complete = false;

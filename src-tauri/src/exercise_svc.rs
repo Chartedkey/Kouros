@@ -10,9 +10,16 @@ use rusqlite::{params, Connection};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::io::Read;
-use std::sync::OnceLock;
+use std::sync::{OnceLock, RwLock};
 
 static LIB_GZ: &[u8] = include_bytes!("../resources/exercises.json.gz");
+/// 1.4: Kouros' own exercises for the runner's ОФП list (no photos), merged into the library.
+static EXTRA: &str = include_str!("../resources/exercises_extra.json");
+
+fn extra() -> &'static Value {
+    static E: OnceLock<Value> = OnceLock::new();
+    E.get_or_init(|| serde_json::from_str(EXTRA).unwrap_or(Value::Null))
+}
 
 fn lib() -> &'static Value {
     static L: OnceLock<Value> = OnceLock::new();
@@ -22,8 +29,26 @@ fn lib() -> &'static Value {
         if d.read_to_string(&mut s).is_err() {
             return Value::Null;
         }
-        serde_json::from_str(&s).unwrap_or(Value::Null)
+        let mut v: Value = serde_json::from_str(&s).unwrap_or(Value::Null);
+        if let (Some(items), Some(more)) = (v["items"].as_array_mut(), extra()["items"].as_array()) {
+            items.extend(more.iter().cloned());
+        }
+        v
     })
+}
+
+/// Your own exercises (1.4, settings `custom_exercises`), kept in memory for the muscle load.
+static CUSTOM: RwLock<Vec<Value>> = RwLock::new(Vec::new());
+
+pub fn load_custom(conn: &Connection) {
+    let v: Vec<Value> = db::get_setting(conn, "custom_exercises").and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
+    if let Ok(mut c) = CUSTOM.write() {
+        *c = v;
+    }
+}
+
+pub fn custom_snapshot() -> Vec<Value> {
+    CUSTOM.read().map(|c| c.clone()).unwrap_or_default()
 }
 
 fn index() -> &'static HashMap<String, usize> {
@@ -33,13 +58,115 @@ fn index() -> &'static HashMap<String, usize> {
     })
 }
 
-pub fn by_id(id: &str) -> Option<&'static Value> {
+fn lib_item(id: &str) -> Option<&'static Value> {
     index().get(id).and_then(|i| lib()["items"].get(*i))
 }
 
-/// The whole library for the UI (cached there).
+/// An exercise of the library or one of your own.
+pub fn by_id(id: &str) -> Option<Value> {
+    lib_item(id).cloned().or_else(|| custom_snapshot().into_iter().find(|x| x["id"].as_str() == Some(id)))
+}
+
+/// The whole library for the UI (cached there): built-in items, then your own; `runnerOfp` = the
+/// runner's ОФП list (1.4).
 pub fn list() -> Value {
-    json!({"source": lib()["source"], "version": lib()["version"], "items": lib()["items"]})
+    let mut items = lib()["items"].as_array().cloned().unwrap_or_default();
+    items.extend(custom_snapshot());
+    json!({"source": lib()["source"], "version": lib()["version"], "items": items, "runnerOfp": extra()["runnerOfp"]})
+}
+
+// ---------- your complexes and exercises (1.4) ----------
+
+/// Settings `complexes`: [{id, name, areas: [pain area keys], note, items: [{exId, leg}]}] and
+/// `custom_exercises`: [{id "c_…", ru, tip, p, s, st, leg, bw}]. A complex keeps only its list
+/// of exercises (repeats allowed); rounds, reps and load are entered on the workout page.
+pub fn complexes(conn: &Connection) -> Value {
+    let cx: Vec<Value> = db::get_setting(conn, "complexes").and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
+    json!({"complexes": cx, "custom": custom_snapshot()})
+}
+
+fn clean_custom(n: usize, x: &Value) -> Option<Value> {
+    let ru = x["ru"].as_str()?.trim();
+    if ru.is_empty() {
+        return None;
+    }
+    let id = x["id"].as_str().filter(|s| s.starts_with("c_")).map(String::from).unwrap_or_else(|| format!("c_{}_{n}", crate::store::now()));
+    let strs = |v: &Value| -> Vec<String> { v.as_array().map(|a| a.iter().filter_map(|y| y.as_str().map(String::from)).collect()).unwrap_or_default() };
+    Some(json!({
+        "id": id, "ru": ru, "en": "", "syn": strs(&x["syn"]), "tip": x["tip"].as_str().unwrap_or("").trim(),
+        "cat": "strength", "eq": x["eq"].as_str().unwrap_or("body only"), "lvl": "", "mech": "", "force": "",
+        "p": strs(&x["p"]), "s": strs(&x["s"]), "bw": x["bw"].as_f64(), "st": x["st"].as_bool().unwrap_or(false),
+        "leg": x["leg"].as_bool().unwrap_or(false), "img": 0, "own": true,
+    }))
+}
+
+fn clean_complex(x: &Value, n: usize) -> Option<Value> {
+    let name = x["name"].as_str()?.trim();
+    if name.is_empty() {
+        return None;
+    }
+    let items: Vec<Value> = x["items"]
+        .as_array()
+        .map(|a| a.iter().filter_map(|i| {
+            let id = i["exId"].as_str().filter(|s| !s.is_empty())?;
+            Some(json!({"exId": id, "leg": i["leg"].as_bool()}))
+        }).collect())
+        .unwrap_or_default();
+    Some(json!({
+        "id": x["id"].as_str().filter(|s| !s.is_empty()).map(String::from).unwrap_or_else(|| format!("x_{}_{n}", crate::store::now())),
+        "name": name, "note": x["note"].as_str().unwrap_or("").trim(),
+        "areas": x["areas"].as_array().cloned().unwrap_or_default(), "items": items,
+    }))
+}
+
+pub fn save_complexes(conn: &Connection, cx: &[Value], custom: &[Value]) -> Result<(), String> {
+    let custom: Vec<Value> = custom.iter().enumerate().filter_map(|(n, x)| clean_custom(n, x)).collect();
+    let cx: Vec<Value> = cx.iter().enumerate().filter_map(|(n, x)| clean_complex(x, n)).collect();
+    db::set_setting(conn, "custom_exercises", &serde_json::to_string(&custom).unwrap_or_else(|_| "[]".into()))?;
+    db::set_setting(conn, "complexes", &serde_json::to_string(&cx).unwrap_or_else(|_| "[]".into()))?;
+    load_custom(conn);
+    Ok(())
+}
+
+/// Adds complexes and exercises from a file ({complexes, custom}); ones already there (same id
+/// or same name) are left as they are. Returns (complexes added, exercises added).
+pub fn import_complexes(conn: &Connection, text: &str) -> Result<(usize, usize), String> {
+    let v: Value = serde_json::from_str(text.trim_start_matches('\u{feff}')).map_err(|_| "Это не файл комплексов Kouros (нужен JSON).".to_string())?;
+    let cur = complexes(conn);
+    let mut cx: Vec<Value> = cur["complexes"].as_array().cloned().unwrap_or_default();
+    let mut custom: Vec<Value> = cur["custom"].as_array().cloned().unwrap_or_default();
+    let (mut nc, mut ne) = (0, 0);
+    // An exercise you already have under the same name keeps its id; the file's complexes point to it.
+    let mut remap: HashMap<String, String> = HashMap::new();
+    for x in v["custom"].as_array().into_iter().flatten() {
+        if let Some(c) = custom.iter().find(|c| c["id"] == x["id"] || c["ru"] == x["ru"]) {
+            if let (Some(a), Some(b)) = (x["id"].as_str(), c["id"].as_str()) {
+                remap.insert(a.to_string(), b.to_string());
+            }
+        } else {
+            custom.push(x.clone());
+            ne += 1;
+        }
+    }
+    for x in v["complexes"].as_array().into_iter().flatten() {
+        if !cx.iter().any(|c| c["id"] == x["id"] || c["name"] == x["name"]) {
+            let mut x = x.clone();
+            if let Some(items) = x["items"].as_array_mut() {
+                for i in items.iter_mut() {
+                    if let Some(to) = i["exId"].as_str().and_then(|id| remap.get(id)).cloned() {
+                        i["exId"] = json!(to);
+                    }
+                }
+            }
+            cx.push(x);
+            nc += 1;
+        }
+    }
+    if nc == 0 && ne == 0 && v["complexes"].as_array().map(|a| a.is_empty()).unwrap_or(true) {
+        return Err("В файле нет комплексов.".into());
+    }
+    save_complexes(conn, &cx, &custom)?;
+    Ok((nc, ne))
 }
 
 /// Your weight around a date: median of the weighings of the 30 days before it, else the latest one.
@@ -92,6 +219,7 @@ fn band_kg(b: &Value) -> f64 {
 /// (`mode` "assist" — the band helps, e.g. pull-ups with a band — subtracts).
 pub fn effective(set: &Value, body: Option<f64>, bands: &[Value]) -> (Option<f64>, Option<f64>, Option<f64>) {
     let ex = set["exId"].as_str().and_then(by_id);
+    let ex = ex.as_ref();
     if ex.map(|e| e["st"].as_bool() == Some(true)).unwrap_or(false) {
         return (None, None, None); // static hold: time under load, not kilograms
     }
@@ -111,8 +239,8 @@ pub fn effective(set: &Value, body: Option<f64>, bands: &[Value]) -> (Option<f64
 
 /// Muscle groups (`muscle_svc::GROUPS` order) of an exercise: primary muscles count fully,
 /// secondary half; leg-dominant work also loads the knees, calf work the ankles.
-pub fn groups(id: &str) -> Option<[f64; 12]> {
-    let ex = by_id(id)?;
+pub fn groups_in(id: &str, custom: &[Value]) -> Option<[f64; 12]> {
+    let ex = lib_item(id).or_else(|| custom.iter().find(|x| x["id"].as_str() == Some(id)))?;
     let mut g = [0.0f64; 12];
     let mut put = |m: &str, w: f64| match m {
         "calves" => { g[0] += w; g[11] += 0.15 * w }

@@ -3,6 +3,7 @@
 mod db;
 pub mod engine;
 mod engine_svc;
+mod manual_svc;
 mod export;
 mod freddy;
 mod hello;
@@ -495,6 +496,59 @@ fn strength_sets_save(id: String, sets: Vec<serde_json::Value>, app: AppHandle, 
     with_db_mut(&st, |c| activity_svc::save_sets(c, &id, &sets))?;
     let _ = tauri::Emitter::emit(&app, "data-changed", "activity");
     Ok(())
+}
+
+#[tauri::command]
+fn ofp_save(id: String, blocks: Vec<serde_json::Value>, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db_mut(&st, |c| activity_svc::save_ofp(c, &id, &blocks))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "activity");
+    Ok(())
+}
+
+#[tauri::command]
+fn ofp_last(id: String, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| Ok(activity_svc::ofp_last(c, &id)))
+}
+
+#[tauri::command]
+fn device_change_decide(changes: Vec<serde_json::Value>, reset: bool, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| {
+        sources::device_decide(c, &changes, reset)?;
+        sources::install_view(c)
+    })?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "sources");
+    Ok(())
+}
+
+#[tauri::command]
+fn manual_state(st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| Ok(manual_svc::state(c)))
+}
+
+#[tauri::command]
+fn manual_save(date: String, values: serde_json::Value, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| manual_svc::save(c, &date, &values))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "manual");
+    Ok(())
+}
+
+#[tauri::command]
+fn complexes_get(st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    with_db(&st, |c| Ok(exercise_svc::complexes(c)))
+}
+
+#[tauri::command]
+fn complexes_save(complexes: Vec<serde_json::Value>, custom: Vec<serde_json::Value>, app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    with_db(&st, |c| exercise_svc::save_complexes(c, &complexes, &custom))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "complexes");
+    Ok(())
+}
+
+#[tauri::command]
+fn complexes_import(text: String, app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let (c, e) = with_db(&st, |c| exercise_svc::import_complexes(c, &text))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "complexes");
+    Ok(serde_json::json!({"complexes": c, "exercises": e}))
 }
 
 #[tauri::command]
@@ -1137,6 +1191,14 @@ pub fn run() {
             activity_get,
             activity_update,
             strength_sets_save,
+            ofp_save,
+            ofp_last,
+            complexes_get,
+            manual_state,
+            manual_save,
+            device_change_decide,
+            complexes_save,
+            complexes_import,
             exercises_list,
             shoe_advice,
             open_link,

@@ -43,6 +43,14 @@ const demo = {
   unlocked: false,
   imported: true,
   cond: null as { date: string; temp: string; surface: string } | null,
+  ofp: {} as Record<string, OfpBlock[]>,
+  complexes: [
+    { id: 'x_demo1', name: 'Пример: колени', note: 'Демо-комплекс', areas: ['knees'], items: [{ exId: 'Bodyweight_Squat' }, { exId: 'k_bird_dog' }, { exId: 'Plank' }] },
+    { id: 'x_demo2', name: 'Пример: стопы', note: '', areas: ['foot', 'ankles'], items: [{ exId: 'k_eccentric_heel_drop' }, { exId: 'c_demo1' }] },
+  ] as Complex[],
+  custom: [
+    { id: 'c_demo1', ru: 'Сбор полотенца пальцами (пример)', en: '', syn: [], tip: 'Сидя, пальцами стопы подтягивай полотенце к себе.', cat: 'strength', eq: 'body only', lvl: '', mech: '', force: '', p: ['calves'], s: [], bw: null, st: false, leg: true, img: 0, own: true },
+  ] as ExerciseItem[],
 };
 
 const DEMO_STRESS = {
@@ -52,6 +60,7 @@ const DEMO_STRESS = {
 
 const DEMO_SUMMARY = {
   today: '2026-10-17', hrRestUsed: 53,
+  muscleMissing: [{ id: 's3', sport: 'strength', start: 1792300000, name: 'Силовая', free: 18, total: 18 }],
   // Fictional muscle state for the demo map (1.2).
   muscleMap: ([
     ['calves', 'Икры', 'loaded', 1.38], ['quads', 'Квадрицепсы', 'over', 1.74], ['hams', 'Задняя поверхность бедра', 'loaded', 1.31],
@@ -148,6 +157,7 @@ function demoDetail(id: string): ActivityDetail {
     zoneS: [300, 900, 1500, 200, 40, 0],
     charts: run ? { t, hr, dist, speed, alt: t.map((_, i) => 150 + 8 * Math.sin(i / 60)), cad: [], lat: t.map((_, i) => 59.94 + 0.01 * Math.sin(i / 90)), lng: t.map((_, i) => 30.31 + 0.015 * Math.cos(i / 90)) } : null,
     splits: run ? Array.from({ length: Math.floor(d / 1000) }, (_, k) => ({ km: k + 1, timeS: 1000 / (a.sport === 'run' ? 2.7 : 1.5) + (k % 3) * 8, hr: 140 + k, full: true })) : [],
+    ofp: demo.ofp[id] ?? [],
     sets: strength ? Array.from({ length: 8 }, (_, k) => ({ idx: k, startUtc: a.startUtc + k * 150, durationS: k % 2 ? 90 : 40, reps: k % 2 ? null : 10, weightKg: k % 2 ? null : 40, kind: (k % 2 ? 'rest' : 'active') as 'rest' | 'active', exercise: null })) : [],
     bodyKg: strength ? 78.4 : null,
   };
@@ -296,14 +306,29 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     }
     case 'activity_get': return demoDetail(String(args.id));
     case 'activity_update': case 'strength_sets_save': case 'shoes_set': return null;
+    case 'ofp_save': demo.ofp[String(args.id)] = args.blocks as OfpBlock[]; return null;
+    case 'ofp_last': return { 'x_demo1': { date: '2026-10-20', block: { cid: 'x_demo1', name: 'Пример: колени', rounds: 3, items: [
+      { exId: 'Bodyweight_Squat', name: 'Приседания без веса', reps: 15, sec: null, leg: false, load: { kind: 'none' }, skip: false },
+      { exId: 'k_bird_dog', name: 'Охотничья собака', reps: 10, sec: null, leg: true, load: { kind: 'none' }, skip: false },
+      { exId: 'Plank', name: 'Планка', reps: null, sec: 45, leg: false, load: { kind: 'none' }, skip: false },
+    ] } } } satisfies OfpLast;
+    case 'device_change_decide': case 'manual_save': return null;
+    case 'manual_state': return { hrvOn: true, vitalsOn: false, kind: 'rmssd', today: '2026-10-26', values: { hrv: null, resp: null, spo2: null }, usual: { hrv: 62, resp: null, spo2: null }, history: [] } satisfies ManualState;
+    case 'complexes_get': return { complexes: demo.complexes, custom: demo.custom };
+    case 'complexes_save': demo.complexes = args.complexes as Complex[]; demo.custom = (args.custom as ExerciseItem[]).map((x) => ({ ...x, en: '', cat: 'strength', eq: 'body only', lvl: '', mech: '', force: '', img: 0, own: true, syn: x.syn ?? [] })); return null;
+    case 'complexes_import': return { complexes: 0, exercises: 0 };
     case 'exercises_list': return ['Жим штанги лёжа', 'Приседания со штангой', 'Тяга верхнего блока'];
     case 'exercise_library': return { source: 'демо', version: 'demo', items: [
       { id: 'Pushups', ru: 'Отжимания', en: 'Pushups', syn: ['отжимания от пола'], tip: 'Руки на ширине плеч, тело прямое; опускай грудь к полу и выжимай.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'push', p: ['chest'], s: ['shoulders', 'triceps'], bw: 0.64, st: false, img: 2 },
       { id: 'Pullups', ru: 'Подтягивания', en: 'Pullups', syn: ['подтягивания на турнике'], tip: 'Хват шире плеч; подтягивайся до подбородка над перекладиной.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'pull', p: ['lats'], s: ['biceps', 'middle back'], bw: 0.95, st: false, img: 2 },
       { id: 'Barbell_Squat', ru: 'Приседания со штангой', en: 'Barbell Squat', syn: ['присед'], tip: 'Штанга на трапециях; садись до параллели, спина прямая.', cat: 'strength', eq: 'barbell', lvl: 'beginner', mech: 'compound', force: 'push', p: ['quadriceps'], s: ['glutes', 'hamstrings', 'calves'], bw: null, st: false, img: 2 },
       { id: 'Plank', ru: 'Планка', en: 'Plank', syn: [], tip: 'Упор на предплечьях и носках; тело прямое.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'isolation', force: 'static', p: ['abdominals'], s: [], bw: null, st: true, img: 2 },
+      { id: 'Bodyweight_Squat', ru: 'Приседания без веса', en: 'Bodyweight Squat', syn: [], tip: 'Стопы на ширине плеч; садись, отводя таз назад, и вставай.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'push', p: ['quadriceps'], s: ['glutes', 'hamstrings'], bw: 0.8, st: false, img: 2 },
+      { id: 'k_bird_dog', ru: 'Охотничья собака', en: 'Bird dog', syn: [], tip: 'На четвереньках вытяни руку и противоположную ногу, задержись и вернись.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'static', p: ['lower back'], s: ['glutes', 'abdominals'], bw: null, st: false, leg: true, img: 0 },
+      { id: 'k_eccentric_heel_drop', ru: 'Медленное опускание пятки (эксцентрика)', en: 'Eccentric heel drop', syn: [], tip: 'На ступеньке поднимись на двух ногах и медленно опустись на одной.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'isolation', force: 'push', p: ['calves'], s: [], bw: 0.9, st: false, leg: true, img: 0 },
+      ...demo.custom,
       { id: 'Band_Pull_Apart', ru: 'Разведение резины перед собой', en: 'Band Pull Apart', syn: [], tip: 'Прямые руки перед собой; растягивай резину в стороны.', cat: 'strength', eq: 'bands', lvl: 'beginner', mech: 'isolation', force: 'pull', p: ['shoulders'], s: ['middle back', 'traps'], bw: null, st: false, img: 2 },
-    ] } satisfies ExerciseLibrary;
+    ], runnerOfp: ['Bodyweight_Squat', 'Plank', 'Pushups', 'k_bird_dog', 'k_eccentric_heel_drop'] } satisfies ExerciseLibrary;
     case 'bands_get': return [{ id: 'b1', name: 'Зелёная', color: '#3DDC97', lo: 15, hi: 35, unit: 'kg' }, { id: 'b2', name: 'Красная', color: '#FF6B6B', lo: 5, hi: 15, unit: 'kg' }] satisfies ResBand[];
     case 'bands_set': return null;
     case 'activity_set_shoe': case 'setting_list_set': case 'map_set_enabled': case 'map_cache_clear': return null;
@@ -524,7 +549,12 @@ function demoSources(): SourcesState {
 function demoBody(): BodyState {
   return {
     areas: [['foot', 'Стопа'], ['ankles', 'Ахилл и голеностоп'], ['shin', 'Голень'], ['calves', 'Икры'], ['knees', 'Колено'], ['quads', 'Передняя поверхность бедра'], ['hams', 'Задняя поверхность бедра'], ['hips', 'Тазобедренный сустав'], ['glutes', 'Ягодицы'], ['back', 'Спина'], ['core', 'Живот и кор'], ['chest', 'Грудь'], ['shoulders', 'Плечо'], ['arms', 'Рука'], ['neck', 'Шея'], ['other', 'Другое']].map(([key, name]) => ({ key, name })),
-    pains: [{ area: 'knees', side: 'R', name: 'Колено (правая сторона)', level: 4, date: '2026-10-19', active: true, trend: 'better', days14: 5, series: [['2026-10-13', 6], ['2026-10-15', 5], ['2026-10-17', 4], ['2026-10-19', 4]], entries: [{ id: 1, date: '2026-10-19', level: 4, context: 'morning', note: null }] }],
+    pains: [{ area: 'knees', side: 'R', name: 'Колено (правая сторона)', level: 4, date: '2026-10-19', active: true, trend: 'better', days14: 5, series: [['2026-10-13', 6], ['2026-10-15', 5], ['2026-10-17', 4], ['2026-10-19', 4]], entries: [{ id: 1, date: '2026-10-19', level: 4, context: 'morning', note: null }],
+      advice: { phase: 'sub', phaseText: 'вторая неделя — заживление', days: 7, remove: ['Убери интервалы, темп, длительную и прыжки; бег — только лёгкий и короткий, если боль не растёт во время и на следующее утро.', 'Спуски и глубокие приседания с весом отложи — они сильнее всего нагружают колено.'],
+        complexes: [{ id: 'x_demo1', name: 'Пример: колени' }], complexText: 'Из твоих комплексов подойдут — без боли во время и на следующее утро; если болит сильнее, сократи круги.',
+        temp: 'Если отёка нет — тепло на 10–15 минут перед нагрузкой и мягкая подвижность; холод — после, если место ноет. Сауна — по самочувствию, без отёка.',
+        ointment: 'Мази и гели: разогревающие — перед нагрузкой, если нет отёка; с противовоспалительным (НПВС) — строго по инструкции и коротко, не чтобы тренироваться через боль; обсуди с врачом, особенно если пьёшь другие лекарства.',
+        doctor: [], redFlags: 'К врачу сразу, если есть отёк, боль ночью или в покое, онемение или покалывание, не можешь опереться на ногу, или боль появилась после удара или падения.' } }],
     pending: [{ id: 's1', sport: 'run', name: 'Вечерний бег', start: 1792440000, min: 52, km: 9.4, rpe: null, shoeId: null, askShoe: true }],
     return: { active: false, steps: ['Бодрая ходьба 30 минут', '5 × (1 мин бег / 2 мин ходьба)', '6 × (2 мин бег / 1 мин ходьба)', '5 × (4 мин бег / 1 мин ходьба)', 'Лёгкий бег 20 минут без остановок', 'Лёгкий бег 30 минут'], stageText: '' },
     tools: { have: 4, best: [{ name: 'Роллер', text: '10 минут: икры, квадрицепсы — по 1–2 минуты на группу, медленно.' }, { name: 'Компрессионная одежда', text: 'Надень на 2–3 часа после тренировки.' }, { name: 'Растяжка', text: '10–15 минут: икры, задняя поверхность бедра.' }], more: [], not: [{ name: 'Перкуссионный массажёр', text: 'не по больному месту (ахилл, 5/10)' }] },
@@ -634,7 +664,13 @@ export type WorkoutAlt = { id: string; sourceName: string; detail: string; min: 
 export type PendingCheckin = { id: string; sport: string; name: string | null; start: number; min: number; km: number | null; rpe: number | null; shoeId?: string | null; askShoe?: boolean };
 export type ShoeRun = { id: string; sport: string; name: string | null; startUtc: number; distanceM: number | null };
 export type PainEntry = { id: number; date: string; level: number; context: string; note: string | null };
+export type PainAdvice = {
+  phase: 'acute' | 'sub' | 'long'; phaseText: string; days: number; remove: string[]; complexes: { id: string; name: string }[]; complexText: string | null;
+  temp: string; ointment: string; doctor: string[]; redFlags: string;
+};
 export type PainArea = {
+  /** 1.4: what to do with an active pain. */
+  advice?: PainAdvice | null;
   area: string; side: string; name: string; level: number; date: string; active: boolean; trend: 'better' | 'worse' | 'same' | 'new';
   days14: number; series: [string, number][]; entries: PainEntry[];
 };
@@ -754,15 +790,30 @@ export type ExportResult = { folder: string; files: number; skipped: number };
 export type ListFilter = { sport?: string | null; days?: number | null; query?: string; sort?: 'date' | 'distance' | 'duration' | 'load' };
 export type SetRow = {
   idx?: number; startUtc: number | null; durationS: number | null; reps: number | null; weightKg: number | null;
-  kind: 'active' | 'rest'; exercise: string | null; category?: number | null;
+  kind: 'active' | 'rest' | 'skip'; exercise: string | null; category?: number | null;
   /** 0.22: exercise from the library, bands used, effective load of one repetition (kg). */
   exId?: string | null; band?: { ids: string[]; mode: 'add' | 'assist' } | null; effKg?: number | null;
 };
 export type ExerciseItem = {
   id: string; ru: string; en: string; syn: string[]; tip: string; cat: string | null; eq: string | null; lvl: string | null;
   mech: string | null; force: string | null; p: string[]; s: string[]; bw: number | null; st: boolean; img: number;
+  /** 1.4: done on each leg / side (reps are per leg); `own` = your own exercise. */
+  leg?: boolean; own?: boolean;
 };
-export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[] };
+export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[]; runnerOfp?: string[] };
+/** 1.4: «ОФП и комплексы» — a block is a complex or one exercise; it is saved as ordinary sets. */
+export type ManualState = {
+  hrvOn: boolean; vitalsOn: boolean; kind: 'rmssd' | 'sdnn'; today: string;
+  values: { hrv: number | null; resp: number | null; spo2: number | null }; usual: { hrv: number | null; resp: number | null; spo2: number | null };
+  history: { date: string; hrv: number | null; resp: number | null; spo2: number | null }[];
+};
+export type DeviceChange = { group: string; name: string; from: string; to: string; since: string };
+export type OfpLoad = { kind: 'none' | 'band' | 'kg'; kg?: number | null; band?: { ids: string[]; mode: 'add' | 'assist' } | null };
+export type OfpItem = { exId: string | null; name: string | null; reps: number | null; sec: number | null; leg: boolean; load: OfpLoad; skip: boolean };
+export type OfpBlock = { cid: string | null; name: string; rounds: number; items: OfpItem[] };
+export type OfpLast = Record<string, { date: string; block: OfpBlock }>;
+export type Complex = { id: string; name: string; note: string; areas: string[]; items: { exId: string; leg?: boolean | null }[] };
+export type CustomExercise = { id: string; ru: string; tip: string; p: string[]; s: string[]; st: boolean; leg: boolean; bw: number | null; syn?: string[] };
 export type ResBand = { id: string; name: string; color: string; lo: number; hi: number; unit: 'kg' | 'lb' };
 export type KmSplit = { km: number; timeS: number; hr: number | null; full: boolean; distM?: number };
 export type ActivityDetail = {
@@ -771,7 +822,8 @@ export type ActivityDetail = {
   charts: { t: number[]; hr: (number | null)[]; dist: (number | null)[]; speed: (number | null)[]; alt: (number | null)[]; cad: (number | null)[]; lat: (number | null)[]; lng: (number | null)[] } | null;
   splits: KmSplit[]; sets: SetRow[]; bodyKg?: number | null;
   sourceName?: string; detailText?: string; hidden?: number; dupState?: string | null; alternatives?: WorkoutAlt[];
-  muscle?: { total: number; up: number | null; down: number | null; rec: { hours: number; heartH: number; muscleH: number } | null; bad?: boolean | null; groups: { key: string; name: string; value: number; pct: number }[] } | null;
+  ofp?: OfpBlock[];
+  muscle?: { total: number; free?: number | null; up: number | null; down: number | null; rec: { hours: number; heartH: number; muscleH: number } | null; bad?: boolean | null; groups: { key: string; name: string; value: number; pct: number }[] } | null;
 };
 export type Shoe = {
   id: string; name: string; kind: 'train' | 'race' | 'trail' | 'walk'; startDate: string; initialKm: number; limitKm: number;
@@ -959,6 +1011,14 @@ export const api = {
   activityGet: (id: string) => call<ActivityDetail>('activity_get', { id }),
   activityUpdate: (id: string, rpe: number | null, notes: string | null) => call<null>('activity_update', { id, rpe, notes }),
   strengthSetsSave: (id: string, sets: SetRow[]) => call<null>('strength_sets_save', { id, sets }),
+  ofpSave: (id: string, blocks: OfpBlock[]) => call<null>('ofp_save', { id, blocks }),
+  ofpLast: (id: string) => call<OfpLast>('ofp_last', { id }),
+  manualState: () => call<ManualState>('manual_state'),
+  manualSave: (date: string, values: { hrv?: number | null; resp?: number | null; spo2?: number | null; kind?: string }) => call<null>('manual_save', { date, values }),
+  deviceChangeDecide: (changes: DeviceChange[], reset: boolean) => call<null>('device_change_decide', { changes, reset }),
+  complexesGet: () => call<{ complexes: Complex[]; custom: ExerciseItem[] }>('complexes_get'),
+  complexesSave: (complexes: Complex[], custom: CustomExercise[]) => call<null>('complexes_save', { complexes, custom }),
+  complexesImport: (text: string) => call<{ complexes: number; exercises: number }>('complexes_import', { text }),
   exercises: () => call<string[]>('exercises_list'),
   exerciseLibrary: () => call<ExerciseLibrary>('exercise_library'),
   bandsGet: () => call<ResBand[]>('bands_get'),
@@ -1093,6 +1153,12 @@ export type EngineSummary = {
   };
   stress?: { today: StressDay | null; history: [string, number | null][] };
   muscleMap?: MuscleGroupState[];
+  /** 1.4: strength / ОФП workouts of the last 6 days whose load is not on the map (no exercises). */
+  /** 1.4: another watch now writes these groups (by the device field) — start the norm again? */
+  deviceChange?: DeviceChange[];
+  /** 1.4: HRV (and breathing / SpO₂) typed in by hand — null when every group has a device. */
+  manualEntry?: ManualState | null;
+  muscleMissing?: { id: string; sport: string; start: number; name: string | null; free: number; total: number }[];
   recovery?: { leftH: number; factor: number; workouts: { id: string; sport: string; end: number; hours: number; heartH: number; muscleH: number; leftH: number; muscle: number | null; up: number | null; down: number | null }[] };
   load: {
     today: number; atl: number; ctl: number; tsb: number; acwr: number | null; week: number;

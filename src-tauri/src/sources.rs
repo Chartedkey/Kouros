@@ -14,6 +14,8 @@ use std::collections::BTreeMap;
 pub const APPLE: &str = "APPLE_HEALTH";
 /// Health Auto Export (1.3): Apple Health data straight from the iPhone, same metric names.
 pub const HAE: &str = "HAE";
+/// 1.4: values typed in by the athlete (HRV from another app, breathing, SpO₂) — `manual_svc`.
+pub const MANUAL: &str = "MANUAL";
 /// Everything not in a group (food, water, caffeine, alcohol, running and walking metrics…):
 /// Apple Health through freddy or through Health Auto Export.
 pub const OTHER: &str = "other";
@@ -106,6 +108,9 @@ fn has_hae(conn: &Connection) -> bool {
 pub fn provider_name(p: &str) -> String {
     if is_hae(p) {
         return "Health Auto Export".into();
+    }
+    if p == MANUAL {
+        return "Ввожу сам".into();
     }
     PROVIDERS.iter().find(|x| x.0.eq_ignore_ascii_case(p)).map(|x| x.1.to_string()).unwrap_or_else(|| {
         let mut s = p.replace('_', " ").to_lowercase();
@@ -305,7 +310,103 @@ pub fn cut(conn: &Connection, group: &str) -> Option<String> {
     while i > 0 && apple_like(&segs[i].0) && apple_like(&segs[i - 1].0) {
         i -= 1;
     }
-    if i > 0 && !segs[i].1.is_empty() { Some(segs[i].1.clone()) } else { None }
+    let by_source = if i > 0 && !segs[i].1.is_empty() { Some(segs[i].1.clone()) } else { None };
+    // 1.4: the athlete changed watches inside one source and chose to start the norm again.
+    let by_device = device_resets(conn)[group].as_str().map(String::from);
+    match (by_source, by_device) {
+        (Some(a), Some(b)) => Some(a.max(b)),
+        (a, b) => a.or(b),
+    }
+}
+
+// ---------- a new watch inside the same source (1.4) ----------
+
+fn device_resets(conn: &Connection) -> Value {
+    db::get_setting(conn, "device_resets").and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_else(|| json!({}))
+}
+
+/// Brand of a device / app name as Apple Health stores it («Garmin Connect», «Apple Watch …»).
+/// Unknown names → None (the phone itself and odd apps never count as a new watch).
+fn brand(name: &str) -> Option<&'static str> {
+    let n = name.to_lowercase();
+    const B: [(&str, &str); 14] = [
+        ("garmin", "Garmin"), ("fitbit", "Fitbit"), ("pixel watch", "Pixel Watch"), ("oura", "Oura"), ("whoop", "Whoop"), ("polar", "Polar"),
+        ("suunto", "Suunto"), ("coros", "Coros"), ("zepp", "Amazfit"), ("amazfit", "Amazfit"), ("withings", "Withings"), ("galaxy", "Samsung"),
+        ("huawei", "Huawei"), ("watch", "Apple Watch"),
+    ];
+    B.iter().find(|b| n.contains(b.0)).map(|b| b.1)
+}
+
+/// Groups where another watch now writes the data than in the month before (by the device /
+/// source field of the rows): [{group, name, from, to, since}]. A change the athlete already
+/// answered (settings `device_seen`) is not asked again.
+pub fn device_change(conn: &Connection, today: &str) -> Vec<Value> {
+    let seen: Value = db::get_setting(conn, "device_seen").and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_else(|| json!({}));
+    let mut out = Vec::new();
+    for (g, name, metrics, _) in GROUPS.iter().filter(|g| matches!(g.0, "sleep" | "hrv" | "rhr" | "vitals")) {
+        let list = metrics.iter().map(|m| q(m)).collect::<Vec<_>>().join(",");
+        let sql = format!(
+            "SELECT date, COALESCE(NULLIF(source, ''), NULLIF(device, ''), '') FROM hm WHERE metric IN ({list}) AND date >= ?1 AND date <= ?2"
+        );
+        let rows: Vec<(String, String)> = conn
+            .prepare(&sql)
+            .and_then(|mut st| st.query_map(rusqlite::params![crate::engine::add_days(today, -34), today], |r| Ok((r.get(0)?, r.get(1)?))).map(|r| r.flatten().collect()))
+            .unwrap_or_default();
+        let recent_from = crate::engine::add_days(today, -4);
+        let (mut old, mut new): (BTreeMap<&str, usize>, BTreeMap<&str, (usize, std::collections::BTreeSet<String>)>) = (BTreeMap::new(), BTreeMap::new());
+        for (d, dev) in &rows {
+            let Some(b) = brand(dev) else { continue };
+            if *d >= recent_from {
+                let e = new.entry(b).or_default();
+                e.0 += 1;
+                e.1.insert(d.clone());
+            } else {
+                *old.entry(b).or_default() += 1;
+            }
+        }
+        let n_old: usize = old.values().sum();
+        let n_new: usize = new.values().map(|x| x.0).sum();
+        let (Some(top_old), Some(top_new)) = (old.iter().max_by_key(|x| *x.1), new.iter().max_by_key(|x| x.1 .0)) else { continue };
+        if top_old.0 == top_new.0 || n_old < 10 || (top_new.1 .1.len()) < 3 {
+            continue;
+        }
+        // The new watch writes most rows now and almost none of the month before.
+        let new_share = top_new.1 .0 as f64 / n_new.max(1) as f64;
+        let was = old.get(top_new.0).copied().unwrap_or(0) as f64 / n_old as f64;
+        if new_share < 0.6 || was > 0.1 || (*top_old.1 as f64) < 0.6 * n_old as f64 {
+            continue;
+        }
+        if seen[*g].as_str() == Some(*top_new.0) {
+            continue;
+        }
+        let since = top_new.1 .1.iter().next().cloned().unwrap_or_else(|| recent_from.clone());
+        out.push(json!({"group": g, "name": name, "from": top_old.0, "to": top_new.0, "since": since}));
+    }
+    out
+}
+
+/// The athlete's answer: `reset` = start the norm of these groups from the new watch's first day.
+pub fn device_decide(conn: &Connection, changes: &[Value], reset: bool) -> Result<(), String> {
+    let mut seen: Value = db::get_setting(conn, "device_seen").and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_else(|| json!({}));
+    let mut resets = device_resets(conn);
+    for c in changes {
+        let (Some(g), Some(to)) = (c["group"].as_str(), c["to"].as_str()) else { continue };
+        seen[g] = json!(to);
+        if reset {
+            if let Some(d) = c["since"].as_str() {
+                resets[g] = json!(d);
+            }
+        }
+    }
+    db::set_setting(conn, "device_seen", &seen.to_string())?;
+    db::set_setting(conn, "device_resets", &resets.to_string())?;
+    if reset {
+        // Frozen morning scores from that day were judged against the old watch's norm.
+        if let Some(from) = changes.iter().filter_map(|c| c["since"].as_str()).min() {
+            let _ = conn.execute("DELETE FROM readiness_log WHERE date >= ?1", rusqlite::params![from]);
+        }
+    }
+    Ok(())
 }
 
 pub fn current(conn: &Connection, group: &str) -> String {
@@ -346,6 +447,13 @@ fn warning(group: &str, from: &str, to: &str) -> String {
     if apple_like(from) && apple_like(to) {
         return "Это те же данные Apple Health, только другой дорогой — цифры не изменятся, личная норма не пересчитывается.".into();
     }
+    if to == MANUAL {
+        return if group == "hrv" {
+            format!("Утренний HRV будешь вводить сам — из приложения, которым меряешь (нагрудный датчик, Elite HRV и т. п.). Это другие цифры, чем у {f}, поэтому норма HRV наберётся заново, примерно за 2 недели.")
+        } else {
+            "Дыхание и SpO₂ будешь вводить сам утром; температура тела в это время не учитывается. Нормы наберутся заново.".to_string()
+        };
+    }
     match group {
         "hrv" => format!("{t} и {f} меряют HRV по-разному (разные методы и время замера) — цифры будут другого уровня, часто заметно выше или ниже. Норма HRV пересчитается заново."),
         "rhr" => format!("{t} считает пульс покоя по-своему — разница обычно 2–5 ударов. Норма пересчитается заново."),
@@ -376,12 +484,15 @@ pub fn state(conn: &Connection) -> Value {
             let cur = segs.last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string());
             let options: Vec<Value> = std::iter::once(json!({"provider": APPLE, "name": apple_name, "matched": metrics.len(), "of": metrics.len()}))
                 .chain(hae.then(|| json!({"provider": HAE, "name": "Health Auto Export", "matched": metrics.len(), "of": metrics.len()})))
-                .chain(provs.iter().filter(|_| *open).map(|p| {
+                .chain(provs.iter().filter(|p| *open && (p.as_str() != MANUAL || matches!(*g, "hrv" | "vitals"))).map(|p| {
                     let m = &maps[p];
                     let of = targets().filter(|t| t.group == *g).count();
                     let matched = targets().filter(|t| t.group == *g && m.contains_key(t.canon)).count();
                     json!({"provider": p, "name": provider_name(p), "matched": matched, "of": of})
                 }))
+                // Typing values in by hand is always possible for HRV and breathing / SpO₂.
+                .chain((matches!(*g, "hrv" | "vitals") && !provs.iter().any(|p| p == MANUAL))
+                    .then(|| json!({"provider": MANUAL, "name": provider_name(MANUAL), "matched": if *g == "hrv" { 1 } else { 2 }, "of": if *g == "hrv" { 1 } else { 3 }})))
                 .collect();
             // Who writes this group into Apple Health (a Garmin can write there too).
             let list = metrics.iter().map(|m| q(m)).collect::<Vec<_>>().join(",");

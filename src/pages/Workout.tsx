@@ -6,6 +6,7 @@ import {
 import { ExerciseCard, ExerciseInput, effectiveKg, useExerciseLib } from '../components/Exercises';
 import { useDataChanged } from '../lib/events';
 import { RouteMap } from './RouteMap';
+import { OfpCard } from '../components/Ofp';
 
 const ZONE_NAMES = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'];
 const ZONE_COLORS = ['#7FD3FF', '#3DDC97', '#F5B642', '#FF8A65', '#FF6B6B'];
@@ -454,6 +455,11 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
             {(d.muscle.down ?? 0) > 0 && <span className="small"><span className="muted">вниз </span><b className="num">{d.muscle.down} м</b></span>}
             {d.muscle.rec && <span className="small muted">сердце {d.muscle.rec.heartH} ч · мышцы {d.muscle.rec.muscleH} ч</span>}
           </div>
+          {(d.muscle.free ?? 0) > 0 && (
+            <span className="small muted" style={{ lineHeight: 1.5 }}>
+              {d.muscle.free === d.muscle.total ? 'Упражнения не внесены' : 'Часть подходов без узнанных упражнений'} — {d.muscle.free} из {d.muscle.total} учтены в общей мышечной нагрузке и восстановлении, но не на карте мышц. Внеси подходы или ОФП ниже.
+            </span>
+          )}
           {d.muscle.bad && <span className="small" style={{ color: '#F5B642', lineHeight: 1.5 }}>Высота записана со сбоем (скачки датчика) — для мышечной нагрузки взят твой обычный рельеф на таких тренировках.</span>}
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             {d.muscle.groups.slice(0, 6).map((g) => <span key={g.key} className="chip" style={{ background: '#1B1F25' }}>{g.name} · {g.pct}%</span>)}
@@ -512,6 +518,7 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
             </section>
           )}
           {isStrength && <SetsEditor key={d.sets.length + ':' + a.id} d={d} onSaved={load} />}
+          <OfpCard key={'ofp:' + a.id + ':' + (d.ofp?.length ?? 0)} d={d} onSaved={load} />
           {!c && !isStrength && <section className="card"><span className="muted small">У этой тренировки нет графиков — только итоги.{a.hasStreams ? '' : ' Strava догрузит их при следующей синхронизации, если они есть.'}</span></section>}
         </div>
         <div className="stack" style={{ gap: 20 }}>

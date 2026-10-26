@@ -382,6 +382,11 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE plan_days ADD COLUMN confirmed INTEGER;
     "#,
+    // v20: ОФП and complexes (1.4) — a set row that belongs to a block of the «ОФП и комплексы»
+    // card: JSON {c: complex id, n: name, b: block, r: round, s: rounds, i: item, leg}
+    r#"
+    ALTER TABLE strength_sets ADD COLUMN cx TEXT;
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {
@@ -409,6 +414,7 @@ pub fn open(root: &Path) -> Result<Connection, String> {
     // Every reader goes through the view of the chosen data sources (0.14).
     crate::sources::install_view(&conn)?;
     crate::workouts_svc::install_view(&conn)?;
+    crate::exercise_svc::load_custom(&conn);
     Ok(conn)
 }
 

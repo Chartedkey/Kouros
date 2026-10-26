@@ -76,6 +76,7 @@ function Group({ g, onChanged }: { g: SourceGroup; onChanged: () => void }) {
       </div>
       {!g.open && g.key !== 'other' && <span className="muted tiny">Только Apple Health: пульс по минутам и стресс Kouros считает из сырых замеров, а их другие источники во freddy не отдают.</span>}
       {g.key === 'other' && <span className="muted tiny">Еда YAZIO, вода и алкоголь Waterllama, кофеин, беговая динамика и походка — всё, что не вошло в группы выше.</span>}
+      {g.current === 'MANUAL' && <span className="muted tiny" style={{ lineHeight: 1.5 }}>Значения вводишь сам: каждое утро на «Сегодня» появится карточка{g.key === 'hrv' ? ' для HRV (RMSSD или SDNN — как показывает твоё приложение)' : ' для дыхания и SpO₂'}. Своя норма набирается по ним около 2 недель.</span>}
       {g.cut && <span className="tiny" style={{ color: '#F5B642' }}>Норма считается с {ruDate(g.cut)} — по данным {g.currentName}.</span>}
       {(g.current === 'APPLE_HEALTH' || g.current === 'HAE') && g.writers.length > 0 && (
         <span className="muted tiny" style={{ lineHeight: 1.5 }}>
@@ -88,9 +89,9 @@ function Group({ g, onChanged }: { g: SourceGroup; onChanged: () => void }) {
           <span className="small">Старые данные никуда не денутся — к прежнему источнику можно вернуться в любой момент.</span>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <button type="button" className="btn" disabled={busy} onClick={() => apply('keep')}>С сегодняшнего дня</button>
-            <button type="button" className="btn2" disabled={busy} onClick={() => apply('replace')}>
+            {pick !== 'MANUAL' && <button type="button" className="btn2" disabled={busy} onClick={() => apply('replace')}>
               {pv?.sameData && pick === 'HAE' ? 'Заменить прошлое, где есть выгрузка' : 'Заменить и историю'}{pv?.historyFrom ? ` (есть с ${ruDate(pv.historyFrom)})` : ''}
-            </button>
+            </button>}
             <button type="button" className="linkbtn small" onClick={() => { setPick(null); setPv(null); }}>Отмена</button>
           </div>
           <span className="tiny" style={{ color: '#c9b78f', lineHeight: 1.5 }}>
@@ -100,7 +101,7 @@ function Group({ g, onChanged }: { g: SourceGroup; onChanged: () => void }) {
           </span>
         </div>
       )}
-      {g.fields.length > 0 && !pick && (
+      {g.fields.length > 0 && !pick && g.current !== 'MANUAL' && (
         <>
           <button type="button" className="linkbtn tiny" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(!open)}>{open ? 'скрыть показатели' : 'какие показатели берутся'}</button>
           {open && <Fields g={g} onChanged={onChanged} />}
@@ -138,6 +139,114 @@ export function DataSourcesCard() {
         </span>
       )}
       {st.groups.map((g) => <Group key={g.key} g={g} onChanged={load} />)}
+    </section>
+  );
+}
+
+/** 1.4: «Похоже, ты сменил часы на Garmin. Начать норму заново?» — one card per change of watch. */
+export function DeviceChangeCard({ changes, onDone }: { changes: import('../lib/api').DeviceChange[]; onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const pairs = Array.from(new Set(changes.map((c) => `${c.from}→${c.to}`)));
+  return (
+    <>
+      {pairs.map((p) => {
+        const cs = changes.filter((c) => `${c.from}→${c.to}` === p);
+        const since = cs.map((c) => c.since).sort()[0];
+        const decide = async (reset: boolean) => {
+          setBusy(true);
+          try { await api.deviceChangeDecide(cs, reset); onDone(); } finally { setBusy(false); }
+        };
+        return (
+          <section key={p} className="card" aria-label="Новые часы" style={{ borderColor: '#F5B64255' }}>
+            <span className="label" style={{ color: '#F5B642' }}>Похоже, ты сменил часы на {cs[0].to}</span>
+            <span className="small" style={{ lineHeight: 1.5 }}>
+              С {ruDate(since)} {cs.map((c) => c.name.toLowerCase()).join(', ')} пишет {cs[0].to}, а раньше — {cs[0].from}. Разные часы меряют по-разному, поэтому старая норма может не подходить: готовность будет то завышенной, то заниженной.
+            </span>
+            <span className="muted small" style={{ lineHeight: 1.5 }}>Начать норму заново — Kouros 2 недели набирает её по новым часам («норма набирается»). Если часы те же или ты носишь двое, оставь как есть.</span>
+            <div className="row" style={{ gap: 10 }}>
+              <button type="button" className="btn" disabled={busy} onClick={() => decide(true)}>Начать норму заново</button>
+              <button type="button" className="btn2" disabled={busy} onClick={() => decide(false)}>Оставить как есть</button>
+            </div>
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
+/** 1.4: morning card «Введи HRV» while the HRV group (or breathing / SpO₂) is typed in by hand. */
+export function ManualEntryCard({ m, onDone }: { m: import('../lib/api').ManualState; onDone: () => void }) {
+  const has = (m.hrvOn ? m.values.hrv != null : true) && (m.vitalsOn ? m.values.resp != null || m.values.spo2 != null : true);
+  const [edit, setEdit] = useState(!has);
+  const [kind, setKind] = useState(m.kind);
+  const [f, setF] = useState({ hrv: m.values.hrv?.toString() ?? '', resp: m.values.resp?.toString() ?? '', spo2: m.values.spo2?.toString() ?? '' });
+  const [ask, setAsk] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')));
+  const odd = () => {
+    const out: string[] = [];
+    const chk = (v: number | null, u: number | null, what: string, k: number) => {
+      if (v == null || u == null) return;
+      if (v > u * (1 + k)) out.push(`${what} намного выше обычного (${Math.round(u)})`);
+      if (v < u * (1 - k)) out.push(`${what} намного ниже обычного (${Math.round(u)})`);
+    };
+    if (m.hrvOn) chk(n(f.hrv), m.usual.hrv, 'HRV', 0.5);
+    if (m.vitalsOn) { chk(n(f.resp), m.usual.resp, 'Дыхание', 0.25); chk(n(f.spo2), m.usual.spo2, 'SpO₂', 0.04); }
+    return out;
+  };
+  async function save(force: boolean) {
+    setErr(null);
+    const o = odd();
+    if (!force && o.length) { setAsk(`${o.join('; ')} — точно?`); return; }
+    try {
+      await api.manualSave(m.today, { kind, ...(m.hrvOn ? { hrv: n(f.hrv) } : {}), ...(m.vitalsOn ? { resp: n(f.resp), spo2: n(f.spo2) } : {}) });
+      setAsk(null); setEdit(false); onDone();
+    } catch (e) { setErr(errText(e)); }
+  }
+  return (
+    <section className="card" aria-label="Утренние показатели вручную">
+      <div className="between">
+        <span className="label">{has && !edit ? 'Утренние показатели' : m.hrvOn ? 'Введи утренний HRV' : 'Введи утренние показатели'}</span>
+        {has && !edit && <button type="button" className="linkbtn small" onClick={() => setEdit(true)}>Изменить</button>}
+      </div>
+      {!edit ? (
+        <span className="small">
+          {m.hrvOn && <>HRV <b className="num">{m.values.hrv}</b> мс ({m.kind === 'sdnn' ? 'SDNN' : 'RMSSD'})</>}
+          {m.vitalsOn && m.values.resp != null && <> · дыхание <b className="num">{m.values.resp}</b>/мин</>}
+          {m.vitalsOn && m.values.spo2 != null && <> · SpO₂ <b className="num">{m.values.spo2}</b>%</>}
+        </span>
+      ) : (
+        <>
+          <span className="muted small" style={{ lineHeight: 1.5 }}>Утром, до кофе и тренировки — из приложения, которым ты меряешь (нагрудный датчик, Elite HRV, Welltory и т. п.). Готовность посчитается с этими цифрами.</span>
+          <div className="row" style={{ gap: 10, alignItems: 'flex-end' }}>
+            {m.hrvOn && (
+              <div className="field"><label htmlFor="mn-hrv">HRV, мс</label><input id="mn-hrv" className="input" inputMode="decimal" style={{ width: 90 }} value={f.hrv} onChange={(e) => setF({ ...f, hrv: e.target.value })} /></div>
+            )}
+            {m.hrvOn && (
+              <div className="row" role="group" aria-label="Какой HRV" style={{ gap: 4 }}>
+                <button type="button" className="pill sm" aria-pressed={kind === 'rmssd'} onClick={() => setKind('rmssd')}>RMSSD</button>
+                <button type="button" className="pill sm" aria-pressed={kind === 'sdnn'} onClick={() => setKind('sdnn')}>SDNN</button>
+              </div>
+            )}
+            {m.vitalsOn && <div className="field"><label htmlFor="mn-resp">Дыхание, /мин</label><input id="mn-resp" className="input" inputMode="decimal" style={{ width: 90 }} value={f.resp} onChange={(e) => setF({ ...f, resp: e.target.value })} /></div>}
+            {m.vitalsOn && <div className="field"><label htmlFor="mn-spo2">SpO₂, %</label><input id="mn-spo2" className="input" inputMode="decimal" style={{ width: 90 }} value={f.spo2} onChange={(e) => setF({ ...f, spo2: e.target.value })} /></div>}
+          </div>
+          {kind !== m.kind && m.usual.hrv != null && <span className="tiny" style={{ color: '#F5B642', lineHeight: 1.5 }}>RMSSD и SDNN — разные числа. После смены норма HRV начнёт набираться заново (около 2 недель).</span>}
+          {ask ? (
+            <div className="row" style={{ gap: 10 }}>
+              <span className="small" style={{ color: '#F5B642' }}>{ask}</span>
+              <button type="button" className="btn" onClick={() => save(true)}>Да, верно</button>
+              <button type="button" className="linkbtn small" onClick={() => setAsk(null)}>Исправлю</button>
+            </div>
+          ) : (
+            <div className="row" style={{ gap: 10 }}>
+              <button type="button" className="btn" onClick={() => save(false)}>Сохранить</button>
+              {has && <button type="button" className="linkbtn small" onClick={() => setEdit(false)}>Отмена</button>}
+            </div>
+          )}
+          {err && <span className="small note-err">{err}</span>}
+        </>
+      )}
     </section>
   );
 }

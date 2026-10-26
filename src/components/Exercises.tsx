@@ -4,11 +4,21 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, type ResBand, type ExerciseItem, type ExerciseLibrary } from '../lib/api';
 
 let cache: Promise<ExerciseLibrary> | null = null;
+/** 1.4: after your own exercises change the library is read again. */
+export function refreshExerciseLib() {
+  cache = null;
+  window.dispatchEvent(new Event('kouros-exlib'));
+}
 export function useExerciseLib(): ExerciseLibrary | null {
   const [lib, setLib] = useState<ExerciseLibrary | null>(null);
   useEffect(() => {
-    if (!cache) cache = api.exerciseLibrary().catch(() => ({ source: '', version: '', items: [] }));
-    cache.then(setLib);
+    const load = () => {
+      if (!cache) cache = api.exerciseLibrary().catch(() => ({ source: '', version: '', items: [] }));
+      cache.then(setLib);
+    };
+    load();
+    window.addEventListener('kouros-exlib', load);
+    return () => window.removeEventListener('kouros-exlib', load);
   }, []);
   return lib;
 }
@@ -87,7 +97,8 @@ export function ExerciseCard({ ex, bodyKg, onClose }: { ex: ExerciseItem; bodyKg
           {ex.bw != null && <span><span className="muted">Свой вес:</span> работает ≈{Math.round(ex.bw * 100)}% веса тела{bodyKg ? ` — ≈${Math.round(ex.bw * bodyKg)} кг при твоих ${String(bodyKg).replace('.', ',')} кг` : ''}.</span>}
           {ex.st && <span className="muted">Статическое упражнение: важно время под нагрузкой, а не килограммы.</span>}
         </div>
-        <span className="muted tiny">Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.</span>
+        {ex.leg && <span className="muted small">Делается на каждую ногу (сторону): повторы считаются на одну ногу.</span>}
+        <span className="muted tiny">{ex.own ? 'Твоё упражнение.' : ex.img ? 'Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.' : 'Описание — Kouros.'}</span>
       </div>
     </div>
   );
@@ -130,7 +141,7 @@ export function ExerciseInput({ value, exId, own, lib, onPick, onInfo }: {
         <span className="ex-drop" role="listbox">
           {hits.map((h) => (
             <button key={h.id} type="button" className="ex-opt" onMouseDown={(e) => e.preventDefault()} onClick={() => { onPick(h.ru, h.id); setQ(h.ru); setOpen(false); }}>
-              {h.img > 0 && <span className="ex-thumb sm" style={{ backgroundImage: `url(ex/${h.id}.webp)` }} />}
+              {h.img > 0 ? <span className="ex-thumb sm" style={{ backgroundImage: `url(ex/${h.id}.webp)` }} /> : <span className="ex-thumb sm ex-noimg">{h.own ? '★' : 'K'}</span>}
               <span className="stack" style={{ gap: 0, minWidth: 0 }}>
                 <span className="small ellipsis">{h.ru}</span>
                 <span className="muted tiny ellipsis">{h.eq ? EQUIP[h.eq] ?? h.eq : ''}{h.p.length ? ` · ${h.p.map((m) => MUSCLE[m] ?? m).join(', ')}` : ''}</span>

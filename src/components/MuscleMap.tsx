@@ -60,7 +60,9 @@ function Body({ by, sel, onPick }: { by: Record<string, MuscleGroupState>; sel: 
   );
 }
 
-export function MuscleMap({ groups, onOpen }: { groups: MuscleGroupState[]; onOpen?: (id: string) => void }) {
+type Missing = NonNullable<import('../lib/api').EngineSummary['muscleMissing']>;
+
+export function MuscleMap({ groups, missing = [], onOpen }: { groups: MuscleGroupState[]; missing?: Missing; onOpen?: (id: string) => void }) {
   const by = Object.fromEntries(groups.map((g) => [g.key, g]));
   const [sel, setSel] = useState<string | null>(null);
   const g = sel ? by[sel] : null;
@@ -78,8 +80,16 @@ export function MuscleMap({ groups, onOpen }: { groups: MuscleGroupState[]; onOp
         ))}
         <span className="muted tiny" style={{ alignSelf: 'center' }}>от твоего обычного уровня</span>
       </div>
-      <div className="row" style={{ gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div style={{ flex: '3 1 420px', minWidth: 0 }}><Body by={by} sel={sel} onPick={setSel} /></div>
+      {missing.map((m) => {
+        const sp = sportOf(m.sport);
+        const day = new Date(m.start * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        return (
+          <button key={m.id} type="button" className="note-warn plain" style={{ textAlign: 'left', cursor: onOpen ? 'pointer' : 'default' }} onClick={onOpen ? () => onOpen(m.id) : undefined}>
+            {m.name || sp.name} {day} без упражнений — внеси подходы, и мышцы появятся на карте. Пока её нагрузка учтена только в общей сумме.{onOpen ? ' Открыть →' : ''}
+          </button>
+        );
+      })}
+XX, minWidth: 0 }}><Body by={by} sel={sel} onPick={setSel} /></div>
         <div className="stack" style={{ gap: 8, flex: '2 1 240px', minWidth: 0 }}>
           {g ? (
             <>

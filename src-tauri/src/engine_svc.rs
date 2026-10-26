@@ -619,6 +619,7 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
         v
     };
     let muscle_map = crate::muscle_svc::map_state(&ml, &act_names);
+    let muscle_missing = crate::muscle_svc::missing(&ml, &act_names, 6);
     let heart_by: std::collections::HashMap<&str, f64> = acts.iter().map(|a| (a.id.as_str(), a.load)).collect();
     let load_acts: Vec<Value> = ml
         .iter()
@@ -967,6 +968,9 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
             "series": series90, "muscle": muscle_v, "history": load_hist, "acts": load_acts},
         "recovery": recovery,
         "muscleMap": muscle_map,
+        "muscleMissing": muscle_missing,
+        "deviceChange": crate::sources::device_change(conn, &today),
+        "manualEntry": { let m = crate::manual_svc::state(conn); if m["hrvOn"] == true || m["vitalsOn"] == true { m } else { Value::Null } },
         "intensity": {"d7": split(7), "d28": split(28), "zones28Min": zones28.iter().map(|s| (s / 60.0).round()).collect::<Vec<_>>()},
         "weeks": weeks_v,
         "records": records,

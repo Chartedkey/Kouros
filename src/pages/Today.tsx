@@ -4,6 +4,7 @@ import { Vital, pointsOf, fmtPts } from '../components/Readiness';
 import { useCallback, useEffect, useState } from 'react';
 import { CheckinCard, MorningPain } from '../components/Checkin';
 import { DupCards, StravaGoneCards } from '../components/Workouts';
+import { DeviceChangeCard, ManualEntryCard } from '../components/DataSources';
 import { DayPlanCard } from '../components/DayPlan';
 import { ShoeTodayCard } from '../components/Shoes';
 import type { Go } from '../lib/nav';
@@ -441,6 +442,8 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
       )}
       <DupCards max={1} />
       <StravaGoneCards />
+      {(s.deviceChange?.length ?? 0) > 0 && <DeviceChangeCard changes={s.deviceChange!} onDone={load} />}
+      {s.manualEntry && <ManualEntryCard key={s.manualEntry.today + String(s.manualEntry.values.hrv)} m={s.manualEntry} onDone={load} />}
       {body && body.pending[0] && <CheckinCard key={body.pending[0].id} a={body.pending[0]} areas={body.areas} suggest={shoe?.picks[0]?.id ?? null} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}
       {/* 1.3.2 (owner): asked after the night is in (morning readiness frozen) or from 15:00, not at midnight. */}
       {body && (s.readiness.frozen || new Date().getHours() >= 15) && <MorningPain b={body} today={s.today} onDone={() => api.bodyState().then(setBody).catch(() => {})} />}

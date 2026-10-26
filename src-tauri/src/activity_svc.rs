@@ -90,7 +90,7 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
     let mut st = conn
         .prepare(
             "SELECT idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg FROM strength_sets
-             WHERE activity_id = ?1 ORDER BY idx",
+             WHERE activity_id = ?1 AND cx IS NULL ORDER BY idx",
         )
         .map_err(err)?;
     let sets: Vec<Value> = st
@@ -133,6 +133,7 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
         "sets": sets,
         "bodyKg": crate::exercise_svc::activity_date(conn, id).and_then(|d| crate::exercise_svc::body_kg(conn, &d)).map(|x| (x * 10.0).round() / 10.0),
         "muscle": muscle,
+        "ofp": ofp_blocks(conn, id),
     }))
 }
 
@@ -154,37 +155,184 @@ pub fn save_sets(conn: &mut Connection, id: &str, sets: &[Value]) -> Result<(), 
     let body = crate::exercise_svc::activity_date(conn, id).and_then(|d| crate::exercise_svc::body_kg(conn, &d));
     let bands = crate::exercise_svc::bands(conn);
     let tx = conn.transaction().map_err(err)?;
-    tx.execute("DELETE FROM strength_sets WHERE activity_id = ?1", params![id]).map_err(err)?;
-    let (mut n_sets, mut n_reps, mut lifted) = (0i64, 0i64, 0.0f64);
+    // 1.4: rows of the «ОФП и комплексы» card are kept; they are saved by `save_ofp`.
+    tx.execute("DELETE FROM strength_sets WHERE activity_id = ?1 AND cx IS NULL", params![id]).map_err(err)?;
     for (i, s) in sets.iter().enumerate() {
-        let reps = s["reps"].as_i64().filter(|r| *r >= 0);
-        let w = s["weightKg"].as_f64().filter(|w| *w >= 0.0);
-        let kind = s["kind"].as_str().unwrap_or("active").to_string();
-        let ex = s["exercise"].as_str().map(|x| x.trim().to_string()).filter(|x| !x.is_empty());
-        let ex_id = s["exId"].as_str().filter(|x| !x.is_empty() && crate::exercise_svc::by_id(x).is_some()).map(String::from);
-        let band = s["band"].as_object().filter(|b| b.get("ids").and_then(|x| x.as_array()).map(|a| !a.is_empty()).unwrap_or(false)).map(|b| Value::Object(b.clone()).to_string());
-        let (eff, _, _) = crate::exercise_svc::effective(s, body, &bands);
-        if kind == "active" {
-            n_sets += 1;
-            n_reps += reps.unwrap_or(0);
-            lifted += eff.or(w).unwrap_or(0.0) * reps.unwrap_or(0) as f64;
-        }
-        if let Some(name) = &ex {
-            tx.execute("INSERT OR IGNORE INTO exercises (name, source) VALUES (?1, 'manual')", params![name]).map_err(err)?;
-        }
-        tx.execute(
-            "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
-            params![id, i as i64, s["startUtc"].as_i64(), s["durationS"].as_f64(), reps, w, kind, ex, s["category"].as_i64(), ex_id, band, eff],
-        )
-        .map_err(err)?;
+        insert_set(&tx, id, i as i64, s, None, body, &bands)?;
+    }
+    recount(&tx, id)?;
+    tx.commit().map_err(err)
+}
+
+fn insert_set(tx: &rusqlite::Transaction, id: &str, idx: i64, s: &Value, cx: Option<String>, body: Option<f64>, bands: &[Value]) -> Result<(), String> {
+    let reps = s["reps"].as_i64().filter(|r| *r >= 0);
+    let w = s["weightKg"].as_f64().filter(|w| *w >= 0.0);
+    let kind = s["kind"].as_str().unwrap_or("active").to_string();
+    let ex = s["exercise"].as_str().map(|x| x.trim().to_string()).filter(|x| !x.is_empty());
+    let ex_id = s["exId"].as_str().filter(|x| !x.is_empty() && crate::exercise_svc::by_id(x).is_some()).map(String::from);
+    let band = s["band"].as_object().filter(|b| b.get("ids").and_then(|x| x.as_array()).map(|a| !a.is_empty()).unwrap_or(false)).map(|b| Value::Object(b.clone()).to_string());
+    let (eff, _, _) = crate::exercise_svc::effective(s, body, bands);
+    if let Some(name) = ex.as_ref().filter(|_| cx.is_none()) {
+        tx.execute("INSERT OR IGNORE INTO exercises (name, source) VALUES (?1, 'manual')", params![name]).map_err(err)?;
     }
     tx.execute(
-        "UPDATE activities SET total_sets = ?2, total_reps = ?3, weight_lifted_kg = ?4, updated_at = datetime('now') WHERE id = ?1",
-        params![id, n_sets, n_reps, if lifted > 0.0 { Some(lifted) } else { None }],
+        "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg, cx)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+        params![id, idx, s["startUtc"].as_i64(), s["durationS"].as_f64(), reps, w, kind, ex, s["category"].as_i64(), ex_id, band, eff, cx],
     )
     .map_err(err)?;
+    Ok(())
+}
+
+/// Sets, reps and tonnage of the workout from all its rows (ordinary sets and ОФП blocks).
+fn recount(tx: &rusqlite::Transaction, id: &str) -> Result<(), String> {
+    let (n_sets, n_reps, lifted): (i64, i64, f64) = tx
+        .query_row(
+            "SELECT count(*), COALESCE(sum(reps), 0), COALESCE(sum(COALESCE(eff_kg, weight_kg, 0) * COALESCE(reps, 0)), 0)
+             FROM strength_sets WHERE activity_id = ?1 AND COALESCE(kind, 'active') = 'active'",
+            params![id],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .map_err(err)?;
+    tx.execute(
+        "UPDATE activities SET total_sets = ?2, total_reps = ?3, weight_lifted_kg = ?4, updated_at = datetime('now') WHERE id = ?1",
+        params![id, if n_sets > 0 { Some(n_sets) } else { None }, if n_sets > 0 { Some(n_reps) } else { None }, if lifted > 0.0 { Some(lifted) } else { None }],
+    )
+    .map_err(err)?;
+    Ok(())
+}
+
+// ---------- ОФП and complexes (1.4) ----------
+
+/// Saves the blocks of the «ОФП и комплексы» card: each block (a complex or one exercise) is
+/// expanded into ordinary set rows — rounds × exercises — so tonnage, muscle load and the map
+/// work as for any sets. Block: {cid, name, rounds, items: [{exId, name, reps, sec, leg,
+/// load: {kind none|band|kg, kg, band: {ids, mode}}, skip}]}. A skipped exercise («не делал»)
+/// keeps one row of kind `skip` so the block looks the same next time.
+pub fn save_ofp(conn: &mut Connection, id: &str, blocks: &[Value]) -> Result<(), String> {
+    let body = crate::exercise_svc::activity_date(conn, id).and_then(|d| crate::exercise_svc::body_kg(conn, &d));
+    let bands = crate::exercise_svc::bands(conn);
+    let tx = conn.transaction().map_err(err)?;
+    tx.execute("DELETE FROM strength_sets WHERE activity_id = ?1 AND cx IS NOT NULL", params![id]).map_err(err)?;
+    let mut idx = 10_000i64;
+    for (b, bl) in blocks.iter().enumerate() {
+        let rounds = bl["rounds"].as_i64().unwrap_or(1).clamp(1, 30);
+        let items = bl["items"].as_array().cloned().unwrap_or_default();
+        if items.is_empty() {
+            continue;
+        }
+        let cid = bl["cid"].as_str().filter(|x| !x.is_empty());
+        let name = bl["name"].as_str().unwrap_or("").trim();
+        for r in 0..=rounds {
+            for (i, it) in items.iter().enumerate() {
+                let skip = it["skip"].as_bool().unwrap_or(false);
+                // Round 0 holds only the skipped exercises.
+                if (r == 0) != skip {
+                    continue;
+                }
+                let load = &it["load"];
+                let set = json!({
+                    "exId": it["exId"], "exercise": it["name"], "kind": if skip { "skip" } else { "active" },
+                    "reps": if it["sec"].as_f64().is_some() { Value::Null } else { it["reps"].clone() },
+                    "durationS": it["sec"],
+                    "weightKg": if load["kind"] == "kg" { load["kg"].clone() } else { Value::Null },
+                    "band": if load["kind"] == "band" { load["band"].clone() } else { Value::Null },
+                });
+                let cx = json!({"c": cid, "n": name, "b": b, "r": r, "s": rounds, "i": i, "leg": it["leg"].as_bool().unwrap_or(false)}).to_string();
+                insert_set(&tx, id, idx, &set, Some(cx), body, &bands)?;
+                idx += 1;
+            }
+        }
+    }
+    recount(&tx, id)?;
     tx.commit().map_err(err)
+}
+
+type CxRow = (i64, Value, Option<String>, Option<String>, Option<i64>, Option<f64>, Option<f64>, Option<String>, String);
+
+/// Blocks back from the set rows: (activity, block) → block JSON, in order.
+fn blocks_from(rows: &[CxRow]) -> Vec<(i64, Value)> {
+    let mut out: Vec<(i64, i64, Value)> = Vec::new();
+    for (start, cx, ex_id, name, reps, sec, kg, band, kind) in rows {
+        let b = cx["b"].as_i64().unwrap_or(0);
+        let r = cx["r"].as_i64().unwrap_or(1);
+        let i = cx["i"].as_i64().unwrap_or(0) as usize;
+        let pos = match out.iter().position(|x| x.0 == *start && x.1 == b) {
+            Some(p) => p,
+            None => {
+                out.push((*start, b, json!({"cid": cx["c"], "name": cx["n"], "rounds": cx["s"].as_i64().unwrap_or(1), "items": []})));
+                out.len() - 1
+            }
+        };
+        // The first round (or the skip row) describes the exercise.
+        if !(r == 1 || kind == "skip") {
+            continue;
+        }
+        let band_v = band.as_deref().and_then(|t| serde_json::from_str::<Value>(t).ok());
+        let load = if band_v.is_some() { json!({"kind": "band", "band": band_v}) } else if kg.is_some() { json!({"kind": "kg", "kg": kg}) } else { json!({"kind": "none"}) };
+        let items = out[pos].2["items"].as_array_mut().unwrap();
+        while items.len() <= i {
+            items.push(Value::Null);
+        }
+        items[i] = json!({"exId": ex_id, "name": name, "reps": reps, "sec": sec, "leg": cx["leg"].as_bool().unwrap_or(false), "load": load, "skip": kind == "skip"});
+    }
+    out.into_iter()
+        .map(|(s, _, mut v)| {
+            if let Some(a) = v["items"].as_array_mut() {
+                a.retain(|x| !x.is_null());
+            }
+            (s, v)
+        })
+        .collect()
+}
+
+fn cx_rows(conn: &Connection, sql: &str, p: &[&dyn rusqlite::ToSql]) -> Vec<CxRow> {
+    let Ok(mut st) = conn.prepare(sql) else { return Vec::new() };
+    let v: Vec<CxRow> = st
+        .query_map(p, |r| {
+            let cx: String = r.get(1)?;
+            Ok((r.get(0)?, serde_json::from_str(&cx).unwrap_or(Value::Null), r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?, r.get(6)?, r.get(7)?, r.get::<_, Option<String>>(8)?.unwrap_or_else(|| "active".into())))
+        })
+        .map(|r| r.flatten().collect())
+        .unwrap_or_default();
+    v
+}
+
+/// The ОФП blocks of one workout.
+pub fn ofp_blocks(conn: &Connection, id: &str) -> Vec<Value> {
+    let rows = cx_rows(
+        conn,
+        "SELECT 0, cx, ex_id, exercise, reps, duration_s, weight_kg, band, kind FROM strength_sets WHERE activity_id = ?1 AND cx IS NOT NULL ORDER BY idx",
+        &[&id],
+    );
+    blocks_from(&rows).into_iter().map(|x| x.1).collect()
+}
+
+/// «В прошлый раз»: for every complex (key = its id) and single exercise (key `ex:<id>`) the
+/// latest earlier workout where it was done, with the date. Nothing is filled in by itself —
+/// the card shows it as a hint with a button.
+pub fn ofp_last(conn: &Connection, id: &str) -> Value {
+    let start: i64 = conn.query_row("SELECT start_utc FROM activities WHERE id = ?1", params![id], |r| r.get(0)).unwrap_or(i64::MAX);
+    let tz = crate::engine_svc::profile(conn).tz_offset_s;
+    let rows = cx_rows(
+        conn,
+        "SELECT a.start_utc, s.cx, s.ex_id, s.exercise, s.reps, s.duration_s, s.weight_kg, s.band, s.kind FROM strength_sets s
+         JOIN va a ON a.id = s.activity_id
+         WHERE s.cx IS NOT NULL AND a.start_utc < ?1 AND a.start_utc >= ?1 - 400 * 86400 ORDER BY a.start_utc DESC, s.idx",
+        &[&start],
+    );
+    let mut out = serde_json::Map::new();
+    for (st, b) in blocks_from(&rows) {
+        let key = match b["cid"].as_str() {
+            Some(c) => c.to_string(),
+            None => match b["items"][0]["exId"].as_str() {
+                Some(e) => format!("ex:{e}"),
+                None => format!("name:{}", b["items"][0]["name"].as_str().unwrap_or("")),
+            },
+        };
+        out.entry(key).or_insert_with(|| json!({"date": crate::parse::time::ymd(st, tz), "block": b}));
+    }
+    Value::Object(out)
 }
 
 pub fn exercises(conn: &Connection) -> Vec<String> {

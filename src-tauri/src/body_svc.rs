@@ -180,6 +180,7 @@ pub fn pains(conn: &Connection) -> Vec<Value> {
             v
         })
         .unwrap_or_default();
+    let cx: Vec<Value> = crate::exercise_svc::complexes(conn)["complexes"].as_array().cloned().unwrap_or_default();
     let mut keys: Vec<(String, String)> = rows.iter().map(|r| (r.2.clone(), r.3.clone())).collect();
     keys.sort();
     keys.dedup();
@@ -204,7 +205,9 @@ pub fn pains(conn: &Connection) -> Vec<Value> {
             _ => "new",
         };
         let days_with = by.range(add_days(&td, -13)..).filter(|(_, v)| **v >= 3).count();
+        let adv = if active { Some(advice(&cx, &a, last.4, &by, trend, &td)) } else { None };
         out.push(json!({
+            "advice": adv,
             "area": a, "side": s, "name": format!("{}{}", area_name(&a), side_word(&s)), "level": last.4, "date": last.1,
             "active": active, "trend": trend, "days14": days_with,
             "series": by.iter().map(|(d, v)| json!([d, v])).collect::<Vec<_>>(),
@@ -213,6 +216,105 @@ pub fn pains(conn: &Connection) -> Vec<Value> {
     }
     out.sort_by(|a, b| b["active"].as_bool().cmp(&a["active"].as_bool()).then(b["level"].as_i64().cmp(&a["level"].as_i64())));
     out
+}
+
+/// Complexes that help an area (1.4): the complex's own areas, plus neighbours (shin and calves
+/// take foot / ankle work, hips and glutes take knee work and the other way round).
+fn helps(area: &str, cx_areas: &[&str]) -> bool {
+    let near: &[&str] = match area {
+        "shin" => &["shin", "calves", "ankles", "foot"],
+        "calves" => &["calves", "ankles", "shin"],
+        "ankles" => &["ankles", "foot", "calves"],
+        "foot" => &["foot", "ankles"],
+        "knees" => &["knees", "quads", "hips", "glutes"],
+        "hips" | "glutes" => &["hips", "glutes", "knees"],
+        a => return cx_areas.contains(&a),
+    };
+    cx_areas.iter().any(|x| near.contains(x))
+}
+
+/// What to do with an active pain (1.4, owner): by area, strength and how long it has lasted —
+/// what to take out of the plan, which of your complexes fits, cold / heat / sauna by phase,
+/// ointments only as general types and with caution, and when to see a doctor. General advice,
+/// not a diagnosis; the plan itself is changed by `plan_svc::pain_check`.
+fn advice(cx: &[Value], area: &str, level: i64, by: &std::collections::BTreeMap<String, i64>, trend: &str, td: &str) -> Value {
+    // Days of the current episode: back from today while days with pain ≥3 are at most 4 days apart.
+    let mut start = td.to_string();
+    let mut prev = td.to_string();
+    for (d, v) in by.iter().rev() {
+        if *v < 3 {
+            continue;
+        }
+        if d.as_str() < add_days(&prev, -4).as_str() {
+            break;
+        }
+        start = d.clone();
+        prev = d.clone();
+    }
+    let days = (crate::engine::day_num(td).unwrap_or(0) - crate::engine::day_num(&start).unwrap_or(0) + 1).max(1);
+    let (phase, phase_text) = if days <= 3 { ("acute", "первые дни") } else if days <= 14 { ("sub", "вторая неделя — заживление") } else { ("long", "дольше двух недель") };
+    let ar = AREAS.iter().find(|x| x.0 == area);
+    let legs = ar.map(|a| a.2).unwrap_or(false);
+    let upper = ar.map(|a| a.3).unwrap_or(false);
+    let mut remove: Vec<String> = Vec::new();
+    if legs {
+        if level >= 6 {
+            remove.push("Бег и прыжки пока убери: вместо них велосипед, плавание или верх тела — то, что не вызывает боли.".into());
+        } else if level >= 4 {
+            remove.push("Убери интервалы, темп, длительную и прыжки; бег — только лёгкий и короткий, если боль не растёт во время и на следующее утро.".into());
+        } else {
+            remove.push("Лёгкий бег можно, если боль не выше 3 и к утру не усиливается; скоростную работу и спуски пока отложи.".into());
+        }
+        if matches!(area, "knees" | "quads") {
+            remove.push("Спуски и глубокие приседания с весом отложи — они сильнее всего нагружают колено.".into());
+        }
+        if matches!(area, "ankles" | "calves" | "foot" | "shin") {
+            remove.push("Без прыжков, бега в гору и по твёрдому; обувь — с большей амортизацией.".into());
+        }
+    }
+    if upper {
+        remove.push(if level >= 5 { "Жимы, тяги и упражнения на это место пока убери; ноги и кор можно, если не отдаёт.".into() } else { "Упражнения на это место — с меньшим весом и только без боли.".into() });
+    }
+    if area == "back" {
+        remove.push("Без становой, наклонов с весом и прыжков; ходьба и лёгкий бег — если спина не реагирует.".into());
+    }
+    let fits: Vec<Value> = cx
+        .iter()
+        .filter(|c| {
+            let a: Vec<&str> = c["areas"].as_array().map(|x| x.iter().filter_map(|y| y.as_str()).collect()).unwrap_or_default();
+            helps(area, &a)
+        })
+        .map(|c| json!({"id": c["id"], "name": c["name"]}))
+        .collect();
+    let cx_text = if fits.is_empty() {
+        None
+    } else if phase == "acute" || level >= 6 {
+        Some("Из твоих комплексов подойдут — когда боль станет не выше 3: начни с одного круга и только с упражнений, которые не усиливают боль.".to_string())
+    } else {
+        Some("Из твоих комплексов подойдут — без боли во время и на следующее утро; если болит сильнее, сократи круги.".to_string())
+    };
+    let temp = match phase {
+        "acute" => "Холод на 10–15 минут через ткань, несколько раз в день, особенно после нагрузки. Первые 2–3 дня не грей: без сауны, бани и горячей ванны.",
+        "sub" => "Если отёка нет — тепло на 10–15 минут перед нагрузкой и мягкая подвижность; холод — после, если место ноет. Сауна — по самочувствию, без отёка.",
+        _ => "Тепло и мягкая работа обычно помогают больше холода. Сауна — если после неё не хуже. Затянувшуюся боль лучше показать специалисту.",
+    };
+    let oint = if phase == "acute" {
+        "Мази и гели: охлаждающие (с ментолом) — чтобы облегчить; разогревающие в первые дни и при отёке не стоит. Гели с противовоспалительным (НПВС) — строго по инструкции и коротко, не перед тренировкой, чтобы не заглушать боль; обсуди с врачом, особенно если пьёшь другие лекарства."
+    } else {
+        "Мази и гели: разогревающие — перед нагрузкой, если нет отёка; с противовоспалительным (НПВС) — строго по инструкции и коротко, не чтобы тренироваться через боль; обсуди с врачом, особенно если пьёшь другие лекарства."
+    };
+    let mut doctor: Vec<String> = Vec::new();
+    if level >= 7 {
+        doctor.push("сильная боль (7 и выше)".into());
+    }
+    if days > 14 && trend != "better" {
+        doctor.push("больше двух недель без улучшения".into());
+    }
+    json!({
+        "phase": phase, "phaseText": phase_text, "days": days, "remove": remove, "complexes": fits, "complexText": cx_text,
+        "temp": temp, "ointment": oint, "doctor": doctor,
+        "redFlags": "К врачу сразу, если есть отёк, боль ночью или в покое, онемение или покалывание, не можешь опереться на ногу, или боль появилась после удара или падения.",
+    })
 }
 
 /// Active pains as (area, level, runs affected, upper affected) — for the plan check.

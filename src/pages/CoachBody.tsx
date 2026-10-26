@@ -1,6 +1,6 @@
 // «Боль и восстановление» and «Цель» in the coach tab (0.16).
 import { useCallback, useEffect, useState } from 'react';
-import { api, errText, type BodyState, type CoachProfile, type GoalRace } from '../lib/api';
+import { api, errText, type BodyState, type CoachProfile, type GoalRace, type PainAdvice } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 import { LevelPills } from '../components/Checkin';
 import { PainFigure, sideText } from '../components/PainFigure';
@@ -18,6 +18,29 @@ function useBody() {
   useEffect(load, [load]);
   useDataChanged(load);
   return { b, err, load };
+}
+
+/** 1.4: what to do with an active pain — general advice, not a diagnosis. */
+function PainAdviceBlock({ a }: { a: PainAdvice }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="stack" style={{ gap: 6, borderTop: '1px solid var(--line)', paddingTop: 8 }}>
+      {a.doctor.length > 0 && <span className="small" style={{ color: '#FF6B6B', lineHeight: 1.5 }}>Покажись врачу: {a.doctor.join(', ')}.</span>}
+      <button type="button" className="linkbtn small" style={{ alignSelf: 'flex-start' }} aria-expanded={open} onClick={() => setOpen(!open)}>
+        Что делать · {a.phaseText}, {a.days} {a.days === 1 ? 'день' : a.days < 5 ? 'дня' : 'дней'} {open ? '▴' : '▾'}
+      </button>
+      {open && (
+        <div className="stack small" style={{ gap: 6, lineHeight: 1.5 }}>
+          {a.remove.map((t) => <span key={t}>• {t}</span>)}
+          {a.complexes.length > 0 && <span>• {a.complexText} <b>{a.complexes.map((c) => c.name).join(', ')}</b>.</span>}
+          <span>• {a.temp}</span>
+          <span className="muted">• {a.ointment}</span>
+          <span style={{ color: '#F5B642' }}>{a.redFlags}</span>
+          <span className="muted tiny">Это общие советы, а не диагноз. План тренировок Kouros поправит сам — предложения появятся в «Плане».</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function CoachBody() {
@@ -77,7 +100,8 @@ export function CoachBody() {
                   {p.entries.slice(0, 4).map((e) => (
                     <div key={e.id} className="between tiny"><span className="muted">{ruDate(e.date)} · {e.context === 'checkin' ? 'после тренировки' : e.context === 'morning' ? 'утром' : 'вручную'}{e.note ? ` · ${e.note}` : ''}</span><span className="row" style={{ gap: 8 }}><b>{e.level}/10</b><button type="button" className="xbtn" aria-label="Удалить" onClick={() => api.painDelete(e.id).then(load)}>×</button></span></div>
                   ))}
-                  {p.active && p.days14 >= 7 && <span className="tiny" style={{ color: '#F5B642', lineHeight: 1.5 }}>Болит уже больше недели — стоит показаться врачу или физиотерапевту.</span>}
+                  {p.active && p.days14 >= 7 && !p.advice?.doctor.length && <span className="tiny" style={{ color: '#F5B642', lineHeight: 1.5 }}>Болит уже больше недели — стоит показаться врачу или физиотерапевту.</span>}
+                  {p.advice && <PainAdviceBlock a={p.advice} />}
                 </div>
               );
             })}

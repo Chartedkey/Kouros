@@ -13,7 +13,7 @@ use rusqlite::{params, Connection};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashMap};
 
-const MV: &str = "m2";
+const MV: &str = "m3";
 
 pub const GROUPS: [(&str, &str); 12] = [
     ("calves", "Икры"),
@@ -39,8 +39,9 @@ const MOBILITY: G = [0., 0., 0.1, 0.1, 0.2, 0.3, 0.2, 0., 0.1, 0., 0., 0.];
 const RIDE: G = [0.1, 0.4, 0.1, 0.25, 0., 0., 0., 0., 0., 0., 0.15, 0.];
 const SWIM: G = [0., 0., 0., 0., 0., 0.2, 0.3, 0.05, 0.3, 0.15, 0., 0.];
 
-/// Muscle groups for a FIT exercise category (or the exercise name).
-fn exercise_groups(cat: Option<i64>, name: &str) -> G {
+/// Muscle groups for a FIT exercise category (or the exercise name); None = not recognised
+/// (1.4: such sets count for the total muscle load but are not shown on the map).
+fn exercise_groups(cat: Option<i64>, name: &str) -> Option<G> {
     let n = name.to_lowercase();
     let has = |k: &[&str]| k.iter().any(|x| n.contains(x));
     let c = cat.unwrap_or(-1);
@@ -69,10 +70,10 @@ fn exercise_groups(cat: Option<i64>, name: &str) -> G {
             else if has(&["плеч", "shoulder", "мах"]) { put(8, 1.0) }
             else if has(&["бицепс", "трицепс", "curl"]) { put(9, 1.0) }
             else if has(&["планк", "пресс", "plank", "crunch", "core"]) { put(5, 1.0) }
-            else { return GYM }
+            else { return None }
         }
     }
-    g
+    Some(g)
 }
 
 fn add(acc: &mut G, w: &G, k: f64) {
@@ -122,6 +123,9 @@ pub struct MLoad {
     pub down: f64,
     /// The altimeter failed; relief replaced by your usual for this sport.
     pub bad: bool,
+    /// 1.4: load with no known muscles (strength / ОФП without entered exercises). Counted in
+    /// `total` (ACWR, injury risk, recovery) but not on the muscle map.
+    pub free: f64,
 }
 
 /// Muscle load of every workout (cached per workout in `muscle_cache`).
@@ -216,6 +220,7 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
         let km = a.distance_m.unwrap_or(0.0) / 1000.0;
         let (mut up, mut down) = (r.0, r.1);
         let mut bad = false;
+        let mut free = 0.0;
         if km > 0.3 && up / km > cap_per_km(&a.sport) {
             bad = true;
             up = (typical(&a.sport) * km).round();
@@ -236,48 +241,83 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
                 add(&mut g, &UP, up / 100.0 * 6.0 * k);
                 add(&mut g, &DOWN, down / 100.0 * 7.0 * k);
             }
-            "strength" => {
-                let sets: Vec<(Option<i64>, String, Option<String>)> = conn
-                    .prepare("SELECT category, COALESCE(exercise, ''), ex_id FROM strength_sets WHERE activity_id = ?1 AND (kind IS NULL OR kind != 'rest')")
-                    .map(|mut st| {
-                        let v: Vec<(Option<i64>, String, Option<String>)> =
-                            st.query_map(params![a.id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).map(|r| r.flatten().collect()).unwrap_or_default();
-                        v
-                    })
-                    .unwrap_or_default();
-                let total = session * 0.8;
+            "strength" | "workout" => {
+                let total = session * if a.sport == "strength" { 0.8 } else { 0.6 };
+                let sets = sets_of(conn, &a.id);
                 if sets.is_empty() {
-                    add(&mut g, &GYM, total);
+                    // 1.4 (owner): no exercises → no map fill; ОФП without exercises as before (× 0.4).
+                    free = if a.sport == "strength" { total } else { session * 0.4 };
                 } else {
                     let per = total / sets.len() as f64;
-                    for (c, n, x) in &sets {
-                        // 0.22: an exercise from the library brings its own muscles.
-                        let w = x.as_deref().and_then(crate::exercise_svc::groups).unwrap_or_else(|| exercise_groups(*c, n));
-                        add(&mut g, &w, per);
+                    for w in &sets {
+                        match w {
+                            Some(w) => add(&mut g, w, per),
+                            None => free += per,
+                        }
                     }
                 }
             }
-            "workout" | "yoga" => add(&mut g, &MOBILITY, session * 0.4),
+            "yoga" => add(&mut g, &MOBILITY, session * 0.4),
             "ride" | "ride_virtual" => add(&mut g, &RIDE, a.load * 0.5),
             "swim" => add(&mut g, &SWIM, a.load * 0.5),
             _ => add(&mut g, &GYM, a.load * 0.3),
         }
-        let total: f64 = g.iter().sum();
+        // 1.4: ОФП or a complex entered on a run / walk / ride — about 2 units per set on top.
+        if !matches!(a.sport.as_str(), "strength" | "workout" | "yoga") {
+            for w in sets_of(conn, &a.id) {
+                match w {
+                    Some(w) => add(&mut g, &w, 2.0),
+                    None => free += 2.0,
+                }
+            }
+        }
+        let total: f64 = g.iter().sum::<f64>() + free;
         // Keep the page's copy in step (written only when it changed).
         if let Some(j) = &r.2 {
-            if (j["t"].as_f64().unwrap_or(-1.0) - total.round()).abs() >= 1.0 || j["bad"].as_bool() != Some(bad) || j["u"].as_f64() != Some(up) {
+            if (j["t"].as_f64().unwrap_or(-1.0) - total.round()).abs() >= 1.0 || j["bad"].as_bool() != Some(bad) || j["u"].as_f64() != Some(up) || (j["f"].as_f64().unwrap_or(0.0) - free.round()).abs() >= 1.0 {
                 let mut j = j.clone();
                 j["t"] = json!(total.round());
                 j["g"] = json!(g.iter().map(|x| (x * 10.0).round() / 10.0).collect::<Vec<_>>());
                 j["u"] = json!(up);
                 j["d"] = json!(down);
                 j["bad"] = json!(bad);
+                j["f"] = json!(free.round());
                 let _ = conn.execute("UPDATE muscle_cache SET data = ?2 WHERE activity_id = ?1", params![a.id, j.to_string()]);
             }
         }
-        out.push(MLoad { id: a.id.clone(), sport: a.sport.clone(), start: a.start_utc, end, total, groups: g, up, down, bad });
+        out.push(MLoad { id: a.id.clone(), sport: a.sport.clone(), start: a.start_utc, end, total, groups: g, up, down, bad, free });
     }
     out
+}
+
+/// Muscles of each done set of a workout (None = exercise not recognised). Rest and skipped
+/// rows are left out.
+fn sets_of(conn: &Connection, id: &str) -> Vec<Option<G>> {
+    let custom = crate::exercise_svc::custom_snapshot();
+    let rows: Vec<(Option<i64>, String, Option<String>)> = conn
+        .prepare("SELECT category, COALESCE(exercise, ''), ex_id FROM strength_sets WHERE activity_id = ?1 AND COALESCE(kind, 'active') = 'active'")
+        .map(|mut st| {
+            let v: Vec<(Option<i64>, String, Option<String>)> =
+                st.query_map(params![id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).map(|r| r.flatten().collect()).unwrap_or_default();
+            v
+        })
+        .unwrap_or_default();
+    rows.iter()
+        .map(|(c, n, x)| {
+            // 0.22: an exercise from the library (1.4: or your own) brings its own muscles.
+            x.as_deref().and_then(|x| crate::exercise_svc::groups_in(x, &custom)).or_else(|| exercise_groups(*c, n))
+        })
+        .collect()
+}
+
+/// Strength / ОФП workouts of the last `days` days whose load is mostly not on the map
+/// (no exercises entered or names not recognised) — the map asks to enter them.
+pub fn missing(ml: &[MLoad], names: &HashMap<String, Option<String>>, days: i64) -> Vec<Value> {
+    let from = store::now() - days * 86400;
+    ml.iter()
+        .filter(|m| m.start >= from && m.free >= 1.0 && m.free >= 0.4 * m.total)
+        .map(|m| json!({"id": m.id, "sport": m.sport, "start": m.start, "name": names.get(&m.id).cloned().flatten(), "free": m.free.round(), "total": m.total.round()}))
+        .collect()
 }
 
 /// Daily muscle totals by local date.
@@ -350,11 +390,13 @@ pub fn for_activity(conn: &Connection, id: &str) -> Value {
     let Some(v) = data.and_then(|d| serde_json::from_str::<Value>(&d).ok()) else { return Value::Null };
     let g: Vec<f64> = v["g"].as_array().map(|a| a.iter().map(|x| x.as_f64().unwrap_or(0.0)).collect()).unwrap_or_default();
     let total = v["t"].as_f64().unwrap_or(0.0);
+    // Shares of what is on the map (1.4: load without exercises is not part of it).
+    let mapped = total - v["f"].as_f64().unwrap_or(0.0);
     let mut top: Vec<(usize, f64)> = g.iter().copied().enumerate().filter(|x| x.1 > 0.0).collect();
     top.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
     json!({
-        "total": total.round(), "up": v["u"], "down": v["d"], "rec": v["rec"], "bad": v["bad"],
-        "groups": top.iter().map(|(i, x)| json!({"key": GROUPS[*i].0, "name": GROUPS[*i].1, "value": x.round(), "pct": if total > 0.0 { (x / total * 100.0).round() } else { 0.0 }})).collect::<Vec<_>>(),
+        "total": total.round(), "free": v["f"], "up": v["u"], "down": v["d"], "rec": v["rec"], "bad": v["bad"],
+        "groups": top.iter().map(|(i, x)| json!({"key": GROUPS[*i].0, "name": GROUPS[*i].1, "value": x.round(), "pct": if mapped > 0.0 { (x / mapped * 100.0).round() } else { 0.0 }})).collect::<Vec<_>>(),
     })
 }
 

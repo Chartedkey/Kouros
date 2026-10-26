@@ -10,6 +10,7 @@ import { DeletedList, DupCards, StravaGoneCards } from '../components/Workouts';
 import { IoTab } from './TrainingIo';
 import { HrBars, Workout } from './Workout';
 import { MuscleMap } from '../components/MuscleMap';
+import { ComplexesCard } from '../components/Ofp';
 import { History, IntensityWeeks, LoadDual, RecordsFull, RecoveryTile, ShoeQuestion, Tolerance, ZonesCard } from './TrainingParts';
 
 export type TrainingSub = 'overview' | 'all' | 'records' | 'body' | 'gear' | 'io';
@@ -464,7 +465,7 @@ function BodyTab({ s, onSaved, onOpen }: { s: EngineSummary; onSaved: () => void
   const w = s.body.weight;
   return (
     <div className="grid">
-      {s.muscleMap && <MuscleMap groups={s.muscleMap} onOpen={onOpen} />}
+      {s.muscleMap && <MuscleMap groups={s.muscleMap} missing={s.muscleMissing} onOpen={onOpen} />}
       <ZonesCard today={s.today} onSaved={onSaved} />
       <section className="card" aria-label="Время в зонах">
         <span className="label">Время в зонах · 28 дней</span>
@@ -593,6 +594,7 @@ function GearTab() {
           </div>
         </section>
       )}
+      <ComplexesCard />
       <BandsCard />
       <LibraryCard />
     </div>
