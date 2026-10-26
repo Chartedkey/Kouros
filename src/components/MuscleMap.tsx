@@ -84,7 +84,7 @@ export function MuscleMap({ groups, missing = [], onOpen }: { groups: MuscleGrou
         const sp = sportOf(m.sport);
         const day = new Date(m.start * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         return (
-          <button key={m.id} type="button" className="note-warn plain" style={{ textAlign: 'left', cursor: onOpen ? 'pointer' : 'default' }} onClick={onOpen ? () => onOpen(m.id) : undefined}>
+          <button key={m.id} type="button" className="note-warn plain small" style={{ textAlign: 'left', cursor: onOpen ? 'pointer' : 'default' }} onClick={onOpen ? () => onOpen(m.id) : undefined}>
             {m.name || sp.name} {day} без упражнений — внеси подходы, и мышцы появятся на карте. Пока её нагрузка учтена только в общей сумме.{onOpen ? ' Открыть →' : ''}
           </button>
         );

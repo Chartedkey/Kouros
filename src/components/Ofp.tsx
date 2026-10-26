@@ -117,7 +117,7 @@ function BlockEditor({ b, lib, bands, last, bodyKg, onChange, onRemove }: {
               </span>
               {!it.skip && (
                 <span className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-                  <input className="input sm num" style={{ width: 56 }} inputMode="numeric" aria-label={tm ? 'Секунд' : 'Повторов'} placeholder={tm ? 'сек' : 'повт.'}
+                  <input className="input sm num" style={{ width: 76 }} inputMode="numeric" aria-label={tm ? 'Секунд' : 'Повторов'} placeholder={tm ? 'сек' : 'повт.'}
                     value={(tm ? it.sec : it.reps) ?? ''} onChange={(e) => upd(i, tm ? { sec: num(e.target.value), reps: null } : { reps: num(e.target.value), sec: null })} />
                   <button type="button" className="xbtn" title={tm ? 'Считать повторы' : 'Считать время'} aria-label="Повторы или время"
                     onClick={() => upd(i, tm ? { sec: null, reps: null } : { sec: it.reps ?? 30, reps: null })}>{tm ? 'с' : '×'}</button>
