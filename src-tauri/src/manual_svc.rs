@@ -90,7 +90,7 @@ pub fn save(conn: &Connection, date: &str, v: &Value) -> Result<(), String> {
     };
     let kind = c["kind"].as_str().unwrap_or("rmssd").to_string();
     if v.get("hrv").is_some() {
-        put(conn, M_HRV, date, rng(&v["hrv"], 5.0, 300.0, "HRV")?, "ms", Some(&kind))?;
+        put(conn, M_HRV, date, rng(&v["hrv"], 5.0, 300.0, "HRV")?, "ms", Some(kind.as_str()))?;
     }
     if v.get("resp").is_some() {
         put(conn, M_RESP, date, rng(&v["resp"], 5.0, 40.0, "Дыхание")?, "count/min", None)?;

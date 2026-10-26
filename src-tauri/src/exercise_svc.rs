@@ -153,7 +153,8 @@ pub fn import_complexes(conn: &Connection, text: &str) -> Result<(usize, usize),
             let mut x = x.clone();
             if let Some(items) = x["items"].as_array_mut() {
                 for i in items.iter_mut() {
-                    if let Some(to) = i["exId"].as_str().and_then(|id| remap.get(id)).cloned() {
+                    let to: Option<String> = i["exId"].as_str().and_then(|id| remap.get(id)).cloned();
+                    if let Some(to) = to {
                         i["exId"] = json!(to);
                     }
                 }
@@ -240,7 +241,8 @@ pub fn effective(set: &Value, body: Option<f64>, bands: &[Value]) -> (Option<f64
 /// Muscle groups (`muscle_svc::GROUPS` order) of an exercise: primary muscles count fully,
 /// secondary half; leg-dominant work also loads the knees, calf work the ankles.
 pub fn groups_in(id: &str, custom: &[Value]) -> Option<[f64; 12]> {
-    let ex = lib_item(id).or_else(|| custom.iter().find(|x| x["id"].as_str() == Some(id)))?;
+    let lib: Option<&Value> = lib_item(id);
+    let ex = lib.or_else(|| custom.iter().find(|x| x["id"].as_str() == Some(id)))?;
     let mut g = [0.0f64; 12];
     let mut put = |m: &str, w: f64| match m {
         "calves" => { g[0] += w; g[11] += 0.15 * w }
