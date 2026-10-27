@@ -443,3 +443,4 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .picker-noimg { display: grid; place-items: center; background: #22262D; color: var(--muted); font-weight: 700; }
 .picker-info { align-self: flex-start; }
 @media (max-width: 720px) { .setr { grid-template-columns: 24px 1fr 1fr 48px; } .setr > :nth-child(5) { display: none; } }
+.exh .thumb.picker-noimg { background: #22262D; color: var(--muted); }
