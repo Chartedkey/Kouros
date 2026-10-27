@@ -74,9 +74,9 @@ function Group({ g, onChanged }: { g: SourceGroup; onChanged: () => void }) {
           ))}
         </div>
       </div>
-      {!g.open && g.key !== 'other' && <span className="muted tiny">Только Apple Health: пульс по минутам и стресс Kouros считает из сырых замеров, а их другие источники во freddy не отдают.</span>}
+      {!g.open && g.key !== 'other' && <span className="muted tiny">Пульс по минутам: из него Kouros считает стресс днём, ночной пульс покоя и ночной HRV. Такие замеры отдают Apple Health и Garmin — у Garmin пульс каждые 15 секунд, шаги по 15 минут. Ночной пульс покоя по Garmin считается, если и «Пульс покоя» стоит на Garmin.</span>}
       {g.key === 'other' && <span className="muted tiny">Еда YAZIO, вода и алкоголь Waterllama, кофеин, беговая динамика и походка — всё, что не вошло в группы выше.</span>}
-      {g.current === 'MANUAL' && <span className="muted tiny" style={{ lineHeight: 1.5 }}>Значения вводишь сам: каждое утро на «Сегодня» появится карточка{g.key === 'hrv' ? ' для HRV (RMSSD или SDNN — как показывает твоё приложение)' : ' для дыхания и SpO₂'}. Своя норма набирается по ним около 2 недель.</span>}
+      {g.current === 'MANUAL' && <span className="muted tiny" style={{ lineHeight: 1.5 }}>Значения вводишь сам: каждое утро на «Сегодня» появится карточка{g.key === 'hrv' ? ' для HRV (RMSSD или SDNN — как показывает твоё приложение; у Fitbit / Google Health, Garmin, Oura и Whoop это RMSSD, у Apple Watch — SDNN)' : ' для дыхания и SpO₂'}. Своя норма набирается по ним около 2 недель.</span>}
       {g.cut && <span className="tiny" style={{ color: '#F5B642' }}>Норма считается с {ruDate(g.cut)} — по данным {g.currentName}.</span>}
       {(g.current === 'APPLE_HEALTH' || g.current === 'HAE') && g.writers.length > 0 && (
         <span className="muted tiny" style={{ lineHeight: 1.5 }}>

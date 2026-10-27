@@ -31,6 +31,7 @@ mod catalog_svc;
 mod coach_svc;
 mod sources;
 mod hae;
+mod garmin;
 mod plan_svc;
 mod body_svc;
 mod workouts_svc;

@@ -24,6 +24,14 @@ pub const OTHER_NAME: &str = "Питание, вода и остальное";
 /// Known sources (freddy provider code, name). Any other provider found in the data works too.
 pub const PROVIDERS: [(&str, &str); 4] = [(APPLE, "Apple Health"), ("GARMIN", "Garmin"), ("SUUNTO", "Suunto"), ("GOOGLE_HEALTH", "Fitbit (Google Health)")];
 
+/// 1.5: sources not offered in the choice for now (owner). Their data stays; a group already set
+/// to one of them keeps it.
+pub const HIDDEN: [&str; 1] = ["SUUNTO"];
+
+fn hidden(p: &str) -> bool {
+    HIDDEN.iter().any(|h| h.eq_ignore_ascii_case(p))
+}
+
 /// Data groups: key, name, Apple metrics in it, whether other sources can provide it.
 pub const GROUPS: [(&str, &str, &[&str], bool); 7] = [
     ("sleep", "Сон", &["sleep_analysis_core_seconds", "sleep_analysis_deep_seconds", "sleep_analysis_rem_seconds", "sleep_analysis_awake_seconds", "sleep_analysis_raw"], true),
@@ -149,6 +157,31 @@ pub fn catalog(conn: &Connection) -> Vec<Cat> {
     v
 }
 
+/// 1.5: Apple-named rows another source has itself (Garmin's rows built by `garmin::derive`).
+fn native<'a>(cat: &'a [Cat], provider: &str, metrics: &[&str]) -> Vec<&'a Cat> {
+    cat.iter().filter(|c| c.provider.eq_ignore_ascii_case(provider) && metrics.contains(&c.metric.as_str())).collect()
+}
+
+/// Whether the current source of a group brings the samples Kouros needs for night values
+/// (HRV samples, pulse, SpO₂ readings) — Apple always, Garmin since 1.5.
+pub fn samples_ok(conn: &Connection, group: &str) -> bool {
+    let cur = current(conn, group);
+    if apple_like(&cur) {
+        return true;
+    }
+    let need = match group {
+        "hrv" => "hrv_sdnn_raw",
+        "rhr" | "pulse" => "heart_rate_raw",
+        "vitals" => "blood_oxygen",
+        _ => return false,
+    };
+    // Night resting pulse is computed from the pulse group's heart rate: both must be this source.
+    if group == "rhr" && !current(conn, "pulse").eq_ignore_ascii_case(&cur) {
+        return false;
+    }
+    conn.query_row("SELECT 1 FROM health_metrics WHERE provider = ?1 AND metric = ?2 LIMIT 1", params![cur, need], |_| Ok(())).is_ok()
+}
+
 fn score(t: &Target, name: &str) -> Option<i64> {
     let n = name.to_lowercase();
     if n.ends_with("_raw") || n.contains("sample") || n.contains("_entry") || n.starts_with("workout") || n.starts_with("activity_") {
@@ -270,7 +303,18 @@ pub fn install_view(conn: &Connection) -> Result<(), String> {
         for p in provs {
             let Some(cond) = date_cond(&segs, &p) else { continue };
             let map = mapping(&cfg, &cat, &p);
+            let own: Vec<String> = native(&cat, &p, metrics).iter().map(|c| c.metric.clone()).collect();
+            if !own.is_empty() {
+                let l = own.iter().map(|m| q(m)).collect::<Vec<_>>().join(",");
+                unions.push(format!(
+                    "SELECT metric, date, ts, provider, device, source_id, source, num, txt, unit FROM health_metrics WHERE provider = {} AND metric IN ({l}) AND ({cond})",
+                    q(&p)
+                ));
+            }
             for t in targets().filter(|t| t.group == *g) {
+                if own.iter().any(|m| m == t.canon) {
+                    continue; // the source has this metric itself
+                }
                 let Some((c, _)) = map.get(t.canon) else { continue };
                 let (a, b, fahr) = convert(t.kind, &c.unit, c.avg);
                 let num = if fahr { "(CASE WHEN num > 50 THEN (num - 32) * 5.0 / 9 ELSE num * 5.0 / 9 END)".to_string() } else { format!("(num * {a} + {b})") };
@@ -344,6 +388,11 @@ pub fn device_change(conn: &Connection, today: &str) -> Vec<Value> {
     let seen: Value = db::get_setting(conn, "device_seen").and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_else(|| json!({}));
     let mut out = Vec::new();
     for (g, name, metrics, _) in GROUPS.iter().filter(|g| matches!(g.0, "sleep" | "hrv" | "rhr" | "vitals")) {
+        // A switch of source (Apple → Garmin) already starts the norm again — not a «new watch».
+        let recent_cut = cut(conn, g).map(|c| c >= crate::engine::add_days(today, -34)).unwrap_or(false);
+        if !current_is_apple(conn, g) || recent_cut {
+            continue;
+        }
         let list = metrics.iter().map(|m| q(m)).collect::<Vec<_>>().join(",");
         let sql = format!(
             "SELECT date, COALESCE(NULLIF(source, ''), NULLIF(device, ''), '') FROM hm WHERE metric IN ({list}) AND date >= ?1 AND date <= ?2"
@@ -455,9 +504,13 @@ fn warning(group: &str, from: &str, to: &str) -> String {
         };
     }
     match group {
+        "hrv" if to.eq_ignore_ascii_case(crate::garmin::GARMIN) && !apple_like(from) => format!("{t} и {f} меряют HRV по-разному — цифры будут другого уровня. Норма HRV пересчитается заново."),
+        "hrv" if to.eq_ignore_ascii_case(crate::garmin::GARMIN) => format!("{t} считает HRV по методу RMSSD, Apple — по SDNN: у {t} цифры обычно заметно выше. Ночной HRV Kouros посчитает по замерам {t} каждые 5 минут; норма HRV наберётся заново."),
         "hrv" => format!("{t} и {f} меряют HRV по-разному (разные методы и время замера) — цифры будут другого уровня, часто заметно выше или ниже. Норма HRV пересчитается заново."),
         "rhr" => format!("{t} считает пульс покоя по-своему — разница обычно 2–5 ударов. Норма пересчитается заново."),
-        "sleep" => format!("{t} определяет фазы сна по-своему: глубокого и быстрого сна может стать больше или меньше. Подробная гипнограмма (сон по минутам) пока есть только от Apple — от {t} будут итоги ночи."),
+        "sleep" if to.eq_ignore_ascii_case(crate::garmin::GARMIN) => format!("{t} определяет фазы сна по-своему: глубокого и быстрого сна может стать больше или меньше, пробуждений — меньше. Сон по минутам (гипнограмма) будет от {t}."),
+        "sleep" => format!("{t} определяет фазы сна по-своему: глубокого и быстрого сна может стать больше или меньше. Подробная гипнограмма (сон по минутам) пока есть только от Apple и Garmin — от {t} будут итоги ночи."),
+        "pulse" => format!("Стресс днём, ночной пульс покоя и ночной HRV Kouros будет считать по пульсу {t}. Уровень стресса может сдвинуться — норма стресса наберётся заново."),
         "vitals" => format!("Дыхание, SpO₂ и температуру {t} меряет своими датчиками — уровни могут сдвинуться. Нормы пересчитаются."),
         "activity" => format!("Шаги и калории у {t} и {f} считаются по-разному, особенно калории. Цели питания зависят от калорий тренировок — они могут немного сдвинуться."),
         "body" => format!("Весы {t} и {f} могут отличаться на несколько сотен граммов и заметно — по проценту жира."),
@@ -484,11 +537,16 @@ pub fn state(conn: &Connection) -> Value {
             let cur = segs.last().map(|x| x.0.clone()).unwrap_or(APPLE.to_string());
             let options: Vec<Value> = std::iter::once(json!({"provider": APPLE, "name": apple_name, "matched": metrics.len(), "of": metrics.len()}))
                 .chain(hae.then(|| json!({"provider": HAE, "name": "Health Auto Export", "matched": metrics.len(), "of": metrics.len()})))
-                .chain(provs.iter().filter(|p| *open && (p.as_str() != MANUAL || matches!(*g, "hrv" | "vitals"))).map(|p| {
+                .chain(provs.iter().filter(|p| (*open || !native(&cat, p, &["heart_rate_raw"]).is_empty()) && (p.as_str() != MANUAL || matches!(*g, "hrv" | "vitals")) && (!hidden(p) || p.eq_ignore_ascii_case(&cur))).map(|p| {
                     let m = &maps[p];
-                    let of = targets().filter(|t| t.group == *g).count();
-                    let matched = targets().filter(|t| t.group == *g && m.contains_key(t.canon)).count();
-                    json!({"provider": p, "name": provider_name(p), "matched": matched, "of": of})
+                    let own = native(&cat, p, metrics);
+                    let has = |c: &str| own.iter().any(|x| x.metric == c);
+                    let (matched, of) = if *open {
+                        (targets().filter(|t| t.group == *g && (m.contains_key(t.canon) || has(t.canon))).count(), targets().filter(|t| t.group == *g).count())
+                    } else {
+                        (own.len(), metrics.len())
+                    };
+                    json!({"provider": p, "name": provider_name(p), "matched": matched, "of": of, "detail": !own.is_empty()})
                 }))
                 // Typing values in by hand is always possible for HRV and breathing / SpO₂.
                 .chain((matches!(*g, "hrv" | "vitals") && !provs.iter().any(|p| p == MANUAL))
@@ -542,8 +600,8 @@ pub fn state(conn: &Connection) -> Value {
     }
     json!({
         "groups": groups,
-        "known": PROVIDERS.iter().map(|(p, n)| json!({"provider": p, "name": n, "connected": is_apple(p) || provs.iter().any(|x| x.eq_ignore_ascii_case(p))})).collect::<Vec<_>>(),
-        "providers": provs.iter().map(|p| {
+        "known": PROVIDERS.iter().filter(|(p, _)| !hidden(p)).map(|(p, n)| json!({"provider": p, "name": n, "connected": is_apple(p) || provs.iter().any(|x| x.eq_ignore_ascii_case(p))})).collect::<Vec<_>>(),
+        "providers": provs.iter().filter(|p| !hidden(p)).map(|p| {
             let c: Vec<&Cat> = cat.iter().filter(|c| &c.provider == p).collect();
             json!({"provider": p, "name": provider_name(p), "metrics": c.len(), "first": c.iter().map(|x| x.first.clone()).min(), "last": c.iter().map(|x| x.last.clone()).max()})
         }).collect::<Vec<_>>(),

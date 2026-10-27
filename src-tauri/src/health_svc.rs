@@ -312,11 +312,12 @@ pub fn spo2_series(conn: &Connection) -> (Series, bool) {
     by_source(conn, "vitals", nightly_spo2(conn), d)
 }
 
-/// Night values (from Apple's samples) or the daily figure. When another source was chosen for the
+/// Night values (from the watch's samples — Apple, Garmin) or the daily figure. When another source was chosen for the
 /// group, its daily figure is used from the switch on (the whole history if it replaced it).
 fn by_source(conn: &Connection, group: &str, night: Series, daily: Series) -> (Series, bool) {
     let pick = |night: Series, daily: Series| if night.len() >= 4 { (night, true) } else { (daily, false) };
-    if crate::sources::current_is_apple(conn, group) {
+    // 1.5: Garmin brings the samples too — night values the same way as for Apple.
+    if crate::sources::current_is_apple(conn, group) || crate::sources::samples_ok(conn, group) {
         return pick(night, daily);
     }
     match crate::sources::cut(conn, group) {

@@ -274,6 +274,28 @@ async fn freddy_sync_inner(app: &AppHandle, full: bool) -> Result<FreddySync, St
             let _ = with_conn(app, |c| crate::db::set_setting(c, "provider_backfill", &v));
         }
     }
+    // 1.5: Garmin's detail (sleep stages, SpO₂/breathing per minute, HRV every 5 min, heart rate
+    // every 15 s) comes only in the raw payloads — the whole history once, then the recent days —
+    // and is turned into Apple-shaped rows.
+    let has_garmin = with_conn(app, |c| Ok(crate::sources::catalog(c).iter().any(|x| x.provider.eq_ignore_ascii_case(crate::garmin::GARMIN))))?;
+    if has_garmin {
+        let back = with_conn(app, |c| Ok(crate::db::get_setting(c, "garmin_raw").as_deref() == Some("1")))?;
+        let gsince = if back { from.clone().unwrap_or_else(|| time::ymd(crate::store::now() - 14 * 86400, 0)) } else { "2015-01-01".to_string() };
+        let mut gok = true;
+        for m in crate::garmin::RAW_METRICS {
+            match freddy::raw_rows(m, &gsince).await {
+                Ok(rows) if !rows.is_empty() => {
+                    let _ = with_conn(app, |c| store::upsert_metrics(c, &rows));
+                }
+                Ok(_) => {}
+                Err(_) => gok = false,
+            }
+        }
+        let _ = with_conn(app, |c| crate::garmin::derive(c, &gsince));
+        if gok && !back {
+            let _ = with_conn(app, |c| crate::db::set_setting(c, "garmin_raw", "1"));
+        }
+    }
     // Workouts from freddy (0.17): summaries for the whole history once, heart rate of recent ones.
     let wmode = with_conn(app, |c| Ok(crate::workouts_svc::mode(c)))?;
     if wmode != "strava" {
