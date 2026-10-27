@@ -587,6 +587,10 @@ fn check_today(conn: &Connection, s: &Value, today: &str, t: f64) -> Result<(), 
     }
     let tier = s["day"]["advice"]["tier"].as_str().and_then(|x| crate::engine::daily::TIERS.iter().position(|t| *t == x));
     let Some(allowed) = tier else { return Ok(()) };
+    // 1.4.1 (owner): no readiness yet (no sleep, no HRV) — nothing to compare the plan with.
+    if s["readiness"]["score"].as_f64().is_none() {
+        return Ok(());
+    }
     if s["day"]["todayLoad"].as_f64().unwrap_or(0.0) > 0.0 && s["day"]["todayLoad"].as_f64().unwrap_or(0.0) >= s["day"]["target"]["lo"].as_f64().unwrap_or(f64::MAX) {
         return Ok(());
     }

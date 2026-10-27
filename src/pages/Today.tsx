@@ -9,6 +9,7 @@ import { DayPlanCard } from '../components/DayPlan';
 import { ShoeTodayCard } from '../components/Shoes';
 import type { Go } from '../lib/nav';
 import { api, errText, type EngineSummary, type HealthSummary, type MedsSummary, type CoachReport, type PlanState, type ShoeAdvice, type BodyState, type PsychSummary, type Split } from '../lib/api';
+import { SportIcon } from '../components/SportIcon';
 import { useDataChanged } from '../lib/events';
 
 const LEVEL: Record<string, [string, string]> = {
@@ -224,11 +225,7 @@ function Details({ s, onSettings }: { s: EngineSummary; onSettings: () => void }
 const WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const SPORT_RU: Record<string, string> = {
   run: 'бег', walk: 'ходьба', hike: 'поход', ride: 'вело', ride_virtual: 'вело', strength: 'силовая',
-  workout: 'физио', yoga: 'йога', swim: 'плавание', other: 'другое',
-};
-const SPORT_LETTER: Record<string, [string, string]> = {
-  run: ['Б', '#3DDC97'], walk: ['Х', '#7FD3FF'], hike: ['П', '#7FD3FF'], ride: ['В', '#F5B642'], ride_virtual: ['В', '#F5B642'],
-  strength: ['С', '#FF8A65'], workout: ['Т', '#C792EA'], yoga: ['Й', '#C792EA'], swim: ['П', '#7FD3FF'], other: ['•', '#9AA3AE'],
+  workout: 'физио', yoga: 'йога', swim: 'плавание', elliptical: 'эллипс', stepper: 'степпер', other: 'другое',
 };
 
 function MiniRing({ frac, color, label }: { frac: number; color: string; label: string }) {
@@ -421,6 +418,20 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
             )}
           </div>
         </section>
+        {s.steps && (s.steps.today != null || s.steps.usual != null) && (
+          <section className="card ring-card" aria-label="Шаги">
+            <MiniRing frac={s.steps.usual ? Math.min(1, (s.steps.today ?? 0) / s.steps.usual) : 0} color="#7FD3FF" label={s.steps.today != null ? n0(s.steps.today) : '—'} />
+            <div className="stack">
+              <span className="label">Шаги</span>
+              <span style={{ fontSize: 20, fontWeight: 700, color: '#7FD3FF' }}>
+                {s.steps.usual ? (s.steps.today != null ? `${Math.round((s.steps.today / s.steps.usual) * 100)}% от обычного` : 'пока нет данных') : 'норма набирается'}
+              </span>
+              <span className="muted small" style={{ lineHeight: 1.45 }}>
+                {s.steps.usual ? `Обычно ${n0(s.steps.usual)} в день` : ''}{s.steps.avg7 ? `${s.steps.usual ? ' · ' : ''}за 7 дней в среднем ${n0(s.steps.avg7)}` : ''}
+              </span>
+            </div>
+          </section>
+        )}
         <section className="card ring-card" aria-label="Сон">
           <MiniRing frac={(night?.score ?? 0) / 100} color="#A78BFA" label={night ? `${night.score}%` : '—'} />
           <div className="stack">
@@ -630,10 +641,9 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
           )}
           <div>
             {day.recent.slice(0, 5).map((a) => {
-              const [l, c] = SPORT_LETTER[a.sport] ?? SPORT_LETTER.other;
               return (
                 <div key={a.id} className="list-row">
-                  <span className="badge" style={{ color: c }}>{l}</span>
+                  <SportIcon sport={a.sport} size={34} />
                   <span className="stack" style={{ gap: 0, flex: 1, minWidth: 0 }}>
                     <span className="ellipsis small" style={{ fontWeight: 700 }}>{a.name || SPORT_RU[a.sport]}</span>
                     <span className="muted tiny">{new Date(a.startUtc * 1000).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · {hm(a.durationS)}{a.distanceM ? ` · ${n1(a.distanceM / 1000)} км` : ''}</span>

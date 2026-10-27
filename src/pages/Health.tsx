@@ -4,6 +4,7 @@ import { Labs } from './Labs';
 import { Vital, pointsOf, fmtPts } from '../components/Readiness';
 import { Fragment, useCallback, useEffect, useMemo, useState, type PointerEvent as RPointerEvent, type ReactNode } from 'react';
 import { api, errText, fmtDur, fmtKm, plural, sportOf, type Band, type HealthDay, type HealthNight, type HealthOverview, type HealthSummary, type Pt, type ReadinessDay, type StressDay } from '../lib/api';
+import { SportIcon } from '../components/SportIcon';
 import { useDataChanged } from '../lib/events';
 
 type Sub = 'overview' | 'history' | 'labs' | 'meds';
@@ -312,11 +313,11 @@ function Overview({ h, reload }: { h: HealthSummary; reload: () => void }) {
             <div className="tile"><span className="num tile-v">{h.vo2.lab ? n1(h.vo2.lab.value) : '—'}</span><span className="muted tiny">{h.vo2.lab ? `лаборатория · ${h.vo2.lab.where ? `${h.vo2.lab.where}, ` : ''}${dayLabel(h.vo2.lab.date)}` : 'лабораторный тест — внеси в Настройки → Профиль'}</span></div>
           </div>
           {vo2 && h.vo2.lab && <span className="small" style={{ lineHeight: 1.5, color: 'var(--text-2)' }}>Часы показывают на {n0(Math.abs((vo2[1] / h.vo2.lab!.value - 1) * 100))}% {vo2[1] >= h.vo2.lab!.value ? 'выше' : 'ниже'} лаборатории — для трендов им можно доверять, а точку отсчёта даёт тест.</span>}
-          <span className="small"><b>Шаги</b> <span className="num">{n0(h.body.steps7)}</span> <span className="muted">в день, среднее за 7 дней</span></span>
           <span className="small"><b>Вес</b> <span className="num">{w ? `${n1(w.weight)} кг` : '—'}</span> <span className="muted">{w ? `весы · ${dayLabel(w.date)}${w.fat != null ? ` · жир ${n1(w.fat)}%` : ''}` : ''}</span></span>
         </section>
       </div>
 
+      <StepsCard h={h} />
       <div className="grid">
         <Habits h={h} />
         <AlcoholCalc h={h} />
@@ -704,7 +705,7 @@ function DayCard({ date, today, ready, onDate, onOpen }: { date: string; today: 
                 const sp = sportOf(a.sport);
                 return (
                   <button key={a.id} type="button" className="list-row plain small" onClick={onOpen ? () => onOpen(a.id) : undefined} disabled={!onOpen}>
-                    <span className="badge" style={{ color: sp.color }}>{sp.letter}</span>
+                    <SportIcon sport={a.sport} size={30} />
                     <span style={{ flex: 1 }}><b>{a.name || sp.name}</b> <span className="muted">· {clockAt(a.startUtc, d.tz)} · {fmtDur(a.durationS)}{a.distanceM ? ` · ${fmtKm(a.distanceM)}` : ''}{a.avgHr ? ` · пульс ${Math.round(a.avgHr)}` : ''}</span></span>
                     <span className="num" style={{ color: '#4FA3FF', fontWeight: 700 }}>{a.load ?? '—'}</span>
                   </button>
@@ -904,5 +905,30 @@ function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: Heal
         </section>
       )}
     </>
+  );
+}
+
+/** 1.4.1: steps of the last 30 days — bars against your usual day (median), today highlighted. */
+function StepsCard({ h }: { h: HealthSummary }) {
+  const pts = h.body.steps.filter((p) => p[1] > 0);
+  if (pts.length < 3) return null;
+  const vals = pts.map((p) => p[1]).filter((v) => v >= 500).sort((a, b) => a - b);
+  const usual = vals.length ? vals[Math.floor(vals.length / 2)] : null;
+  const max = Math.max(...pts.map((p) => p[1]), usual ?? 0, 1);
+  const last = pts[pts.length - 1];
+  return (
+    <section className="card" aria-label="Шаги">
+      <div className="between">
+        <span className="label">Шаги · 30 дней</span>
+        <span className="small"><span className="muted">последний день </span><b className="num">{n0(last[1])}</b>{usual ? <span className="muted"> · обычно {n0(usual)}</span> : null}{h.body.steps7 ? <span className="muted"> · за 7 дней {n0(h.body.steps7)}</span> : null}</span>
+      </div>
+      <div className="steps-bars" role="img" aria-label="Шаги по дням">
+        {pts.map(([d, v], i) => (
+          <span key={d} title={`${dayLabel(d)}: ${n0(v)}`} style={{ height: `${Math.max(2, (v / max) * 100)}%`, background: i === pts.length - 1 ? '#7FD3FF' : usual && v >= usual ? '#7FD3FF99' : '#7FD3FF44' }} />
+        ))}
+        {usual && <i style={{ bottom: `${(usual / max) * 100}%` }} />}
+      </div>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Шаги считаются за весь день, вместе с ходьбой и бегом. Пунктир — твой обычный день (медиана за месяц). Нагрузку Kouros считает по тренировкам, а шаги — для общей картины движения.</span>
+    </section>
   );
 }

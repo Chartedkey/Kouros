@@ -3,6 +3,7 @@ import {
   api, errText, fmtDur, fmtKm, fmtPace, fmtWhen, plural, sportOf,
   type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type ShoeRun, type Split, type TrainingOverview, type ResBand, type ExerciseItem,
 } from '../lib/api';
+import { SportIcon, sportKey } from '../components/SportIcon';
 import { useDataChanged } from '../lib/events';
 import { SpecEditor } from '../components/Shoes';
 import { EQUIP, ExerciseCard, MUSCLE, bandKg, searchExercises, useExerciseLib } from '../components/Exercises';
@@ -232,10 +233,10 @@ function Overview({ s, o, reloadO, onOpen, onAll, onImport }: { s: EngineSummary
             <>
               <button type="button" className="plain" onClick={() => onOpen(la.id)}>
                 <span className="row" style={{ gap: 12, flexWrap: 'nowrap' }}>
-                  <span className="badge" style={{ color: lsp.color }}>{lsp.letter}</span>
+                  <SportIcon sport={sportKey(la)} size={52} rpe={la.rpe} />
                   <span className="stack" style={{ gap: 0, minWidth: 0 }}>
                     <span style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700 }} className="ellipsis">{la.name || lsp.name}</span>
-                    <span className="muted small">{lsp.name}{last?.load != null ? ` · нагрузка ${last.load}` : ''}{la.relativeEffort ? ` · Relative Effort ${Math.round(la.relativeEffort)}` : ''}</span>
+                    <span className="muted small">{sportKey(la) === 'treadmill' ? 'Беговая дорожка' : lsp.name}{last?.load != null ? ` · нагрузка ${last.load}` : ''}{la.relativeEffort ? ` · Relative Effort ${Math.round(la.relativeEffort)}` : ''}</span>
                   </span>
                 </span>
               </button>
@@ -309,11 +310,11 @@ function ActRow({ a, onOpen, compact, sel }: { a: ActivityPage['items'][number];
     <button type="button" className={compact ? 'list-row plain' : 'tr tr-act plain'} onClick={() => onOpen(a.id)} style={sel ? { background: '#1a2230' } : undefined}>
       {!compact && <span className="muted small">{sel != null && <input type="checkbox" readOnly checked={sel} style={{ marginRight: 8 }} />}{fmtWhen(a.startUtc)}</span>}
       <span className="row" style={{ flexWrap: 'nowrap', gap: 10, minWidth: 0, flex: compact ? 1 : undefined }}>
-        <span className="badge" style={{ color: sp.color }}>{sp.letter}</span>
+        <SportIcon sport={sportKey(a)} size={36} rpe={a.rpe} />
         <span className="stack" style={{ gap: 0, minWidth: 0 }}>
           <span className="ellipsis" style={{ fontWeight: 700 }}>{a.name || sp.name}</span>
           <span className="muted tiny ellipsis">
-            {compact ? `${fmtWhen(a.startUtc)} · ` : ''}{sp.name}
+            {compact ? `${fmtWhen(a.startUtc)} · ` : ''}{sportKey(a) === 'treadmill' ? 'Беговая дорожка' : sp.name}
             {a.totalSets ? ` · ${plural(a.totalSets, 'подход', 'подхода', 'подходов')}` : ''}
             {a.rpe ? ` · тяжесть ${a.rpe}` : ''}
           </span>

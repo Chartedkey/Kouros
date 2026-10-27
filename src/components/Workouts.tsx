@@ -164,7 +164,7 @@ export function DeletedList() {
             const sp = sportOf(w.sport);
             return (
               <div key={w.id} className="list-row small" style={{ flexWrap: 'wrap' }}>
-                <span style={{ flex: 1, minWidth: 0 }}><span style={{ color: sp.color }}>{sp.letter}</span> {w.name || sp.name} <span className="muted">· {when(w.start)} · {w.min} мин{w.km ? ` · ${String(w.km).replace('.', ',')} км` : ''} · {w.sourceName}</span></span>
+                <span style={{ flex: 1, minWidth: 0 }}>{w.name || sp.name} <span className="muted">· {when(w.start)} · {w.min} мин{w.km ? ` · ${String(w.km).replace('.', ',')} км` : ''} · {w.sourceName}</span></span>
                 {confirm === w.id ? (
                   <span className="row" style={{ gap: 8 }}>
                     <span className="tiny" style={{ color: '#FF6B6B' }}>Удалить навсегда?</span>

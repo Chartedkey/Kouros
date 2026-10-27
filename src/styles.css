@@ -400,3 +400,10 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .ofp-item.skip > :first-child { opacity: .5; text-decoration: line-through; }
 .ofp-edit-row { gap: 6px; flex-wrap: wrap; padding: 3px 0; }
 @media (max-width: 720px) { .ofp-item { grid-template-columns: 1fr; } }
+/* 1.4.1 workout icons */
+.sport-icon { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; }
+.sport-icon > svg { position: absolute; inset: 0; }
+.sport-icon > img { display: block; filter: brightness(1.12) saturate(1.1); pointer-events: none; }
+.steps-bars { position: relative; display: flex; align-items: flex-end; gap: 3px; height: 90px; }
+.steps-bars > span { flex: 1; border-radius: 3px 3px 0 0; min-width: 3px; }
+.steps-bars > i { position: absolute; left: 0; right: 0; border-top: 1px dashed #9AA3AE88; }

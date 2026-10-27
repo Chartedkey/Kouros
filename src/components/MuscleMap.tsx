@@ -4,6 +4,7 @@
 // (group index + 1 per pixel) to know which group was clicked.
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { sportOf, type MuscleGroupState } from '../lib/api';
+import { SportIcon } from './SportIcon';
 
 // Owner's choice (1.3.1): below 60 % of the usual level grey (fresh), 60–120 % green (normal working
 // load), 120–160 % yellow (tired), above 160 % red (overloaded). Thresholds = muscle_svc::map_state.
@@ -100,7 +101,7 @@ export function MuscleMap({ groups, missing = [], onOpen }: { groups: MuscleGrou
                 const sp = sportOf(c.sport);
                 return (
                   <button key={c.id} type="button" className="list-row plain small" onClick={onOpen ? () => onOpen(c.id) : undefined}>
-                    <span className="badge" style={{ color: sp.color }}>{sp.letter}</span>
+                    <SportIcon sport={c.sport} size={30} />
                     <span style={{ flex: 1, textAlign: 'left' }}>{c.name || sp.name} <span className="muted">· {new Date(c.start * 1000).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' })}</span></span>
                     <span className="num">{c.share}%</span>
                   </button>

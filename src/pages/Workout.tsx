@@ -7,6 +7,7 @@ import { ExerciseCard, ExerciseInput, effectiveKg, useExerciseLib } from '../com
 import { useDataChanged } from '../lib/events';
 import { RouteMap } from './RouteMap';
 import { OfpCard } from '../components/Ofp';
+import { SportIcon, sportKey } from '../components/SportIcon';
 
 const ZONE_NAMES = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'];
 const ZONE_COLORS = ['#7FD3FF', '#3DDC97', '#F5B642', '#FF8A65', '#FF6B6B'];
@@ -404,10 +405,15 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
       <div className="page-head">
         <div className="stack" style={{ gap: 6, minWidth: 0, flex: '1 1 480px' }}>
           {back}
+          <div className="row" style={{ gap: 16, flexWrap: 'nowrap', minWidth: 0 }}>
+            <SportIcon sport={sportKey(a)} size={64} rpe={a.rpe} />
+            <div className="stack" style={{ gap: 6, minWidth: 0 }}>
           <h1 className="ellipsis" style={{ maxWidth: '100%' }}>{a.name || sp.name}</h1>
           <p className="subtitle">
-            {sp.name} · {fmtWhen(a.startUtc)} · {d.sourceName ?? (a.source === 'strava_api' ? 'Strava' : a.source === 'strava_archive' ? 'архив Strava' : 'файл')}{!d.sourceName && a.device ? ` · ${a.device}` : ''}
+            {sportKey(a) === 'treadmill' ? 'Беговая дорожка' : sp.name} · {fmtWhen(a.startUtc)} · {d.sourceName ?? (a.source === 'strava_api' ? 'Strava' : a.source === 'strava_archive' ? 'архив Strava' : 'файл')}{!d.sourceName && a.device ? ` · ${a.device}` : ''}
           </p>
+            </div>
+          </div>
           {d.detailText && <span className="muted tiny">Данные: {d.detailText}</span>}
         </div>
         <div className="stack" style={{ gap: 0, alignItems: 'flex-end' }}>

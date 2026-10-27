@@ -4,6 +4,7 @@ import {
   api, errText, fmtDur, fmtKm, fmtPace, plural, sportOf,
   type AthleteProfile, type EngineSummary, type RecordsExtra, type Shoe, type TrainingOverview, type WeekAgg,
 } from '../lib/api';
+import { SportIcon } from '../components/SportIcon';
 
 const n0 = (x: number | null | undefined) => (x == null ? '—' : Math.round(x).toLocaleString('ru-RU'));
 const n1 = (x: number | null | undefined) => (x == null ? '—' : x.toFixed(1).replace('.', ','));
@@ -164,7 +165,7 @@ export function LoadDual({ s, onOpen }: { s: EngineSummary; onOpen: (id: string)
             const sp = sportOf(a.sport);
             return (
               <button key={a.id} type="button" className="list-row plain small" onClick={() => onOpen(a.id)}>
-                <span className="badge" style={{ color: sp.color }}>{sp.letter}</span>
+                <SportIcon sport={a.sport} size={30} />
                 <span style={{ flex: 1, textAlign: 'left' }}>{a.name || sp.name}
                   <span className="muted"> · {new Date(a.start * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}{(a.up ?? 0) > 0 ? ` · ↑${a.up} ↓${a.down} м` : ''}</span>
                   {a.bad && <span style={{ color: '#F5B642' }}> · высота записана со сбоем</span>}

@@ -37,6 +37,9 @@ const DOWN: G = [0.10, 0.45, 0., 0., 0., 0., 0., 0., 0., 0., 0.35, 0.10];
 const GYM: G = [0.03, 0.15, 0.10, 0.15, 0.04, 0.13, 0.15, 0.08, 0.08, 0.09, 0., 0.];
 const MOBILITY: G = [0., 0., 0.1, 0.1, 0.2, 0.3, 0.2, 0., 0.1, 0., 0., 0.];
 const RIDE: G = [0.1, 0.4, 0.1, 0.25, 0., 0., 0., 0., 0., 0., 0.15, 0.];
+/// 1.4.1: elliptical (no impact, arms on the handles) and stair stepper (climbing).
+const ELLIPTICAL: G = [0.12, 0.3, 0.13, 0.25, 0.05, 0.05, 0., 0., 0.04, 0.06, 0., 0.];
+const STEPPER: G = [0.22, 0.3, 0.08, 0.3, 0.04, 0.02, 0., 0., 0., 0., 0.04, 0.];
 const SWIM: G = [0., 0., 0., 0., 0., 0.2, 0.3, 0.05, 0.3, 0.15, 0., 0.];
 
 /// Muscle groups for a FIT exercise category (or the exercise name); None = not recognised
@@ -260,6 +263,8 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
             "yoga" => add(&mut g, &MOBILITY, session * 0.4),
             "ride" | "ride_virtual" => add(&mut g, &RIDE, a.load * 0.5),
             "swim" => add(&mut g, &SWIM, a.load * 0.5),
+            "elliptical" => add(&mut g, &ELLIPTICAL, a.load * 0.5),
+            "stepper" => add(&mut g, &STEPPER, a.load * 0.6),
             _ => add(&mut g, &GYM, a.load * 0.3),
         }
         // 1.4: ОФП or a complex entered on a run / walk / ride — about 2 units per set on top.

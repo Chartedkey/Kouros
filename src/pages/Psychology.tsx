@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, errText, plural, sportOf, type PsychSummary, type SurveyKind, type SurveyRow } from '../lib/api';
+import { SportIcon } from '../components/SportIcon';
 import { useDataChanged } from '../lib/events';
 
 const dayLabel = (d: string) => new Date(d + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
@@ -154,7 +155,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
                 const sp = sportOf(a.sport);
                 return (
                   <button key={a.id} type="button" className="list-row plain small" onClick={() => onOpenWorkout?.(a.id)}>
-                    <span className="badge" style={{ color: sp.color }}>{sp.letter}</span>
+                    <SportIcon sport={a.sport} size={30} />
                     <span style={{ flex: 1 }}>{a.name || sp.name} <span className="muted">· {new Date(a.startUtc * 1000).toLocaleString('ru-RU', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</span></span>
                     <span className="linkbtn small">Оценить →</span>
                   </button>

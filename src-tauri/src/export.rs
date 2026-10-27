@@ -27,6 +27,8 @@ fn sport_ru(s: &str) -> &'static str {
         "workout" => "Тренировка",
         "yoga" => "Йога",
         "swim" => "Плавание",
+        "elliptical" => "Эллипс",
+        "stepper" => "Степпер",
         _ => "Другое",
     }
 }

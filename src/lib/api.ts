@@ -60,6 +60,7 @@ const DEMO_STRESS = {
 
 const DEMO_SUMMARY = {
   today: '2026-10-17', hrRestUsed: 53,
+  steps: { today: 6420, usual: 9100, avg7: 8650, last14: [] as [string, number][] },
   muscleMissing: [{ id: 's3', sport: 'strength', start: 1792300000, name: 'Силовая', free: 18, total: 18 }],
   // Fictional muscle state for the demo map (1.2).
   muscleMap: ([
@@ -248,7 +249,7 @@ function demoHealth(): HealthSummary {
     stress: { series: hrv.map(([d, v]) => [d, Math.round(20 + (v % 25))] as Pt), today: DEMO_STRESS, norm: 33 },
     vo2: { series: days.slice(-10).map((d, i) => [d, 48 + (i % 3) * 0.2] as Pt), lab: { value: 48.5, date: '2026-05-20', where: 'лаборатория' } },
     body: {
-      weighings: [{ date: '2026-10-14', weight: 78.4, fat: 17.8, lean: 64.4 }, { date: '2026-10-10', weight: 78.7, fat: 18.0, lean: 64.5 }], steps7: 11400, steps: [],
+      weighings: [{ date: '2026-10-14', weight: 78.4, fat: 17.8, lean: 64.4 }, { date: '2026-10-10', weight: 78.7, fat: 18.0, lean: 64.5 }], steps7: 11400, steps: Array.from({ length: 30 }, (_, k) => [`2026-10-${String(k + 1).padStart(2, '0')}`, Math.round(8000 + 3500 * Math.sin(k / 2.3) + (k % 4) * 600)] as Pt),
       weight: Array.from({ length: 120 }, (_, k) => [new Date(Date.UTC(2026, 5, 20) + k * 86400000).toISOString().slice(0, 10), 80 - k / 60 + Math.sin(k) * 0.6] as Pt).filter((_, k) => k % 2 === 0),
       fat: Array.from({ length: 60 }, (_, k) => [new Date(Date.UTC(2026, 5, 20) + k * 2 * 86400000).toISOString().slice(0, 10), 18.5 - k / 60 + Math.cos(k) * 0.5] as Pt),
       lean: Array.from({ length: 60 }, (_, k) => [new Date(Date.UTC(2026, 5, 20) + k * 2 * 86400000).toISOString().slice(0, 10), 64.5 + Math.sin(k) * 0.6] as Pt),
@@ -1156,6 +1157,8 @@ export type EngineSummary = {
   /** 1.4: strength / ОФП workouts of the last 6 days whose load is not on the map (no exercises). */
   /** 1.4: another watch now writes these groups (by the device field) — start the norm again? */
   deviceChange?: DeviceChange[];
+  /** 1.4.1: steps today vs your usual day (median of 30 days before). */
+  steps?: { today: number | null; usual: number | null; avg7: number | null; last14: [string, number][] };
   /** 1.4: HRV (and breathing / SpO₂) typed in by hand — null when every group has a device. */
   manualEntry?: ManualState | null;
   muscleMissing?: { id: string; sport: string; start: number; name: string | null; free: number; total: number }[];
@@ -1209,6 +1212,8 @@ export const SPORTS: Record<string, { name: string; letter: string; color: strin
   workout: { name: 'Тренировка', letter: 'Т', color: '#C792EA' },
   yoga: { name: 'Йога', letter: 'Й', color: '#C792EA' },
   swim: { name: 'Плавание', letter: 'П', color: '#7FD3FF' },
+  elliptical: { name: 'Эллипс', letter: 'Э', color: '#A78BFA' },
+  stepper: { name: 'Степпер', letter: 'С', color: '#FF6B6B' },
   other: { name: 'Другое', letter: '•', color: '#9AA3AE' },
 };
 export const sportOf = (s: string) => SPORTS[s] ?? SPORTS.other;

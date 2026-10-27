@@ -620,6 +620,15 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
     };
     let muscle_map = crate::muscle_svc::map_state(&ml, &act_names);
     let muscle_missing = crate::muscle_svc::missing(&ml, &act_names, 6);
+    // 1.4.1: steps today against your usual day (median of the 30 days before, days with a watch on).
+    let steps_json = {
+        let st = series(conn, "steps_total", "max");
+        let prev: Vec<f64> = st.range(add_days(&today, -30)..today.clone()).map(|(_, v)| *v).filter(|v| *v >= 500.0).collect();
+        let week: Vec<f64> = st.range(add_days(&today, -7)..today.clone()).map(|(_, v)| *v).filter(|v| *v >= 500.0).collect();
+        let usual = if prev.len() >= 7 { crate::engine::median(&prev) } else { None };
+        json!({"today": st.get(&today).map(|v| v.round()), "usual": usual.map(|v| v.round()), "avg7": crate::engine::mean(&week).map(|v| v.round()),
+               "last14": st.range(add_days(&today, -13)..add_days(&today, 1)).map(|(d, v)| json!([d, v.round()])).collect::<Vec<_>>()})
+    };
     let manual_entry = {
         let m = crate::manual_svc::state(conn);
         if m["hrvOn"] == true || m["vitalsOn"] == true { m } else { Value::Null }
@@ -973,6 +982,7 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
         "recovery": recovery,
         "muscleMap": muscle_map,
         "muscleMissing": muscle_missing,
+        "steps": steps_json,
         "deviceChange": crate::sources::device_change(conn, &today),
         "manualEntry": manual_entry,
         "intensity": {"d7": split(7), "d28": split(28), "zones28Min": zones28.iter().map(|s| (s / 60.0).round()).collect::<Vec<_>>()},

@@ -65,6 +65,8 @@ fn estimate_per_min(sport: &str) -> f64 {
         "swim" => 1.2,
         "yoga" => 0.35,
         "workout" => 0.5,
+        "elliptical" => 0.9,
+        "stepper" => 1.0,
         _ => 0.6,
     }
 }

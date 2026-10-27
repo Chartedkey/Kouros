@@ -387,6 +387,15 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE strength_sets ADD COLUMN cx TEXT;
     "#,
+    // v21: elliptical and stair stepper are their own kinds (1.4.1) — earlier ones were «other»
+    r#"
+    UPDATE activities SET sport = 'elliptical' WHERE sport = 'other' AND lower(COALESCE(sport_label, '')) IN ('elliptical', 'эллиптический тренажер', 'эллиптический тренажёр', 'эллипс')
+        OR sport = 'other' AND COALESCE(sport_label, '') IN ('Эллиптический тренажер', 'Эллиптический тренажёр', 'Эллипс');
+    UPDATE activities SET sport = 'stepper' WHERE sport = 'other' AND lower(COALESCE(sport_label, '')) IN ('stairstepper', 'stair stepper', 'stairclimbing', 'stair_climbing', 'степпер')
+        OR sport = 'other' AND COALESCE(sport_label, '') IN ('Степпер');
+    DELETE FROM activity_metrics WHERE activity_id IN (SELECT id FROM activities WHERE sport IN ('elliptical', 'stepper'));
+    DELETE FROM muscle_cache WHERE activity_id IN (SELECT id FROM activities WHERE sport IN ('elliptical', 'stepper'));
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {

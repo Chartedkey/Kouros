@@ -75,7 +75,11 @@ fn provider_allowed(cfg: &Value, p: &str) -> bool {
 
 fn apple_sport(t: &str) -> &'static str {
     let t = t.to_lowercase();
-    if t.contains("run") {
+    if t.contains("ellipt") {
+        "elliptical"
+    } else if t.contains("stair") || t.contains("stepper") {
+        "stepper"
+    } else if t.contains("run") {
         "run"
     } else if t.contains("hik") {
         "hike"
@@ -106,6 +110,8 @@ fn sport_ru(s: &str) -> &'static str {
         "yoga" => "Йога и растяжка",
         "strength" => "Силовая",
         "workout" => "Тренировка",
+        "elliptical" => "Эллипс",
+        "stepper" => "Степпер",
         _ => "Тренировка",
     }
 }

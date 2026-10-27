@@ -192,6 +192,9 @@ pub fn sport_from_strava(t: &str) -> &'static str {
         "workout" | "тренировка" | "crossfit" | "кроссфит" | "hiit" => "workout",
         "yoga" | "йога" | "pilates" | "пилатес" => "yoga",
         "swim" | "плавание" => "swim",
+        // 1.4.1: own kinds (lighter on the legs than running).
+        "elliptical" | "эллиптический тренажер" | "эллиптический тренажёр" | "эллипс" => "elliptical",
+        "stairstepper" | "stair stepper" | "степпер" | "лестница" => "stepper",
         _ => "other",
     }
 }

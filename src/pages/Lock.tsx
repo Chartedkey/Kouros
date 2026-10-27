@@ -24,6 +24,7 @@ export function Lock({ onUnlocked }: { onUnlocked: () => void }) {
       <div className="lock-card">
         <Logo size={72} />
         <span className="wordmark" style={{ fontSize: 26 }}>KOUROS</span>
+        <span style={{ fontWeight: 600, marginTop: -6 }}>Твой тренер знает, как ты спал.</span>
         <span className="muted" style={{ lineHeight: 1.5 }}>
           Твои данные зашифрованы. Подтверди, что это ты, — PIN-кодом, отпечатком или лицом.
         </span>
