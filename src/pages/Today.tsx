@@ -420,14 +420,14 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
         </section>
         {s.steps && (s.steps.today != null || s.steps.usual != null) && (
           <section className="card ring-card" aria-label="Шаги">
-            <MiniRing frac={s.steps.usual ? Math.min(1, (s.steps.today ?? 0) / s.steps.usual) : 0} color="#7FD3FF" label={s.steps.today != null ? n0(s.steps.today) : '—'} />
+            <MiniRing frac={s.steps.usual ? Math.min(1, (s.steps.today ?? 0) / s.steps.usual) : 0} color="#7FD3FF" label={s.steps.today != null && s.steps.usual ? `${Math.round((s.steps.today / s.steps.usual) * 100)}%` : '—'} />
             <div className="stack">
               <span className="label">Шаги</span>
               <span style={{ fontSize: 20, fontWeight: 700, color: '#7FD3FF' }}>
-                {s.steps.usual ? (s.steps.today != null ? `${Math.round((s.steps.today / s.steps.usual) * 100)}% от обычного` : 'пока нет данных') : 'норма набирается'}
+                {s.steps.today != null ? `${n0(s.steps.today)} шагов` : 'пока нет данных'}
               </span>
               <span className="muted small" style={{ lineHeight: 1.45 }}>
-                {s.steps.usual ? `Обычно ${n0(s.steps.usual)} в день` : ''}{s.steps.avg7 ? `${s.steps.usual ? ' · ' : ''}за 7 дней в среднем ${n0(s.steps.avg7)}` : ''}
+                {s.steps.usual ? `Обычно ${n0(s.steps.usual)} в день` : 'Обычный день ещё набирается'}{s.steps.avg7 ? `${s.steps.usual ? ' · ' : ''}за 7 дней в среднем ${n0(s.steps.avg7)}` : ''}
               </span>
             </div>
           </section>
