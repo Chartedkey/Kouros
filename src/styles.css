@@ -409,7 +409,7 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .steps-bars > i { position: absolute; left: 0; right: 0; border-top: 1px dashed #9AA3AE88; }
 .steps-week { display: flex; gap: 8px; align-items: flex-end; height: 92px; }
 .steps-week > button { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
-.steps-week-bar { position: relative; display: flex; align-items: flex-end; width: 22px; flex: 1; }
+.steps-week-bar { position: relative; display: flex; align-items: flex-end; width: 22px; height: 70px; }
 .steps-week-bar > span { display: block; width: 100%; border-radius: 4px 4px 0 0; }
 .ring-card .stack { min-width: 0; }
 .ring-card .stack > span { overflow-wrap: anywhere; }

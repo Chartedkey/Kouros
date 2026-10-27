@@ -60,7 +60,7 @@ const DEMO_STRESS = {
 
 const DEMO_SUMMARY = {
   today: '2026-10-17', hrRestUsed: 53,
-  steps: { today: 6420, usual: 9100, avg7: 8650, last14: [] as [string, number][] },
+  steps: { today: 6420, usual: 9100, avg7: 8650, last14: [['2026-10-11', 9800], ['2026-10-12', 12400], ['2026-10-13', 7600], ['2026-10-14', 8900], ['2026-10-15', 11200], ['2026-10-16', 9300], ['2026-10-17', 6420]] as [string, number][] },
   muscleMissing: [{ id: 's3', sport: 'strength', start: 1792300000, name: 'Силовая', free: 18, total: 18 }],
   // Fictional muscle state for the demo map (1.2).
   muscleMap: ([

@@ -72,7 +72,7 @@ pub fn by_id(id: &str) -> Option<Value> {
 pub fn list() -> Value {
     let mut items = lib()["items"].as_array().cloned().unwrap_or_default();
     items.extend(custom_snapshot());
-    json!({"source": lib()["source"], "version": lib()["version"], "items": items, "runnerOfp": extra()["runnerOfp"]})
+    json!({"source": lib()["source"], "version": lib()["version"], "items": items, "runnerOfp": extra()["runnerOfp"], "bandList": extra()["bandList"]})
 }
 
 // ---------- your complexes and exercises (1.4) ----------
