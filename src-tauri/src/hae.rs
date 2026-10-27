@@ -771,6 +771,15 @@ pub fn state(app: &AppHandle, conn: &Connection) -> Value {
         o.remove("seen");
     }
     let cover: Vec<Value> = if rows > 0 { coverage(conn) } else { Vec::new() };
+    // 1.4.4: days whose steps look loaded in part and did not come again within 2 days.
+    let partial: Vec<String> = if rows > 0 {
+        let pr = crate::engine_svc::profile(conn);
+        let today = crate::engine_svc::today(&pr);
+        let to = crate::engine::add_days(&today, -2);
+        crate::health_svc::steps_days(conn, &pr, &crate::engine::add_days(&today, -14), &to).into_iter().filter(|(_, s)| s.partial).map(|(d, _)| d).collect()
+    } else {
+        Vec::new()
+    };
     json!({
         "enabled": v["enabled"].as_bool().unwrap_or(false),
         "port": port,
@@ -788,6 +797,7 @@ pub fn state(app: &AppHandle, conn: &Connection) -> Value {
         "waiting": waiting,
         "data": {"first": first, "last": last, "rows": rows},
         "coverage": cover,
+        "partialDays": partial,
         "groups": crate::sources::GROUPS.iter().map(|g| json!({"key": g.0, "name": g.1, "current": crate::sources::current(conn, g.0), "from": crate::sources::current_from(conn, g.0)})).chain(std::iter::once(json!({"key": crate::sources::OTHER, "name": crate::sources::OTHER_NAME, "current": crate::sources::current(conn, crate::sources::OTHER), "from": crate::sources::current_from(conn, crate::sources::OTHER)}))).collect::<Vec<_>>(),
     })
 }

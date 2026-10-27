@@ -653,7 +653,7 @@ function DayCard({ date, today, ready, onDate, onOpen }: { date: string; today: 
       item('температура запястья', d.tempShift != null ? `${d.tempShift > 0 ? '+' : ''}${n1(d.tempShift)} °C` : null),
     ]],
     ['Активность и тело', [
-      item('шаги', d.steps != null ? n0(d.steps) : null), item('активные калории', d.activeKcal != null ? `${n0(d.activeKcal)} ккал` : null),
+      item('активные калории', d.activeKcal != null ? `${n0(d.activeKcal)} ккал` : null),
       item('вес', d.weight != null ? `${n1(d.weight)} кг` : null), item('жир', d.fatPct != null ? `${n1(d.fatPct)}%` : null),
     ]],
     ['Питание и привычки', [
@@ -693,6 +693,7 @@ function DayCard({ date, today, ready, onDate, onOpen }: { date: string; today: 
               {d.hypnogram && <Hypnogram hyp={d.hypnogram} tz={d.tz} />}
             </div>
           ) : <span className="muted small">Сна за эту ночь нет.</span>}
+          {(d.steps != null || d.stepsPartial) && <DaySteps d={d} />}
           <div className="daygrid">
             {groups.map(([g, items]) => {
               const shown = items.filter(Boolean);
@@ -864,6 +865,7 @@ function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: Heal
         <div className="between"><span className="label">Сон по ночам</span><span className="row tiny" style={{ gap: 12 }}>{(['deep', 'core', 'rem'] as const).map((k) => <span key={k} className="row" style={{ gap: 4 }}><span className="dot" style={{ background: STAGE[k][1] }} />{STAGE[k][0]}</span>)}</span></div>
         <SleepBars nights={nights} needMin={480} count={days} sel={sel} onPick={setSel} />
       </section>
+      <StepsCard h={h} count={days} sel={sel} onDay={setSel} />
       <div className="grid2">
         <section className="card" aria-label="HRV ночью"><span className="label">{h.hrv.nightly ? 'HRV ночью · мс' : 'HRV по утрам · мс'}</span><LineBand pts={hrv} band={h.hrv.band} color="#3DDC97" fmt={(v) => String(Math.round(v))} sel={sel} onPick={setSel} marks={marksOf(h, "hrv")} /></section>
         <section className="card" aria-label="Пульс покоя"><span className="label">{h.rhr.nightly ? 'Пульс покоя ночью · уд/мин' : 'Пульс покоя · уд/мин'}</span><LineBand pts={rhr} band={h.rhr.band} color="#FF8A65" fmt={(v) => String(Math.round(v))} invertGood sel={sel} onPick={setSel} marks={marksOf(h, "rhr")} /></section>
@@ -910,29 +912,36 @@ function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: Heal
 }
 
 /** 1.4.2: steps of the last 30 days — every day (empty ones too), bars against your usual day
-(median), hover shows the day, a click opens it in «История»; today is marked as not finished. */
-function StepsCard({ h, onDay }: { h: HealthSummary; onDay?: (d: string) => void }) {
+(median), hover shows the day, a click opens it in «История»; today is marked as not finished.
+1.4.4: also in «История» (7 / 30 / 90 days, the picked day highlighted) and days loaded only in
+part are amber. */
+function StepsCard({ h, onDay, count = 30, sel: picked }: { h: HealthSummary; onDay?: (d: string) => void; count?: number; sel?: string }) {
   const [hov, setHov] = useState<string | null>(null);
-  const by = new Map(h.body.steps.map((p) => [p[0], p[1]] as [string, number]));
-  const days = Array.from({ length: 30 }, (_, k) => {
-    const d = new Date(`${h.today}T12:00:00`); d.setDate(d.getDate() - (29 - k));
+  const src = count > 30 && h.body.steps90?.length ? h.body.steps90 : h.body.steps;
+  const by = new Map(src.map((p) => [p[0], p[1]] as [string, number]));
+  const partial = new Set(h.body.stepsPartial ?? []);
+  const days = Array.from({ length: count }, (_, k) => {
+    const d = new Date(`${h.today}T12:00:00`); d.setDate(d.getDate() - (count - 1 - k));
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     return { key, v: by.get(key) ?? null };
   });
   const have = days.filter((d) => d.v != null && d.v > 0);
-  if (have.length < 3) return null;
-  const vals = days.filter((d) => d.key !== h.today && (d.v ?? 0) >= 500).map((d) => d.v!).sort((a, b) => a - b);
-  const usual = vals.length ? vals[Math.floor(vals.length / 2)] : null;
+  if (have.length < 3 && !picked) return null;
+  const vals = h.body.steps.filter((p) => p[0] !== h.today && p[1] >= 500).map((p) => p[1]).sort((a, b) => a - b);
+  const usual = h.body.stepsUsual ?? (vals.length ? vals[Math.floor(vals.length / 2)] : null);
   const max = Math.max(...have.map((d) => d.v!), usual ?? 0, 1);
   const wd = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('ru-RU', { weekday: 'short' });
   const sel = hov ? days.find((d) => d.key === hov) : null;
   const todayV = by.get(h.today);
+  const avg = have.length ? Math.round(have.filter((d) => d.key !== h.today).reduce((a, d) => a + d.v!, 0) / Math.max(1, have.filter((d) => d.key !== h.today).length)) : null;
   return (
     <section className="card" aria-label="Шаги">
       <div className="between" style={{ flexWrap: 'wrap', gap: 8 }}>
-        <span className="label">Шаги · 30 дней</span>
+        <span className="label">Шаги · {count === 7 ? 'неделя' : `${count} дней`}</span>
         {sel ? (
-          <span className="small"><b>{dayLabel(sel.key)}, {wd(sel.key)}</b> · {sel.v != null ? <><b className="num">{n0(sel.v)}</b> шагов{usual ? <span className="muted"> · {Math.round((sel.v / usual) * 100)}% от обычного</span> : null}</> : <span className="muted">нет данных</span>}{sel.key === h.today ? <span className="muted"> · день ещё идёт</span> : null}</span>
+          <span className="small"><b>{dayLabel(sel.key)}, {wd(sel.key)}</b> · {sel.v != null ? <><b className="num">{n0(sel.v)}</b> шагов{usual ? <span className="muted"> · {Math.round((sel.v / usual) * 100)}% от обычного</span> : null}</> : <span className="muted">нет данных</span>}{sel.key === h.today ? <span className="muted"> · день ещё идёт</span> : null}{partial.has(sel.key) ? <span style={{ color: '#F5B642' }}> · загружен не полностью</span> : null}</span>
+        ) : picked ? (
+          <span className="small"><span className="muted">в среднем </span><b className="num">{avg != null ? n0(avg) : '—'}</b>{usual ? <span className="muted"> · обычно {n0(usual)}</span> : null}</span>
         ) : (
           <span className="small"><span className="muted">сегодня пока </span><b className="num">{todayV != null ? n0(todayV) : '—'}</b>{usual ? <span className="muted"> · обычно {n0(usual)}</span> : null}{h.body.steps7 ? <span className="muted"> · за 7 дней {n0(h.body.steps7)}</span> : null}</span>
         )}
@@ -940,19 +949,49 @@ function StepsCard({ h, onDay }: { h: HealthSummary; onDay?: (d: string) => void
       <div className="steps-bars" role="img" aria-label="Шаги по дням" onMouseLeave={() => setHov(null)}>
         {days.map((d) => {
           const isToday = d.key === h.today;
+          const part = partial.has(d.key);
+          const col = part ? '#F5B642' : '#7FD3FF';
           return (
-            <button key={d.key} type="button" className="steps-col" title={`${dayLabel(d.key)}: ${d.v != null ? n0(d.v) : 'нет данных'}`}
+            <button key={d.key} type="button" className="steps-col" title={`${dayLabel(d.key)}: ${d.v != null ? n0(d.v) : 'нет данных'}${part ? ' · загружен не полностью' : ''}`}
               onMouseEnter={() => setHov(d.key)} onFocus={() => setHov(d.key)} onClick={onDay ? () => onDay(d.key) : undefined}
-              aria-pressed={hov === d.key}>
-              <span style={{ height: d.v ? `${Math.max(2, (d.v / max) * 100)}%` : '0%', background: isToday ? 'transparent' : usual && (d.v ?? 0) >= usual ? '#7FD3FFAA' : '#7FD3FF55',
-                border: isToday ? '1.5px dashed #7FD3FF' : undefined }} />
+              aria-pressed={hov === d.key || picked === d.key} data-sel={picked === d.key ? '1' : undefined}>
+              <span style={{ height: d.v ? `${Math.max(2, (d.v / max) * 100)}%` : '0%', background: isToday ? 'transparent' : part ? '#F5B64299' : usual && (d.v ?? 0) >= usual ? '#7FD3FFAA' : '#7FD3FF55',
+                border: isToday ? `1.5px dashed ${col}` : undefined }} />
               {d.v == null && <i className="steps-none" />}
             </button>
           );
         })}
         {usual && <i style={{ bottom: `${(usual / max) * 100}%` }} />}
       </div>
-      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Наведи на столбик — покажу день, нажми — откроется этот день в «Истории». Пунктир — твой обычный день (медиана за месяц), пунктирный столбик — сегодня, день ещё идёт. Нагрузку Kouros считает по тренировкам, а шаги — для общей картины движения.</span>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>
+        {picked ? 'Нажми на столбик — день откроется наверху. ' : 'Наведи на столбик — покажу день, нажми — откроется этот день в «Истории». '}
+        Пунктир — твой обычный день (медиана за месяц), пунктирный столбик — сегодня, день ещё идёт.{partial.size ? ' Жёлтый — день загружен не полностью: часть шагов ещё не пришла с телефона.' : ''}{picked ? '' : ' Нагрузку Kouros считает по тренировкам, а шаги — для общей картины движения.'}
+      </span>
     </section>
+  );
+}
+
+/** 1.4.4: steps of the day — total against the usual day and bars by hour; a day loaded only in
+part says so. */
+function DaySteps({ d }: { d: HealthDay }) {
+  const hrs = d.stepsHours ?? null;
+  const max = hrs ? Math.max(...hrs, 1) : 1;
+  const pct = d.steps != null && d.stepsUsual ? Math.round((d.steps / d.stepsUsual) * 100) : null;
+  return (
+    <div className="inset" style={{ gap: 8 }}>
+      <div className="between" style={{ flexWrap: 'wrap', gap: 6 }}>
+        <span className="small"><b className="tiny muted" style={{ textTransform: 'uppercase', letterSpacing: '.06em', marginRight: 8 }}>Шаги</b>
+          <b className="num" style={{ fontSize: 18 }}>{d.steps != null ? n0(d.steps) : '—'}</b>
+          {pct != null && <span className="muted"> · {pct}% от обычного ({n0(d.stepsUsual!)})</span>}</span>
+        {d.stepsPartial && <span className="tiny" style={{ color: '#F5B642' }}>загружен не полностью</span>}
+      </div>
+      {hrs && (
+        <div className="steps-hours" role="img" aria-label="Шаги по часам">
+          {hrs.map((v, i) => <span key={i} title={`${String(i).padStart(2, '0')}:00 — ${n0(v)}`} style={{ height: v > 0 ? `${Math.max(3, (v / max) * 100)}%` : '0%' }} />)}
+        </div>
+      )}
+      {hrs && <div className="steps-hours-x tiny muted"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>}
+      {d.stepsPartial && <span className="tiny" style={{ color: '#F5B642', lineHeight: 1.5 }}>Часы были на руке, а шагов за несколько часов нет — часть дня ещё не пришла с телефона. Когда Health Auto Export пришлёт день ещё раз, Kouros дозаполнит его сам; можно и вручную — экспорт за эту дату в Health Auto Export.</span>}
+    </div>
   );
 }

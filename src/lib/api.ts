@@ -249,7 +249,8 @@ function demoHealth(): HealthSummary {
     stress: { series: hrv.map(([d, v]) => [d, Math.round(20 + (v % 25))] as Pt), today: DEMO_STRESS, norm: 33 },
     vo2: { series: days.slice(-10).map((d, i) => [d, 48 + (i % 3) * 0.2] as Pt), lab: { value: 48.5, date: '2026-05-20', where: 'лаборатория' } },
     body: {
-      weighings: [{ date: '2026-10-14', weight: 78.4, fat: 17.8, lean: 64.4 }, { date: '2026-10-10', weight: 78.7, fat: 18.0, lean: 64.5 }], steps7: 11400, steps: Array.from({ length: 30 }, (_, k) => [`2026-10-${String(k + 1).padStart(2, '0')}`, Math.round(8000 + 3500 * Math.sin(k / 2.3) + (k % 4) * 600)] as Pt),
+      weighings: [{ date: '2026-10-14', weight: 78.4, fat: 17.8, lean: 64.4 }, { date: '2026-10-10', weight: 78.7, fat: 18.0, lean: 64.5 }], steps7: 11400, steps: Array.from({ length: 30 }, (_, k) => [`2026-10-${String(k + 1).padStart(2, '0')}`, k === 25 ? 4100 : Math.round(8000 + 3500 * Math.sin(k / 2.3) + (k % 4) * 600)] as Pt),
+      steps90: Array.from({ length: 90 }, (_, k) => [new Date(Date.UTC(2026, 7, 2 + k)).toISOString().slice(0, 10), Math.round(8500 + 3200 * Math.sin(k / 2.7) + (k % 5) * 500)] as Pt), stepsUsual: 9800, stepsPartial: ['2026-10-26'],
       weight: Array.from({ length: 120 }, (_, k) => [new Date(Date.UTC(2026, 5, 20) + k * 86400000).toISOString().slice(0, 10), 80 - k / 60 + Math.sin(k) * 0.6] as Pt).filter((_, k) => k % 2 === 0),
       fat: Array.from({ length: 60 }, (_, k) => [new Date(Date.UTC(2026, 5, 20) + k * 2 * 86400000).toISOString().slice(0, 10), 18.5 - k / 60 + Math.cos(k) * 0.5] as Pt),
       lean: Array.from({ length: 60 }, (_, k) => [new Date(Date.UTC(2026, 5, 20) + k * 2 * 86400000).toISOString().slice(0, 10), 64.5 + Math.sin(k) * 0.6] as Pt),
@@ -432,7 +433,7 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     } satisfies NutritionDay;
     case 'health_day': return {
       date: String(args.date), tz: 10800, sleep: { totalS: 26000, deepS: 5000, coreS: 14000, remS: 7000, awakeS: 1100 }, hypnogram: demoHealth().hypnogram,
-      hrv: 58, rhr: 49, hrRecovery: 31, walkHr: 98, resp: 14.1, breath: 2.4, spo2: 96.5, tempShift: 0.12, steps: 12400, activeKcal: 820,
+      hrv: 58, rhr: 49, hrRecovery: 31, walkHr: 98, resp: 14.1, breath: 2.4, spo2: 96.5, tempShift: 0.12, steps: 12400, stepsHours: [0, 0, 0, 0, 0, 0, 0, 340, 1200, 620, 380, 900, 1500, 700, 450, 2600, 1900, 400, 520, 310, 180, 60, 40, 0], stepsPartial: false, stepsUsual: 9800, activeKcal: 820,
       kcal: 2650, protein: 160, carbs: 280, fatG: 85, waterMl: 2600, alcohol: 0, caffeine: 85, caffeineLast: '11:05', vo2: 48.4, weight: 78.4, fatPct: 17.8,
       activities: [{ id: 's1', sport: 'run', name: 'Утренний бег', startUtc: 1792130000, durationS: 2940, distanceM: 8200, avgHr: 141, load: 118 }], habits: [['sauna', 1]],
       stress: DEMO_STRESS,
@@ -531,6 +532,7 @@ const demoHae = {
       running: this.enabled, error: null, lastPush: this.enabled ? Math.floor(Date.now() / 1000) - 600 : null, lastCheck: null, progress: null,
       lastImport: null, waiting: 0, data: this.enabled ? { first: '2026-10-01', last: '2026-10-22', rows: 48210 } : { first: null, last: null, rows: 0 },
       coverage: this.enabled ? [['Сон по фазам', 1, '2026-10-22'], ['HRV', 1, '2026-10-22'], ['Пульс', 1, '2026-10-22'], ['Пульс покоя', 1, '2026-10-22'], ['Дыхание во сне', 1, null], ['Кислород', 0, '2026-10-22'], ['Температура запястья', 0, '2026-10-22'], ['Шаги', 1, '2026-10-22'], ['Активные калории', 1, '2026-10-22'], ['VO₂max', 0, '2026-10-20'], ['Вес', 0, null], ['Еда', 0, '2026-10-22'], ['Вода', 0, '2026-10-22'], ['Кофеин', 0, '2026-10-21'], ['Беговая динамика', 0, '2026-10-21'], ['Ходьба', 0, '2026-10-21']].map(([name, imp, last], i) => ({ key: `m${i}`, name: name as string, important: !!imp, last: last as string | null })) : [],
+      partialDays: this.enabled ? ['2026-10-19'] : [],
       groups: [['sleep', 'Сон'], ['hrv', 'HRV'], ['rhr', 'Пульс покоя'], ['vitals', 'Дыхание, SpO₂ и температура'], ['activity', 'Шаги, калории и VO₂max'], ['body', 'Вес и состав тела'], ['pulse', 'Пульс днём и стресс'], ['other', 'Питание, вода и остальное']].map(([key, name]) => ({ key, name, current: 'APPLE_HEALTH', from: '' })) };
   },
 };
@@ -645,6 +647,7 @@ export type HaeState = {
   lastImport: { at: number; how: string; stats: HaeImport } | null; waiting: number;
   data: { first: string | null; last: string | null; rows: number };
   coverage: { key: string; name: string; important: boolean; last: string | null }[];
+  partialDays?: string[];
   groups: { key: string; name: string; current: string; from: string }[];
 };
 
@@ -948,7 +951,7 @@ export type HealthDay = {
   hypnogram: { date: string; start: number; end: number; segs: [string, number, number][] } | null;
   hrv: number | null; rhr: number | null; hrRecovery: number | null; walkHr: number | null;
   resp: number | null; breath: number | null; spo2: number | null; tempShift: number | null;
-  steps: number | null; activeKcal: number | null; kcal: number | null; protein: number | null; carbs: number | null; fatG: number | null; waterMl: number | null;
+  steps: number | null; stepsHours?: number[] | null; stepsPartial?: boolean; stepsUsual?: number | null; activeKcal: number | null; kcal: number | null; protein: number | null; carbs: number | null; fatG: number | null; waterMl: number | null;
   alcohol: number | null; caffeine: number | null; caffeineLast: string | null; vo2: number | null; weight: number | null; fatPct: number | null;
   activities: { id: string; sport: string; name: string | null; startUtc: number; durationS: number | null; distanceM: number | null; avgHr: number | null; load: number | null }[];
   habits: [string, number][];
@@ -979,7 +982,7 @@ export type HealthSummary = {
   stress?: { series: Pt[]; today: StressDay | null; norm: number | null };
   rhr: { series: Pt[]; last30: Pt[]; band: Band; nightly?: boolean };
   vo2: { series: Pt[]; lab: { value: number; date: string; where: string } | null };
-  body: { weighings: { date: string; weight: number; fat: number | null; lean: number | null }[]; steps7: number | null; steps: Pt[]; weight: Pt[]; fat: Pt[]; lean: Pt[] };
+  body: { weighings: { date: string; weight: number; fat: number | null; lean: number | null }[]; steps7: number | null; steps: Pt[]; steps90?: Pt[]; stepsUsual?: number | null; stepsPartial?: string[]; weight: Pt[]; fat: Pt[]; lean: Pt[] };
   alcohol: { days: Pt[]; known: number; hrvAfterPct: number | null; rhrAfter: number | null; session: { ts: number; units: number; volumeMl: number | null }[]; weightKg: number | null };
   caffeine: { avg: number | null; latest: string | null; lateDays: number; days: [string, string, number | null][]; known: number };
   habits: Habit[];

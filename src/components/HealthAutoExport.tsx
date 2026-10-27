@@ -127,6 +127,13 @@ function Coverage({ st }: { st: HaeState }) {
           Не приходит: {missing.map((c) => c.name.toLowerCase()).join(', ')}. Проверь, что в автоматизации выбраны все показатели, а на iPhone у Health Auto Export есть доступ к ним: Настройки → Здоровье → Доступ к данным и устройства → Health Auto Export → «Включить все».
         </span>
       )}
+      {(st.partialDays?.length ?? 0) > 0 && (
+        <span className="tiny" style={{ color: '#F5B642', lineHeight: 1.5 }}>
+          Шаги загружены не полностью: {st.partialDays!.map((d) => new Date(`${d}T12:00:00`).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })).join(', ')}.
+          Часы передают данные на iPhone с опозданием, и часть дня не успела уйти. Сделай в Health Auto Export ручной экспорт за эти даты (тот же формат) — Kouros дозаполнит пропуски сам, ничего не задвоится.
+          Чтобы так не было, добавь вторую автоматизацию «последние 3 дня» раз в сутки (шаг 3 выше).
+        </span>
+      )}
       <span className="muted tiny" style={{ lineHeight: 1.5 }}>«—» — не приходило. Если эти данные у тебя есть в Здоровье, проверь доступ Health Auto Export: Настройки → Здоровье → Доступ к данным и устройства → Health Auto Export.</span>
     </div>
   );
@@ -216,8 +223,15 @@ export function HaeCard() {
                   <Copy text={st.url} />
                 </div>
               </div>
+              <div className="stack" style={{ gap: 6 }}>
+                <b className="small">3. Вторая автоматизация — догрузка прошлых дней</b>
+                <span className="muted tiny" style={{ lineHeight: 1.5 }}>
+                  Часы передают шаги и пульс на iPhone с опозданием, а «с последней синхронизации» уже не отправит то, что пришло позже. Сделай копию автоматизации с тем же адресом и показателями,
+                  но в диапазоне дат выбери последние несколько дней (например, «Previous 7 Days») и запуск раз в сутки, лучше ночью. Kouros дозаполнит пропущенные минуты, а то, что уже есть, не задвоит.
+                </span>
+              </div>
               <div className="stack" style={{ gap: 4 }}>
-                <b className="small">3. Что пришло</b>
+                <b className="small">4. Что пришло</b>
                 <span className="small">
                   {st.lastPush ? `Последние данные — ${ago(st.lastPush)}.` : 'С телефона пока ничего не приходило.'}
                   {st.data.rows > 0 && st.data.first && st.data.last ? ` Всего записано с ${ruDate(st.data.first)} по ${ruDate(st.data.last)}.` : ''}

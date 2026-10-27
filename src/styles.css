@@ -444,3 +444,11 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .picker-info { align-self: flex-start; }
 @media (max-width: 720px) { .setr { grid-template-columns: 24px 1fr 1fr 48px; } .setr > :nth-child(5) { display: none; } }
 .exh .thumb.picker-noimg { background: #22262D; color: var(--muted); }
+/* 1.4.4 steps by hour in the day card, picked day in the steps chart */
+.steps-hours { display: flex; align-items: flex-end; gap: 2px; height: 46px; }
+.steps-hours > span { flex: 1; background: #7FD3FF88; border-radius: 2px 2px 0 0; min-width: 2px; }
+.steps-hours-x { display: flex; justify-content: space-between; margin-top: -4px; }
+.steps-bars > .steps-col[data-sel="1"]::after { content: ''; position: absolute; left: 0; right: 0; bottom: -5px; height: 2px; border-radius: 2px; background: var(--text, #fff); }
+/* 1.4.4 band per set */
+.pill.band-mini { padding: 3px 8px; font-size: 12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.setr-act .band-pop { left: auto; right: 0; }

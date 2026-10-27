@@ -84,6 +84,98 @@ pub(crate) fn raw_samples(conn: &Connection, metric: &str, from: &str, lo: f64, 
     out
 }
 
+/// 1.4.4: steps of a day by hour and whether the day looks loaded only in part.
+pub(crate) struct StepsDay {
+    pub hours: [f64; 24],
+    pub partial: bool,
+}
+
+/// Usual day of steps: median of `steps_total` over the 30 days before `today` (days ≥ 500).
+pub(crate) fn steps_usual(conn: &Connection, today: &str) -> Option<f64> {
+    let st = series(conn, "steps_total", "max");
+    let prev: Vec<f64> = st.range(add_days(today, -30)..today.to_string()).map(|(_, v)| *v).filter(|v| *v >= 500.0).collect();
+    if prev.len() >= 7 { median(&prev) } else { None }
+}
+
+/// Steps by local hour for every day `from..=to`. A day is «partial» when the watch was on
+/// (pulse while awake, outside workouts) for 3+ hours in a row between 07 and 23 with no steps,
+/// and the day is below 80 % of the usual one — or there are no steps at all on a day with 6+
+/// such hours. Missing data usually comes later (Health Auto Export sends it again).
+pub(crate) fn steps_days(conn: &Connection, p: &crate::engine::Profile, from: &str, to: &str) -> BTreeMap<String, StepsDay> {
+    let tz = p.tz_offset_s;
+    let now = crate::store::now();
+    let steps = raw_samples(conn, "steps_raw", &add_days(from, -1), 0.0, 100000.0);
+    let hr = raw_samples(conn, "heart_rate_raw", &add_days(from, -1), 25.0, 230.0);
+    let hyps = hypnograms(conn, &add_days(from, -2));
+    let acts: Vec<(i64, i64)> = match conn.prepare("SELECT start_utc, COALESCE(elapsed_s, moving_s, 0) FROM va WHERE start_utc >= ?1") {
+        Ok(mut st) => {
+            let start = time::unix(
+                from.get(0..4).and_then(|x| x.parse().ok()).unwrap_or(2000),
+                from.get(5..7).and_then(|x| x.parse().ok()).unwrap_or(1),
+                from.get(8..10).and_then(|x| x.parse().ok()).unwrap_or(1),
+                0, 0, 0,
+            ) - tz - 86400;
+            let v: Vec<(i64, i64)> = st
+                .query_map(params![start], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, f64>(1)? as i64)))
+                .map(|r| r.flatten().collect())
+                .unwrap_or_default();
+            v
+        }
+        Err(_) => Vec::new(),
+    };
+    let in_workout = |t: i64| acts.iter().any(|(s, d)| t >= s - 300 && t <= s + d + 300);
+    let mut st_h: BTreeMap<String, [f64; 24]> = BTreeMap::new();
+    let mut hr_h: BTreeMap<String, [u32; 24]> = BTreeMap::new();
+    for (t, v) in &steps {
+        let d = day_of(*t, tz);
+        if d.as_str() < from || d.as_str() > to {
+            continue;
+        }
+        st_h.entry(d).or_insert([0.0; 24])[(clock_min(*t, tz) / 60) as usize] += v;
+    }
+    for t in hr.keys() {
+        let d = day_of(*t, tz);
+        if d.as_str() < from || d.as_str() > to || in_workout(*t) || hyps.iter().any(|h| h.asleep(*t)) {
+            continue;
+        }
+        hr_h.entry(d).or_insert([0; 24])[(clock_min(*t, tz) / 60) as usize] += 1;
+    }
+    let usual = steps_usual(conn, to);
+    let totals = series(conn, "steps_total", "max");
+    let today = engine_svc::today(p);
+    let mut out = BTreeMap::new();
+    let mut d = from.to_string();
+    while d.as_str() <= to {
+        let hours = st_h.get(&d).copied().unwrap_or([0.0; 24]);
+        let pulse = hr_h.get(&d).copied().unwrap_or([0; 24]);
+        // Only finished hours of today count.
+        let last_h = if d == today { (clock_min(now, tz) / 60) as usize } else { 24 };
+        let (mut run, mut best, mut worn) = (0, 0, 0);
+        for h in 7..23.min(last_h) {
+            let on = pulse[h] >= 4;
+            if on {
+                worn += 1;
+            }
+            if on && hours[h] < 5.0 {
+                run += 1;
+                best = best.max(run);
+            } else {
+                run = 0;
+            }
+        }
+        let total = totals.get(&d).copied().unwrap_or_else(|| hours.iter().sum());
+        let low = usual.map(|u| total < 0.8 * u).unwrap_or(true);
+        let partial = (best >= 3 && low) || (total < 1.0 && worn >= 6);
+        let mut h2 = hours;
+        for x in h2.iter_mut() {
+            *x = x.round();
+        }
+        out.insert(d.clone(), StepsDay { hours: h2, partial });
+        d = add_days(&d, 1);
+    }
+    out
+}
+
 pub(crate) fn hypnograms(conn: &Connection, from: &str) -> Vec<Hyp> {
     let Ok(mut st) = conn.prepare(
         "SELECT date, txt FROM hm WHERE metric = 'sleep_analysis_raw' AND txt IS NOT NULL AND date >= ?1 ORDER BY date",
@@ -810,7 +902,9 @@ pub fn summary(conn: &Connection) -> Result<Value, String> {
         "stress": stress_v,
         "rhr": {"series": ser90(&rhr), "last30": ser30(&rhr), "band": band_g("rhr", &rhr, 0.75, 2.0), "nightly": rhr_nightly},
         "vo2": {"series": ser90(&vo2), "lab": get_json(conn, "lab_vo2", Value::Null)},
-        "body": {"weighings": weighings, "steps7": steps7.map(|s| s.round()), "steps": ser30(&steps),
+        "body": {"weighings": weighings, "steps7": steps7.map(|s| s.round()), "steps": ser30(&steps), "steps90": ser90(&steps),
+                 "stepsUsual": steps_usual(conn, &today).map(|v| v.round()),
+                 "stepsPartial": steps_days(conn, &p, &add_days(&today, -29), &today).into_iter().filter(|(_, s)| s.partial).map(|(d, _)| d).collect::<Vec<_>>(),
                  "weight": weight.iter().map(|(d, v)| json!([d, r1(*v)])).collect::<Vec<_>>(),
                  "fat": fat.iter().map(|(d, v)| json!([d, r1(if *v <= 1.0 { v * 100.0 } else { *v })])).collect::<Vec<_>>(),
                  "lean": lean.iter().map(|(d, v)| json!([d, r1(*v)])).collect::<Vec<_>>()},
@@ -853,6 +947,7 @@ pub fn set(conn: &Connection, key: &str, v: &Value) -> Result<(), String> {
 pub fn day(conn: &Connection, date: &str) -> Result<Value, String> {
     let p = engine_svc::profile(conn);
     let tz = p.tz_offset_s;
+    let steps_day = steps_days(conn, &p, date, date).remove(date).filter(|s| s.hours.iter().any(|x| *x > 0.0) || s.partial);
     let one = |metric: &str, how: &str| -> Option<f64> {
         let agg = match how {
             "sum" => "sum(num)",
@@ -939,6 +1034,9 @@ pub fn day(conn: &Connection, date: &str) -> Result<Value, String> {
         "spo2": spo2.map(r1),
         "tempShift": temp_shift,
         "steps": one("steps_total", "max").map(|v| v.round()),
+        "stepsHours": steps_day.as_ref().map(|s| s.hours.to_vec()),
+        "stepsPartial": steps_day.as_ref().map(|s| s.partial).unwrap_or(false),
+        "stepsUsual": steps_usual(conn, date).map(|v| v.round()),
         "activeKcal": one("active_energy_total", "max").map(|v| v.round()),
         "kcal": food("dietary_energy_total").map(|v| v.round()),
         "protein": food("dietary_protein_total").map(|v| v.round()),

@@ -140,7 +140,7 @@ type Band = { ids: string[]; mode: 'add' | 'assist' } | null | undefined;
 export const bandText = (b: Band, bands: ResBand[]) => (b?.ids ?? []).map((id) => bands.find((x) => x.id === id)?.name || 'резина').join(' + ');
 
 /** One button «〰 Зелёная + Фиолетовая»; the bands open in a small window. */
-export function BandButton({ value, bands, onChange, assistable }: { value: Band; bands: ResBand[]; onChange: (b: Band) => void; assistable?: boolean }) {
+export function BandButton({ value, bands, onChange, assistable, compact, mixed }: { value: Band; bands: ResBand[]; onChange: (b: Band) => void; assistable?: boolean; compact?: boolean; mixed?: boolean }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -156,8 +156,11 @@ export function BandButton({ value, bands, onChange, assistable }: { value: Band
   };
   return (
     <span ref={box} className="band-btn-wrap">
-      <button type="button" className={`pill sm${ids.length ? ' on' : ''}`} aria-pressed={ids.length > 0} aria-expanded={open} onClick={() => setOpen(!open)} title="Резина">
-        〰 {ids.length ? bandText(value, bands) : 'резина'}{value?.mode === 'assist' && ids.length ? ' · помогает' : ''}
+      <button type="button" className={`pill sm${ids.length || mixed ? ' on' : ''}${compact ? ' band-mini' : ''}`} aria-pressed={ids.length > 0 || !!mixed} aria-expanded={open} onClick={() => setOpen(!open)}
+        title={compact ? (ids.length ? `Резина этого подхода: ${bandText(value, bands)}` : 'Резина для этого подхода') : mixed ? 'У подходов разная резина — выбор здесь поставит одну на все подходы' : 'Резина на все подходы'}>
+        {compact
+          ? (ids.length ? <>{ids.map((id) => <span key={id} className="dot" style={{ background: bands.find((x) => x.id === id)?.color || '#9AA3AE', marginRight: 3 }} />)}{bandText(value, bands)}</> : '〰')
+          : <>〰 {ids.length ? bandText(value, bands) : mixed ? 'разные' : 'резина'}{value?.mode === 'assist' && ids.length ? ' · помогает' : ''}</>}
       </button>
       {open && (
         <span className="band-pop" role="dialog" aria-label="Резина">
@@ -281,6 +284,9 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
         const st = !!ex?.st;
         const bandsAll = b.sets.map((s) => JSON.stringify(s.row.band?.ids ?? []));
         const sameBand = bandsAll.every((x) => x === bandsAll[0]);
+        const anyBand = b.sets.some((s) => (s.row.band?.ids.length ?? 0) > 0);
+        const bandEx = !!ex && ['bands', 'mini'].includes(eqOf(ex, lib));
+        const assist = !!ex?.en.toLowerCase().match(/pull|chin|dip/);
         const reps = b.sets.reduce((a, s) => a + (s.row.reps ?? 0), 0);
         return (
           <div key={b.key} className="exb">
@@ -298,7 +304,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
                   {side ? <> · <span className="tag2">{side}</span></> : null}
                 </span>
               </span>
-              {!st && <BandButton value={sameBand ? b.sets[0]?.row.band : null} bands={bands} assistable={!!ex?.en.toLowerCase().match(/pull|chin|dip/)}
+              {!st && <BandButton value={sameBand ? b.sets[0]?.row.band : null} mixed={!sameBand} bands={bands} assistable={assist}
                 onChange={(v) => updBlock(i, { sets: b.sets.map((s) => ({ ...s, row: { ...s.row, band: v } })) })} />}
               <span className="small muted exh-sum">{b.sets.length} {b.sets.length === 1 ? 'подход' : b.sets.length < 5 ? 'подхода' : 'подходов'}{reps ? ` · ${side ? `${reps}/${sideShort(ex)}` : `${reps} повт.`}` : ''}</span>
               <span className="exh-menu">
@@ -318,7 +324,6 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
               const r = s.row;
               const eff = effOf(b, r);
               const orm = epley(eff ?? r.weightKg, r.reps);
-              const own = !sameBand && (r.band?.ids.length ?? 0) > 0;
               return (
                 <div key={j} className="stack" style={{ gap: 2 }}>
                   <div className="setr">
@@ -330,7 +335,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
                     <span className="num small" style={{ color: eff != null && eff !== r.weightKg ? '#9DB8FF' : 'var(--muted)' }}>{st ? '' : eff != null ? `${eff !== r.weightKg ? '≈' : ''}${Math.round(eff)}` : ''}</span>
                     <span className="num small muted">{orm ? Math.round(orm) : ''}</span>
                     <span className="row setr-act">
-                      {own && <span className="muted tiny">〰 {bandText(r.band, bands)}</span>}
+                      {!st && (anyBand || bandEx) && <BandButton compact value={r.band} bands={bands} assistable={assist} onChange={(v) => updSet(i, j, { band: v })} />}
                       {side && (
                         <button type="button" className="pill sm" aria-pressed={r.sides === 1} title="Сделал только одну сторону — посчитать один раз" onClick={() => updSet(i, j, { sides: r.sides === 1 ? null : 1 })}>1 сторона</button>
                       )}
@@ -363,7 +368,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
         </div>
       )}
       <span className="muted tiny" style={{ lineHeight: 1.5 }}>
-        Нагрузка — сколько килограммов работало в повторе: вес снаряда, плюс доля веса тела{d.bodyKg ? ` (по твоему весу ${fmt(d.bodyKg)} кг)` : ''}, плюс или минус резина; ≈ — оценка. 1ПМ — расчётный максимум на одно повторение. У упражнений «на каждую руку / ногу» повторы пишутся на одну сторону, а тоннаж и нагрузка на мышцы считаются за обе; «1 сторона» — если делал только одну.
+        Нагрузка — сколько килограммов работало в повторе: вес снаряда, плюс доля веса тела{d.bodyKg ? ` (по твоему весу ${fmt(d.bodyKg)} кг)` : ''}, плюс или минус резина; ≈ — оценка. Резину можно выбрать на всё упражнение (кнопка сверху) или для каждого подхода отдельно (кнопка в строке подхода); «+ подход» берёт резину предыдущего. 1ПМ — расчётный максимум на одно повторение. У упражнений «на каждую руку / ногу» повторы пишутся на одну сторону, а тоннаж и нагрузка на мышцы считаются за обе; «1 сторона» — если делал только одну.
       </span>
       {pick && <ExercisePicker lib={lib} mode="strength" onPick={picked} onClose={() => setPick(null)} />}
       {info && <ExerciseCard ex={info} bodyKg={d.bodyKg} onClose={() => setInfo(null)} />}

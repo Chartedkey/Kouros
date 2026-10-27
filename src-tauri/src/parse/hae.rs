@@ -766,13 +766,18 @@ pub fn convert(name: &str, units: &str, rows: &[Row], out: &mut Batch) {
 pub fn derive(metric: &str, date: &str, devices: &[(String, Vec<(i64, f64)>)]) -> Option<Out> {
     let (daily, sum) = derive_rule(metric)?;
     let num = if sum {
-        // HealthKit counts overlapping devices once; the merged stream if there is one, else the
-        // device with the most.
-        if let Some((_, p)) = devices.iter().find(|d| d.0 == "Merged") {
-            p.iter().map(|x| x.1).sum::<f64>()
-        } else {
-            devices.iter().map(|(_, p)| p.iter().map(|x| x.1).sum::<f64>()).fold(0.0, f64::max)
+        // HealthKit counts overlapping devices once. 1.4.4: per minute the largest value of any
+        // stream (merged or a single device), so a partial merged export never hides the rest.
+        let mut per: BTreeMap<i64, f64> = BTreeMap::new();
+        for (_, p) in devices {
+            for (t, v) in p {
+                let e = per.entry(*t).or_insert(0.0);
+                if *v > *e {
+                    *e = *v;
+                }
+            }
         }
+        per.values().sum::<f64>()
     } else {
         let all: Vec<f64> = devices.iter().flat_map(|(_, p)| p.iter().map(|x| x.1)).collect();
         if all.is_empty() {
@@ -901,6 +906,17 @@ pub fn read_all<R: Read>(r: R, f: &mut dyn FnMut(Batch) -> Result<(), String>) -
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn derive_takes_max_per_minute() {
+        let devs = vec![
+            ("Merged".to_string(), vec![(60, 10.0)]),
+            ("Ultra 4".to_string(), vec![(60, 8.0), (120, 30.0)]),
+            ("iPhone".to_string(), vec![(120, 20.0), (180, 5.0)]),
+        ];
+        let o = derive("steps_raw", "2026-10-26", &devs).unwrap();
+        assert_eq!(o.num, Some(45.0));
+    }
 
     #[test]
     fn times() {
