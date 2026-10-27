@@ -1,23 +1,1274 @@
-{"note": "1.4: own exercises of Kouros (no photos) for the runner's ОФП list; descriptions written by Kouros.",
+{
+ "note": "1.4: own exercises of Kouros (no photos) for the runner's ОФП list; descriptions written by Kouros.",
  "items": [
-  {"id": "k_forward_lunge", "ru": "Выпады вперёд", "en": "Forward lunge (bodyweight)", "syn": ["выпад вперед"], "tip": "Шагни вперёд и опустись, пока оба колена не согнутся примерно под прямым углом; колено передней ноги смотрит туда же, куда носок. Оттолкнись передней ногой и вернись.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "compound", "force": "push", "p": ["quadriceps"], "s": ["glutes", "hamstrings", "calves"], "bw": 0.8, "st": false, "leg": true, "img": 0},
-  {"id": "k_single_leg_balance", "ru": "Равновесие на одной ноге, колено вверх", "en": "Single-leg balance, knee up", "syn": ["баланс на одной ноге", "стойка на одной ноге"], "tip": "Стоя на одной ноге, подними другое колено до уровня таза (угол 90°) и держи корпус ровно. Усложнение — закрыть глаза или встать на мягкую поверхность.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "static", "p": ["abductors"], "s": ["calves", "glutes", "abdominals"], "bw": null, "st": true, "leg": true, "img": 0},
-  {"id": "k_reverse_lunge", "ru": "Выпады назад", "en": "Reverse lunge (bodyweight)", "syn": ["выпад назад", "обратный выпад"], "tip": "Шагни назад и опустись до прямого угла в обоих коленях, вес на передней ноге. Вернись, толкаясь передней пяткой. Мягче для колена, чем выпад вперёд.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "compound", "force": "push", "p": ["quadriceps", "glutes"], "s": ["hamstrings"], "bw": 0.8, "st": false, "leg": true, "img": 0},
-  {"id": "k_jump_lunge", "ru": "Плиометрические выпады", "en": "Jumping lunge", "syn": ["выпады с прыжком", "выпады в прыжке"], "tip": "Из выпада выпрыгни вверх и в воздухе поменяй ноги, приземлись мягко снова в выпад. Делай только без боли в коленях и после разминки.", "cat": "plyometrics", "eq": "body only", "lvl": "intermediate", "mech": "compound", "force": "push", "p": ["quadriceps", "glutes"], "s": ["calves", "hamstrings"], "bw": null, "st": false, "leg": false, "img": 0},
-  {"id": "k_single_leg_half_squat", "ru": "Полуприсед на одной ноге", "en": "Single-leg half squat", "syn": ["присед на одной ноге", "неполный присед на одной ноге"], "tip": "Стоя на одной ноге, отведи таз назад и опустись примерно на четверть или половину глубины. Колено не заваливается внутрь, таз ровный.", "cat": "strength", "eq": "body only", "lvl": "intermediate", "mech": "compound", "force": "push", "p": ["quadriceps", "glutes"], "s": ["abductors", "calves"], "bw": 0.85, "st": false, "leg": true, "img": 0},
-  {"id": "k_step_calf_raise", "ru": "Подъём на носки со ступеньки", "en": "Calf raise on a step", "syn": ["подъем на носки на ступеньке", "икры на ступеньке"], "tip": "Носки на краю ступеньки, пятки свисают. Опусти пятки ниже ступеньки, затем поднимись на носки как можно выше. Держись рукой за опору.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "push", "p": ["calves"], "s": [], "bw": 0.9, "st": false, "leg": false, "img": 0},
-  {"id": "k_shoulder_bridge", "ru": "Плечевой мост", "en": "Shoulder bridge hold", "syn": ["мост на лопатках"], "tip": "Лёжа на спине, стопы на полу: подними таз, чтобы опора была на лопатках и стопах, тело от плеч до колен — прямая. Держи, не прогибая поясницу.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "static", "p": ["glutes"], "s": ["hamstrings", "lower back"], "bw": null, "st": true, "leg": false, "img": 0},
-  {"id": "k_bent_knee_calf_raise", "ru": "Подъём на носки с согнутыми коленями", "en": "Bent-knee calf raise", "syn": ["подъем на носок с согнутым коленом", "камбаловидная"], "tip": "Слегка согни колени и держи этот угол, поднимаясь на носки и опускаясь. Так работает глубокая мышца икры (камбаловидная) — она много трудится в беге.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "push", "p": ["calves"], "s": [], "bw": 0.9, "st": false, "leg": false, "img": 0},
-  {"id": "k_single_leg_step_calf_raise", "ru": "Подъём на носок одной ногой со ступеньки", "en": "Single-leg calf raise on a step", "syn": ["подъем на носок одной ногой"], "tip": "Носок одной ноги на краю ступеньки, вторая нога согнута. Опусти пятку ниже ступеньки и поднимись на носок до конца. Медленно, держась за опору.", "cat": "strength", "eq": "body only", "lvl": "intermediate", "mech": "isolation", "force": "push", "p": ["calves"], "s": [], "bw": 0.9, "st": false, "leg": true, "img": 0},
-  {"id": "k_eccentric_heel_drop", "ru": "Медленное опускание пятки (эксцентрика)", "en": "Eccentric heel drop", "syn": ["опускание пяток", "эксцентрика для ахилла"], "tip": "Поднимись на носки двумя ногами, перенеси вес на одну и очень медленно (3–4 секунды) опусти пятку ниже ступеньки. Вверх снова двумя ногами. Частое упражнение для ахилла — при боли сначала посоветуйся с врачом.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "push", "p": ["calves"], "s": [], "bw": 0.9, "st": false, "leg": true, "img": 0},
-  {"id": "k_hollow_leg_hold", "ru": "Удержание прямых ног на весу", "en": "Straight-leg hold", "syn": ["ноги на весу", "лодочка"], "tip": "Лёжа на спине, прижми поясницу к полу и подними прямые ноги на 20–30 см. Держи, не отрывая поясницу; чем ниже ноги, тем труднее.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "static", "p": ["abdominals"], "s": [], "bw": null, "st": true, "leg": false, "img": 0},
-  {"id": "k_lying_leg_raise", "ru": "Подъём прямых ног лёжа", "en": "Lying straight-leg raise", "syn": ["подъем ног лежа"], "tip": "Лёжа на спине, руки вдоль тела: подними прямые ноги до вертикали и медленно опусти, не касаясь пола. Поясница прижата.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "isolation", "force": "pull", "p": ["abdominals"], "s": [], "bw": 0.2, "st": false, "leg": false, "img": 0},
-  {"id": "k_windshield_wipers", "ru": "Маятник", "en": "Windshield wipers (lying)", "syn": ["дворники", "маятник ногами"], "tip": "Лёжа на спине, руки в стороны, ноги подняты вертикально. Медленно опускай ноги вместе в одну сторону, не отрывая плечи, затем в другую.", "cat": "strength", "eq": "body only", "lvl": "intermediate", "mech": "isolation", "force": "pull", "p": ["abdominals"], "s": ["lower back"], "bw": 0.2, "st": false, "leg": false, "img": 0},
-  {"id": "k_bird_dog", "ru": "Охотничья собака", "en": "Bird dog", "syn": ["птица-собака", "бёрд-дог"], "tip": "Стоя на четвереньках, одновременно вытяни вперёд руку и назад противоположную ногу, задержись на 1–2 секунды и вернись. Спина ровная, таз не поворачивается.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "compound", "force": "static", "p": ["lower back"], "s": ["glutes", "abdominals", "shoulders"], "bw": null, "st": false, "leg": true, "img": 0},
-  {"id": "k_swimmer", "ru": "Пловец", "en": "Prone swimmer", "syn": ["плавание лёжа"], "tip": "Лёжа на животе, руки вытянуты вперёд: приподними руки и ноги и быстро поочерёдно поднимай противоположные руку и ногу, как при плавании кролем.", "cat": "strength", "eq": "body only", "lvl": "beginner", "mech": "compound", "force": "pull", "p": ["lower back"], "s": ["glutes", "shoulders"], "bw": null, "st": false, "leg": false, "img": 0},
-  {"id": "k_scorpion", "ru": "Скорпион", "en": "Prone scorpion", "syn": ["скорпион лёжа"], "tip": "Лёжа на животе, руки в стороны: согни одну ногу и заведи её через спину к противоположной руке, плечи остаются на полу. Вернись и смени сторону. Мягко, без рывков.", "cat": "stretching", "eq": "body only", "lvl": "beginner", "mech": "compound", "force": "static", "p": ["lower back"], "s": ["glutes", "abductors"], "bw": null, "st": false, "leg": true, "img": 0},
-  {"id": "k_plank_up_down", "ru": "Динамическая планка", "en": "Plank up-down", "syn": ["планка вверх-вниз", "из локтей на ладони"], "tip": "Из планки на локтях поочерёдно встань на ладони — сначала одна рука, потом другая — и так же вернись на локти. Таз не раскачивается.", "cat": "strength", "eq": "body only", "lvl": "intermediate", "mech": "compound", "force": "push", "p": ["abdominals"], "s": ["triceps", "shoulders", "chest"], "bw": null, "st": false, "leg": false, "img": 0},
-  {"id": "k_burpee", "ru": "Бёрпи", "en": "Burpee", "syn": ["берпи"], "tip": "Присядь, поставь руки на пол, прыжком отправь ноги назад в упор лёжа, верни ноги к рукам и выпрыгни вверх. Темп — такой, чтобы сохранять технику.", "cat": "plyometrics", "eq": "body only", "lvl": "intermediate", "mech": "compound", "force": "push", "p": ["quadriceps"], "s": ["chest", "shoulders", "glutes", "calves", "abdominals"], "bw": null, "st": false, "leg": false, "img": 0}
+  {
+   "id": "k_forward_lunge",
+   "ru": "Выпады вперёд",
+   "en": "Forward lunge (bodyweight)",
+   "syn": [
+    "выпад вперед"
+   ],
+   "tip": "Шагни вперёд и опустись, пока оба колена не согнутся примерно под прямым углом; колено передней ноги смотрит туда же, куда носок. Оттолкнись передней ногой и вернись.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "push",
+   "p": [
+    "quadriceps"
+   ],
+   "s": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ],
+   "bw": 0.8,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_single_leg_balance",
+   "ru": "Равновесие на одной ноге, колено вверх",
+   "en": "Single-leg balance, knee up",
+   "syn": [
+    "баланс на одной ноге",
+    "стойка на одной ноге"
+   ],
+   "tip": "Стоя на одной ноге, подними другое колено до уровня таза (угол 90°) и держи корпус ровно. Усложнение — закрыть глаза или встать на мягкую поверхность.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "static",
+   "p": [
+    "abductors"
+   ],
+   "s": [
+    "calves",
+    "glutes",
+    "abdominals"
+   ],
+   "bw": null,
+   "st": true,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_reverse_lunge",
+   "ru": "Выпады назад",
+   "en": "Reverse lunge (bodyweight)",
+   "syn": [
+    "выпад назад",
+    "обратный выпад"
+   ],
+   "tip": "Шагни назад и опустись до прямого угла в обоих коленях, вес на передней ноге. Вернись, толкаясь передней пяткой. Мягче для колена, чем выпад вперёд.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "push",
+   "p": [
+    "quadriceps",
+    "glutes"
+   ],
+   "s": [
+    "hamstrings"
+   ],
+   "bw": 0.8,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_jump_lunge",
+   "ru": "Плиометрические выпады",
+   "en": "Jumping lunge",
+   "syn": [
+    "выпады с прыжком",
+    "выпады в прыжке"
+   ],
+   "tip": "Из выпада выпрыгни вверх и в воздухе поменяй ноги, приземлись мягко снова в выпад. Делай только без боли в коленях и после разминки.",
+   "cat": "plyometrics",
+   "eq": "body only",
+   "lvl": "intermediate",
+   "mech": "compound",
+   "force": "push",
+   "p": [
+    "quadriceps",
+    "glutes"
+   ],
+   "s": [
+    "calves",
+    "hamstrings"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_single_leg_half_squat",
+   "ru": "Полуприсед на одной ноге",
+   "en": "Single-leg half squat",
+   "syn": [
+    "присед на одной ноге",
+    "неполный присед на одной ноге"
+   ],
+   "tip": "Стоя на одной ноге, отведи таз назад и опустись примерно на четверть или половину глубины. Колено не заваливается внутрь, таз ровный.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "intermediate",
+   "mech": "compound",
+   "force": "push",
+   "p": [
+    "quadriceps",
+    "glutes"
+   ],
+   "s": [
+    "abductors",
+    "calves"
+   ],
+   "bw": 0.85,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_step_calf_raise",
+   "ru": "Подъём на носки со ступеньки",
+   "en": "Calf raise on a step",
+   "syn": [
+    "подъем на носки на ступеньке",
+    "икры на ступеньке"
+   ],
+   "tip": "Носки на краю ступеньки, пятки свисают. Опусти пятки ниже ступеньки, затем поднимись на носки как можно выше. Держись рукой за опору.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "push",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": 0.9,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_shoulder_bridge",
+   "ru": "Плечевой мост",
+   "en": "Shoulder bridge hold",
+   "syn": [
+    "мост на лопатках"
+   ],
+   "tip": "Лёжа на спине, стопы на полу: подними таз, чтобы опора была на лопатках и стопах, тело от плеч до колен — прямая. Держи, не прогибая поясницу.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "static",
+   "p": [
+    "glutes"
+   ],
+   "s": [
+    "hamstrings",
+    "lower back"
+   ],
+   "bw": null,
+   "st": true,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_bent_knee_calf_raise",
+   "ru": "Подъём на носки с согнутыми коленями",
+   "en": "Bent-knee calf raise",
+   "syn": [
+    "подъем на носок с согнутым коленом",
+    "камбаловидная"
+   ],
+   "tip": "Слегка согни колени и держи этот угол, поднимаясь на носки и опускаясь. Так работает глубокая мышца икры (камбаловидная) — она много трудится в беге.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "push",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": 0.9,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_single_leg_step_calf_raise",
+   "ru": "Подъём на носок одной ногой со ступеньки",
+   "en": "Single-leg calf raise on a step",
+   "syn": [
+    "подъем на носок одной ногой"
+   ],
+   "tip": "Носок одной ноги на краю ступеньки, вторая нога согнута. Опусти пятку ниже ступеньки и поднимись на носок до конца. Медленно, держась за опору.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "intermediate",
+   "mech": "isolation",
+   "force": "push",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": 0.9,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_eccentric_heel_drop",
+   "ru": "Медленное опускание пятки (эксцентрика)",
+   "en": "Eccentric heel drop",
+   "syn": [
+    "опускание пяток",
+    "эксцентрика для ахилла"
+   ],
+   "tip": "Поднимись на носки двумя ногами, перенеси вес на одну и очень медленно (3–4 секунды) опусти пятку ниже ступеньки. Вверх снова двумя ногами. Частое упражнение для ахилла — при боли сначала посоветуйся с врачом.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "push",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": 0.9,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_hollow_leg_hold",
+   "ru": "Удержание прямых ног на весу",
+   "en": "Straight-leg hold",
+   "syn": [
+    "ноги на весу",
+    "лодочка"
+   ],
+   "tip": "Лёжа на спине, прижми поясницу к полу и подними прямые ноги на 20–30 см. Держи, не отрывая поясницу; чем ниже ноги, тем труднее.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "static",
+   "p": [
+    "abdominals"
+   ],
+   "s": [],
+   "bw": null,
+   "st": true,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_lying_leg_raise",
+   "ru": "Подъём прямых ног лёжа",
+   "en": "Lying straight-leg raise",
+   "syn": [
+    "подъем ног лежа"
+   ],
+   "tip": "Лёжа на спине, руки вдоль тела: подними прямые ноги до вертикали и медленно опусти, не касаясь пола. Поясница прижата.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "isolation",
+   "force": "pull",
+   "p": [
+    "abdominals"
+   ],
+   "s": [],
+   "bw": 0.2,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_windshield_wipers",
+   "ru": "Маятник",
+   "en": "Windshield wipers (lying)",
+   "syn": [
+    "дворники",
+    "маятник ногами"
+   ],
+   "tip": "Лёжа на спине, руки в стороны, ноги подняты вертикально. Медленно опускай ноги вместе в одну сторону, не отрывая плечи, затем в другую.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "intermediate",
+   "mech": "isolation",
+   "force": "pull",
+   "p": [
+    "abdominals"
+   ],
+   "s": [
+    "lower back"
+   ],
+   "bw": 0.2,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_bird_dog",
+   "ru": "Охотничья собака",
+   "en": "Bird dog",
+   "syn": [
+    "птица-собака",
+    "бёрд-дог"
+   ],
+   "tip": "Стоя на четвереньках, одновременно вытяни вперёд руку и назад противоположную ногу, задержись на 1–2 секунды и вернись. Спина ровная, таз не поворачивается.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "static",
+   "p": [
+    "lower back"
+   ],
+   "s": [
+    "glutes",
+    "abdominals",
+    "shoulders"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_swimmer",
+   "ru": "Пловец",
+   "en": "Prone swimmer",
+   "syn": [
+    "плавание лёжа"
+   ],
+   "tip": "Лёжа на животе, руки вытянуты вперёд: приподними руки и ноги и быстро поочерёдно поднимай противоположные руку и ногу, как при плавании кролем.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "lower back"
+   ],
+   "s": [
+    "glutes",
+    "shoulders"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_scorpion",
+   "ru": "Скорпион",
+   "en": "Prone scorpion",
+   "syn": [
+    "скорпион лёжа"
+   ],
+   "tip": "Лёжа на животе, руки в стороны: согни одну ногу и заведи её через спину к противоположной руке, плечи остаются на полу. Вернись и смени сторону. Мягко, без рывков.",
+   "cat": "stretching",
+   "eq": "body only",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "static",
+   "p": [
+    "lower back"
+   ],
+   "s": [
+    "glutes",
+    "abductors"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 0
+  },
+  {
+   "id": "k_plank_up_down",
+   "ru": "Динамическая планка",
+   "en": "Plank up-down",
+   "syn": [
+    "планка вверх-вниз",
+    "из локтей на ладони"
+   ],
+   "tip": "Из планки на локтях поочерёдно встань на ладони — сначала одна рука, потом другая — и так же вернись на локти. Таз не раскачивается.",
+   "cat": "strength",
+   "eq": "body only",
+   "lvl": "intermediate",
+   "mech": "compound",
+   "force": "push",
+   "p": [
+    "abdominals"
+   ],
+   "s": [
+    "triceps",
+    "shoulders",
+    "chest"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_burpee",
+   "ru": "Бёрпи",
+   "en": "Burpee",
+   "syn": [
+    "берпи"
+   ],
+   "tip": "Присядь, поставь руки на пол, прыжком отправь ноги назад в упор лёжа, верни ноги к рукам и выпрыгни вверх. Темп — такой, чтобы сохранять технику.",
+   "cat": "plyometrics",
+   "eq": "body only",
+   "lvl": "intermediate",
+   "mech": "compound",
+   "force": "push",
+   "p": [
+    "quadriceps"
+   ],
+   "s": [
+    "chest",
+    "shoulders",
+    "glutes",
+    "calves",
+    "abdominals"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 0
+  },
+  {
+   "id": "k_mb_bridge",
+   "ru": "Ягодичный мост с мини-резинкой",
+   "en": "Glute bridge with mini band",
+   "syn": [
+    "мост с резинкой",
+    "ягодичный мост мини-бэнд"
+   ],
+   "tip": "Мини-резинка чуть выше коленей, стопы на ширине таза. Поднимай таз, сжимая ягодицы, и держи колени разведёнными против резинки; опускайся медленно.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "glutes"
+   ],
+   "s": [
+    "hamstrings",
+    "abductors"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_mb_clamshell",
+   "ru": "«Ракушка» с мини-резинкой",
+   "en": "Clamshell with mini band",
+   "syn": [
+    "ракушка",
+    "раскрытие коленей лёжа на боку"
+   ],
+   "tip": "Лёжа на боку, колени согнуты, стопы вместе, резинка выше коленей. Не разводя стоп и не заваливая таз назад, поднимай верхнее колено и медленно опускай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abductors",
+    "glutes"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_mb_lateral_walk",
+   "ru": "Боковые шаги с мини-резинкой",
+   "en": "Lateral band walk",
+   "syn": [
+    "боковая ходьба с резинкой",
+    "шаги в сторону"
+   ],
+   "tip": "Резинка на щиколотках или над коленями, полуприсед, спина ровная. Шагай в сторону, не сводя стопы до конца и не раскачивая корпус; столько же шагов обратно.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abductors",
+    "glutes"
+   ],
+   "s": [
+    "quadriceps"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_mb_squat",
+   "ru": "Приседания с мини-резинкой",
+   "en": "Mini band squat",
+   "syn": [
+    "присед с резинкой на коленях"
+   ],
+   "tip": "Резинка чуть выше коленей, стопы на ширине плеч. Садись, отводя таз назад, и всё время дави коленями наружу против резинки — колени смотрят туда же, куда носки.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "quadriceps",
+    "glutes"
+   ],
+   "s": [
+    "abductors"
+   ],
+   "bw": 0.8,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_mb_kickback_stand",
+   "ru": "Отведение ноги назад стоя с мини-резинкой",
+   "en": "Standing band kickback",
+   "syn": [
+    "мах ногой назад с резинкой"
+   ],
+   "tip": "Резинка на щиколотках, держись рукой за опору. Прямую ногу отводи назад за счёт ягодицы, не прогибая поясницу, и медленно возвращай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "glutes"
+   ],
+   "s": [
+    "hamstrings"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_mb_abduction_stand",
+   "ru": "Отведение ноги в сторону стоя с мини-резинкой",
+   "en": "Standing band hip abduction",
+   "syn": [
+    "мах ногой в сторону с резинкой"
+   ],
+   "tip": "Резинка на щиколотках, руки на поясе или на опоре. Отводи прямую ногу в сторону, носок смотрит вперёд, корпус не наклоняй.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abductors"
+   ],
+   "s": [
+    "glutes"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_mb_fire_hydrant",
+   "ru": "«Пожарный гидрант» с мини-резинкой",
+   "en": "Fire hydrant with mini band",
+   "syn": [
+    "гидрант",
+    "отведение бедра на четвереньках"
+   ],
+   "tip": "На четвереньках, резинка выше коленей. Не меняя угла в колене, отводи согнутую ногу в сторону до уровня таза; корпус не поворачивается.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "glutes",
+    "abductors"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_mb_donkey_kick",
+   "ru": "Мах ногой назад на четвереньках с мини-резинкой",
+   "en": "Donkey kick with mini band",
+   "syn": [
+    "ослиный мах",
+    "донки кик"
+   ],
+   "tip": "На четвереньках, резинка выше коленей. Согнутую ногу поднимай стопой к потолку, пока бедро не станет горизонтально; поясница не прогибается.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "glutes"
+   ],
+   "s": [
+    "hamstrings"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_mb_side_lying_abd",
+   "ru": "Отведение ноги лёжа на боку с мини-резинкой",
+   "en": "Side-lying abduction with mini band",
+   "syn": [
+    "махи лёжа на боку"
+   ],
+   "tip": "Лёжа на боку, ноги прямые, резинка на щиколотках. Поднимай верхнюю ногу чуть назад от линии тела, носок вперёд, и медленно опускай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abductors"
+   ],
+   "s": [
+    "glutes"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_mb_plank_leg_lift",
+   "ru": "Планка с подъёмом ноги и мини-резинкой",
+   "en": "Plank leg lift with mini band",
+   "syn": [
+    "планка с резинкой"
+   ],
+   "tip": "Планка на ладонях, резинка на щиколотках. Поочерёдно поднимай прямую ногу на 20–30 см, таз не поворачивается и не проседает.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abdominals",
+    "glutes"
+   ],
+   "s": [
+    "shoulders"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_lb_row_stand",
+   "ru": "Тяга резины к поясу стоя",
+   "en": "Standing band row",
+   "syn": [
+    "горизонтальная тяга с резиной"
+   ],
+   "tip": "Резина закреплена впереди на уровне пояса. Тяни ручки к поясу, сводя лопатки, локти идут вдоль корпуса; возвращай руки медленно.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "middle back",
+    "lats"
+   ],
+   "s": [
+    "biceps"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_bent_row",
+   "ru": "Тяга резины в наклоне",
+   "en": "Bent-over band row",
+   "syn": [
+    "тяга в наклоне с резиной"
+   ],
+   "tip": "Встань на середину резины, наклонись вперёд с прямой спиной, колени чуть согнуты. Тяни ручки к поясу, сводя лопатки, и медленно опускай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "middle back",
+    "lats"
+   ],
+   "s": [
+    "biceps",
+    "lower back"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_rdl",
+   "ru": "Румынская тяга с резиной",
+   "en": "Band Romanian deadlift",
+   "syn": [
+    "румынская становая с резиной"
+   ],
+   "tip": "Встань на резину, ручки в руках. Отводи таз назад и наклоняйся с прямой спиной, колени слегка согнуты, затем выпрямляйся, сжимая ягодицы.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "hamstrings",
+    "glutes"
+   ],
+   "s": [
+    "lower back"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_pulldown",
+   "ru": "Тяга резины сверху на коленях",
+   "en": "Kneeling band pulldown",
+   "syn": [
+    "вертикальная тяга с резиной"
+   ],
+   "tip": "Резина закреплена высоко впереди. Стоя на коленях, тяни ручки вниз к груди, опуская плечи и сводя лопатки; руки вверх возвращай медленно.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "lats"
+   ],
+   "s": [
+    "biceps",
+    "middle back"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_pushup",
+   "ru": "Отжимания с резиной",
+   "en": "Banded push-up",
+   "syn": [
+    "отжимания с эспандером"
+   ],
+   "tip": "Резина за спиной на уровне лопаток, концы прижаты ладонями к полу. Тело прямое, опускайся грудью к полу и выжимай себя вверх против резины.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "chest"
+   ],
+   "s": [
+    "triceps",
+    "shoulders"
+   ],
+   "bw": 0.64,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_split_squat",
+   "ru": "Выпады на месте с резиной",
+   "en": "Band split squat",
+   "syn": [
+    "сплит-присед с резиной"
+   ],
+   "tip": "Встань передней ногой на резину, ручки у плеч. Опускайся вниз, пока оба колена не согнутся под прямым углом, и поднимайся, толкаясь передней ногой.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "quadriceps",
+    "glutes"
+   ],
+   "s": [
+    "hamstrings"
+   ],
+   "bw": 0.8,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_lb_pallof",
+   "ru": "Паллоф-пресс с резиной",
+   "en": "Pallof press",
+   "syn": [
+    "паллоф",
+    "антиротация"
+   ],
+   "tip": "Резина закреплена сбоку на уровне груди. Встань боком, руки с ручкой у груди. Выпрямляй руки вперёд, не давая резине повернуть корпус, задержись на 2 секунды и верни.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abdominals"
+   ],
+   "s": [
+    "shoulders"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_woodchop",
+   "ru": "«Дровосек» с резиной",
+   "en": "Band woodchop",
+   "syn": [
+    "дровосек",
+    "диагональная тяга"
+   ],
+   "tip": "Резина закреплена высоко сбоку. Прямыми руками тяни ручку по диагонали вниз к противоположному бедру, поворачивая корпус и слегка приседая; вверх — медленно.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "abdominals"
+   ],
+   "s": [
+    "shoulders",
+    "lats"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_overhead_pullapart",
+   "ru": "Разведение резины над головой",
+   "en": "Overhead band pull-apart",
+   "syn": [
+    "разведение над головой"
+   ],
+   "tip": "Возьми резину прямыми руками над головой на ширине плеч. Разводи руки в стороны и чуть назад, опуская их до уровня плеч, лопатки сводятся вниз.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "shoulders",
+    "middle back"
+   ],
+   "s": [
+    "traps"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_front_raise",
+   "ru": "Подъём рук перед собой с резиной",
+   "en": "Band front raise",
+   "syn": [
+    "подъём рук вперёд",
+    "фронтальный подъём"
+   ],
+   "tip": "Встань на резину, ручки у бёдер. Поднимай прямые руки вперёд до уровня плеч, не раскачиваясь, и медленно опускай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "shoulders"
+   ],
+   "s": [
+    "chest"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_chest_press",
+   "ru": "Жим резины от груди стоя",
+   "en": "Standing band chest press",
+   "syn": [
+    "жим от груди с резиной"
+   ],
+   "tip": "Резина закреплена сзади на уровне груди. Шаг вперёд, ручки у груди. Выпрямляй руки вперёд, сводя их перед грудью, и медленно возвращай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "chest"
+   ],
+   "s": [
+    "triceps",
+    "shoulders"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_curl",
+   "ru": "Сгибание рук с резиной",
+   "en": "Band biceps curl",
+   "syn": [
+    "бицепс с резиной"
+   ],
+   "tip": "Встань на резину, ручки в опущенных руках, ладони вперёд. Сгибай руки, не отводя локти от корпуса, и медленно опускай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "biceps"
+   ],
+   "s": [
+    "forearms"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_pushdown",
+   "ru": "Разгибание рук вниз с резиной",
+   "en": "Band triceps pushdown",
+   "syn": [
+    "трицепс с резиной",
+    "разгибания на трицепс"
+   ],
+   "tip": "Резина закреплена высоко впереди. Локти прижаты к бокам, разгибай руки вниз до прямых и медленно возвращай до прямого угла в локте.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "triceps"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_lb_seated_row",
+   "ru": "Тяга резины сидя",
+   "en": "Seated band row",
+   "syn": [
+    "тяга сидя с резиной"
+   ],
+   "tip": "Сядь с прямыми ногами, резина вокруг стоп. Спина прямая; тяни ручки к поясу, сводя лопатки, и медленно выпрямляй руки.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "middle back",
+    "lats"
+   ],
+   "s": [
+    "biceps"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_fb_dorsiflexion",
+   "ru": "Тыльное сгибание стопы с резиной",
+   "en": "Banded ankle dorsiflexion",
+   "syn": [
+    "носок на себя с резиной",
+    "передняя большеберцовая"
+   ],
+   "tip": "Сидя, нога прямая, резина закреплена впереди и надета на верх стопы. Тяни носок на себя против резины и медленно отпускай. Укрепляет переднюю поверхность голени.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_fb_plantarflexion",
+   "ru": "Носок от себя с резиной",
+   "en": "Banded ankle plantar flexion",
+   "syn": [
+    "носок от себя",
+    "подошвенное сгибание"
+   ],
+   "tip": "Сидя, нога прямая, резина вокруг стопы, концы в руках. Тяни носок от себя против резины, как будто давишь на педаль, и медленно возвращай.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_fb_inversion",
+   "ru": "Поворот стопы внутрь с резиной",
+   "en": "Banded ankle inversion",
+   "syn": [
+    "супинация стопы с резиной"
+   ],
+   "tip": "Сидя, резина закреплена сбоку снаружи от ноги и надета на стопу. Поворачивай стопу подошвой внутрь против резины, голень не двигается.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_fb_eversion",
+   "ru": "Поворот стопы наружу с резиной",
+   "en": "Banded ankle eversion",
+   "syn": [
+    "пронация стопы с резиной"
+   ],
+   "tip": "Сидя, резина закреплена сбоку с внутренней стороны и надета на стопу. Поворачивай стопу подошвой наружу против резины, голень не двигается.",
+   "cat": "strength",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "calves"
+   ],
+   "s": [],
+   "bw": null,
+   "st": false,
+   "leg": true,
+   "img": 2
+  },
+  {
+   "id": "k_rb_resisted_march",
+   "ru": "Бег на месте с резиной за пояс",
+   "en": "Band-resisted running march",
+   "syn": [
+    "бег с сопротивлением",
+    "беговые шаги с резиной"
+   ],
+   "tip": "Резина вокруг пояса, закреплена сзади. Наклонись чуть вперёд всем телом и выполняй беговые шаги с высоким подъёмом колена и активной работой рук.",
+   "cat": "plyometrics",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "quadriceps",
+    "glutes"
+   ],
+   "s": [
+    "calves",
+    "abdominals"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  },
+  {
+   "id": "k_rb_a_march",
+   "ru": "«А-шаг» с мини-резинкой",
+   "en": "A-march with mini band",
+   "syn": [
+    "а-скип",
+    "высокое колено с резинкой"
+   ],
+   "tip": "Мини-резинка на стопах. Поднимай колено до уровня таза, стопа под коленом, носок на себя; опускай ногу под себя активно, на переднюю часть стопы. Руки работают как при беге.",
+   "cat": "plyometrics",
+   "eq": "bands",
+   "lvl": "beginner",
+   "mech": "compound",
+   "force": "pull",
+   "p": [
+    "quadriceps"
+   ],
+   "s": [
+    "calves",
+    "abdominals"
+   ],
+   "bw": null,
+   "st": false,
+   "leg": false,
+   "img": 2
+  }
  ],
- "runnerOfp": ["Bodyweight_Squat", "k_forward_lunge", "k_single_leg_balance", "k_reverse_lunge", "Single_Leg_Glute_Bridge", "Split_Squats", "Butt_Lift_Bridge", "k_jump_lunge", "k_single_leg_half_squat", "k_step_calf_raise", "k_shoulder_bridge", "k_bent_knee_calf_raise", "k_single_leg_step_calf_raise", "k_eccentric_heel_drop", "Plank", "Mountain_Climbers", "k_hollow_leg_hold", "Cross-Body_Crunch", "k_lying_leg_raise", "Air_Bike", "k_windshield_wipers", "Superman", "k_bird_dog", "k_swimmer", "k_scorpion", "Pushups", "Bench_Dips", "Inchworm", "k_plank_up_down", "k_burpee"]
+ "runnerOfp": [
+  "Bodyweight_Squat",
+  "k_forward_lunge",
+  "k_single_leg_balance",
+  "k_reverse_lunge",
+  "Single_Leg_Glute_Bridge",
+  "Split_Squats",
+  "Butt_Lift_Bridge",
+  "k_jump_lunge",
+  "k_single_leg_half_squat",
+  "k_step_calf_raise",
+  "k_shoulder_bridge",
+  "k_bent_knee_calf_raise",
+  "k_single_leg_step_calf_raise",
+  "k_eccentric_heel_drop",
+  "Plank",
+  "Mountain_Climbers",
+  "k_hollow_leg_hold",
+  "Cross-Body_Crunch",
+  "k_lying_leg_raise",
+  "Air_Bike",
+  "k_windshield_wipers",
+  "Superman",
+  "k_bird_dog",
+  "k_swimmer",
+  "k_scorpion",
+  "Pushups",
+  "Bench_Dips",
+  "Inchworm",
+  "k_plank_up_down",
+  "k_burpee"
+ ],
+ "bandList": [
+  "k_mb_bridge",
+  "k_mb_clamshell",
+  "k_mb_lateral_walk",
+  "k_mb_squat",
+  "k_mb_kickback_stand",
+  "k_mb_abduction_stand",
+  "k_mb_fire_hydrant",
+  "k_mb_donkey_kick",
+  "k_mb_side_lying_abd",
+  "k_mb_plank_leg_lift",
+  "k_lb_row_stand",
+  "k_lb_bent_row",
+  "k_lb_rdl",
+  "k_lb_pulldown",
+  "k_lb_pushup",
+  "k_lb_split_squat",
+  "k_lb_pallof",
+  "k_lb_woodchop",
+  "k_lb_overhead_pullapart",
+  "k_lb_front_raise",
+  "k_lb_chest_press",
+  "k_lb_curl",
+  "k_lb_pushdown",
+  "k_lb_seated_row",
+  "k_fb_dorsiflexion",
+  "k_fb_plantarflexion",
+  "k_fb_inversion",
+  "k_fb_eversion",
+  "k_rb_resisted_march",
+  "k_rb_a_march",
+  "Band_Pull_Apart",
+  "External_Rotation_with_Band",
+  "Internal_Rotation_with_Band",
+  "Lateral_Raise_-_With_Bands",
+  "Monster_Walk",
+  "Hip_Extension_with_Bands",
+  "Hip_Flexion_with_Band",
+  "Band_Good_Morning",
+  "Back_Flyes_-_With_Bands",
+  "Shoulder_Press_-_With_Bands",
+  "Upright_Row_-_With_Bands",
+  "Squats_-_With_Bands",
+  "Calf_Raises_-_With_Bands",
+  "Seated_Band_Hamstring_Curl",
+  "Band_Hip_Adductions"
+ ]
 }

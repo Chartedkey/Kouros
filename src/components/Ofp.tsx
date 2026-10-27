@@ -140,6 +140,7 @@ function BlockEditor({ b, lib, bands, last, bodyKg, onChange, onRemove }: {
 function AddBlock({ lib, complexes, onAdd }: { lib: ExerciseLibrary | null; complexes: Complex[]; onAdd: (b: OfpBlock) => void }) {
   const [mode, setMode] = useState<'none' | 'cx' | 'ex'>('none');
   const runner = useMemo(() => (lib?.runnerOfp ?? []).map((id) => lib?.items.find((x) => x.id === id)).filter((x): x is ExerciseItem => !!x), [lib]);
+  const banded = useMemo(() => (lib?.bandList ?? []).map((id) => lib?.items.find((x) => x.id === id)).filter((x): x is ExerciseItem => !!x), [lib]);
   const exOf = (id: string) => lib?.items.find((x) => x.id === id);
   const addEx = (ex: ExerciseItem | undefined, id: string | null, name: string | null) => {
     if (!name) return;
@@ -174,6 +175,14 @@ function AddBlock({ lib, complexes, onAdd }: { lib: ExerciseLibrary | null; comp
               <span className="muted tiny">ОФП для бегунов:</span>
               <div className="row" style={{ gap: 6 }}>
                 {runner.map((x) => <button key={x.id} type="button" className="pill sm" onClick={() => addEx(x, x.id, x.ru)}>{x.ru}</button>)}
+              </div>
+            </>
+          )}
+          {banded.length > 0 && (
+            <>
+              <span className="muted tiny">Упражнения с резиной:</span>
+              <div className="row" style={{ gap: 6 }}>
+                {banded.map((x) => <button key={x.id} type="button" className="pill sm" onClick={() => addEx(x, x.id, x.ru)}>{x.ru}</button>)}
               </div>
             </>
           )}

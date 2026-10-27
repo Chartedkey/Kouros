@@ -407,3 +407,13 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .steps-bars { position: relative; display: flex; align-items: flex-end; gap: 3px; height: 90px; }
 .steps-bars > span { flex: 1; border-radius: 3px 3px 0 0; min-width: 3px; }
 .steps-bars > i { position: absolute; left: 0; right: 0; border-top: 1px dashed #9AA3AE88; }
+.steps-week { display: flex; gap: 8px; align-items: flex-end; height: 92px; }
+.steps-week > button { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+.steps-week-bar { position: relative; display: flex; align-items: flex-end; width: 22px; flex: 1; }
+.steps-week-bar > span { display: block; width: 100%; border-radius: 4px 4px 0 0; }
+.ring-card .stack { min-width: 0; }
+.ring-card .stack > span { overflow-wrap: anywhere; }
+.steps-bars > .steps-col { flex: 1; min-width: 3px; height: 100%; display: flex; align-items: flex-end; padding: 0; border: 0; background: transparent; cursor: pointer; position: relative; }
+.steps-bars > .steps-col > span { display: block; width: 100%; border-radius: 3px 3px 0 0; box-sizing: border-box; }
+.steps-bars > .steps-col[aria-pressed="true"] > span { filter: brightness(1.35); }
+.steps-none { position: absolute; left: 30%; right: 30%; bottom: 0; height: 2px; background: #3A404A; }

@@ -40,6 +40,7 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
   useEffect(() => { if (day) setSub('history'); }, [day]);
   useEffect(() => { if (initialSub) { setSub(initialSub); onSubUsed?.(); } }, [initialSub]);
   const [h, setH] = useState<HealthSummary | null>(null);
+  const [pick, setPick] = useState<string | null>(null);
   const [ov, setOv] = useState<HealthOverview | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const load = useCallback(() => {
@@ -77,8 +78,8 @@ export function Health({ onSettings, onOpenWorkout, day, onDayUsed, initialSub, 
         </section>
       )}
       {!empty && !h && !err && sub !== 'labs' && sub !== 'meds' && <div className="muted">Считаю…</div>}
-      {!empty && h && sub === 'overview' && <Overview h={h} reload={load} />}
-      {!empty && h && sub === 'history' && <History h={h} ov={ov} onOpen={onOpenWorkout} day={day} onDayUsed={onDayUsed} />}
+      {!empty && h && sub === 'overview' && <Overview h={h} reload={load} onDay={(d) => { setPick(d); setSub('history'); }} />}
+      {!empty && h && sub === 'history' && <History h={h} ov={ov} onOpen={onOpenWorkout} day={day ?? pick} onDayUsed={() => { setPick(null); onDayUsed?.(); }} />}
       {sub === 'labs' && <Labs />}
       {sub === 'meds' && medsOn && <Meds />}
       <p className="muted tiny" style={{ textAlign: 'center', margin: 0 }}>Данные Apple Watch и весов через Apple Health. Не является медицинской диагностикой.</p>
@@ -201,7 +202,7 @@ function Hypnogram({ hyp, tz }: { hyp: NonNullable<HealthSummary['hypnogram']>; 
 
 // ---------- overview ----------
 
-function Overview({ h, reload }: { h: HealthSummary; reload: () => void }) {
+function Overview({ h, reload, onDay }: { h: HealthSummary; reload: () => void; onDay?: (d: string) => void }) {
   const night = h.night;
   const needS = h.need.totalMin * 60;
   const alarms = h.signals.filter((s) => s.level > 0);
@@ -317,7 +318,7 @@ function Overview({ h, reload }: { h: HealthSummary; reload: () => void }) {
         </section>
       </div>
 
-      <StepsCard h={h} />
+      <StepsCard h={h} onDay={onDay} />
       <div className="grid">
         <Habits h={h} />
         <AlcoholCalc h={h} />
@@ -908,27 +909,50 @@ function History({ h, ov, onOpen, day, onDayUsed }: { h: HealthSummary; ov: Heal
   );
 }
 
-/** 1.4.1: steps of the last 30 days — bars against your usual day (median), today highlighted. */
-function StepsCard({ h }: { h: HealthSummary }) {
-  const pts = h.body.steps.filter((p) => p[1] > 0);
-  if (pts.length < 3) return null;
-  const vals = pts.map((p) => p[1]).filter((v) => v >= 500).sort((a, b) => a - b);
+/** 1.4.2: steps of the last 30 days — every day (empty ones too), bars against your usual day
+(median), hover shows the day, a click opens it in «История»; today is marked as not finished. */
+function StepsCard({ h, onDay }: { h: HealthSummary; onDay?: (d: string) => void }) {
+  const [hov, setHov] = useState<string | null>(null);
+  const by = new Map(h.body.steps.map((p) => [p[0], p[1]] as [string, number]));
+  const days = Array.from({ length: 30 }, (_, k) => {
+    const d = new Date(`${h.today}T12:00:00`); d.setDate(d.getDate() - (29 - k));
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return { key, v: by.get(key) ?? null };
+  });
+  const have = days.filter((d) => d.v != null && d.v > 0);
+  if (have.length < 3) return null;
+  const vals = days.filter((d) => d.key !== h.today && (d.v ?? 0) >= 500).map((d) => d.v!).sort((a, b) => a - b);
   const usual = vals.length ? vals[Math.floor(vals.length / 2)] : null;
-  const max = Math.max(...pts.map((p) => p[1]), usual ?? 0, 1);
-  const last = pts[pts.length - 1];
+  const max = Math.max(...have.map((d) => d.v!), usual ?? 0, 1);
+  const wd = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('ru-RU', { weekday: 'short' });
+  const sel = hov ? days.find((d) => d.key === hov) : null;
+  const todayV = by.get(h.today);
   return (
     <section className="card" aria-label="Шаги">
-      <div className="between">
+      <div className="between" style={{ flexWrap: 'wrap', gap: 8 }}>
         <span className="label">Шаги · 30 дней</span>
-        <span className="small"><span className="muted">последний день </span><b className="num">{n0(last[1])}</b>{usual ? <span className="muted"> · обычно {n0(usual)}</span> : null}{h.body.steps7 ? <span className="muted"> · за 7 дней {n0(h.body.steps7)}</span> : null}</span>
+        {sel ? (
+          <span className="small"><b>{dayLabel(sel.key)}, {wd(sel.key)}</b> · {sel.v != null ? <><b className="num">{n0(sel.v)}</b> шагов{usual ? <span className="muted"> · {Math.round((sel.v / usual) * 100)}% от обычного</span> : null}</> : <span className="muted">нет данных</span>}{sel.key === h.today ? <span className="muted"> · день ещё идёт</span> : null}</span>
+        ) : (
+          <span className="small"><span className="muted">сегодня пока </span><b className="num">{todayV != null ? n0(todayV) : '—'}</b>{usual ? <span className="muted"> · обычно {n0(usual)}</span> : null}{h.body.steps7 ? <span className="muted"> · за 7 дней {n0(h.body.steps7)}</span> : null}</span>
+        )}
       </div>
-      <div className="steps-bars" role="img" aria-label="Шаги по дням">
-        {pts.map(([d, v], i) => (
-          <span key={d} title={`${dayLabel(d)}: ${n0(v)}`} style={{ height: `${Math.max(2, (v / max) * 100)}%`, background: i === pts.length - 1 ? '#7FD3FF' : usual && v >= usual ? '#7FD3FF99' : '#7FD3FF44' }} />
-        ))}
+      <div className="steps-bars" role="img" aria-label="Шаги по дням" onMouseLeave={() => setHov(null)}>
+        {days.map((d) => {
+          const isToday = d.key === h.today;
+          return (
+            <button key={d.key} type="button" className="steps-col" title={`${dayLabel(d.key)}: ${d.v != null ? n0(d.v) : 'нет данных'}`}
+              onMouseEnter={() => setHov(d.key)} onFocus={() => setHov(d.key)} onClick={onDay ? () => onDay(d.key) : undefined}
+              aria-pressed={hov === d.key}>
+              <span style={{ height: d.v ? `${Math.max(2, (d.v / max) * 100)}%` : '0%', background: isToday ? 'transparent' : usual && (d.v ?? 0) >= usual ? '#7FD3FFAA' : '#7FD3FF55',
+                border: isToday ? '1.5px dashed #7FD3FF' : undefined }} />
+              {d.v == null && <i className="steps-none" />}
+            </button>
+          );
+        })}
         {usual && <i style={{ bottom: `${(usual / max) * 100}%` }} />}
       </div>
-      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Шаги считаются за весь день, вместе с ходьбой и бегом. Пунктир — твой обычный день (медиана за месяц). Нагрузку Kouros считает по тренировкам, а шаги — для общей картины движения.</span>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Наведи на столбик — покажу день, нажми — откроется этот день в «Истории». Пунктир — твой обычный день (медиана за месяц), пунктирный столбик — сегодня, день ещё идёт. Нагрузку Kouros считает по тренировкам, а шаги — для общей картины движения.</span>
     </section>
   );
 }

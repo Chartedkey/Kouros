@@ -233,7 +233,7 @@ function Overview({ s, o, reloadO, onOpen, onAll, onImport }: { s: EngineSummary
             <>
               <button type="button" className="plain" onClick={() => onOpen(la.id)}>
                 <span className="row" style={{ gap: 12, flexWrap: 'nowrap' }}>
-                  <SportIcon sport={sportKey(la)} size={52} rpe={la.rpe} />
+                  <SportIcon sport={sportKey(la)} size={52} />
                   <span className="stack" style={{ gap: 0, minWidth: 0 }}>
                     <span style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700 }} className="ellipsis">{la.name || lsp.name}</span>
                     <span className="muted small">{sportKey(la) === 'treadmill' ? 'Беговая дорожка' : lsp.name}{last?.load != null ? ` · нагрузка ${last.load}` : ''}{la.relativeEffort ? ` · Relative Effort ${Math.round(la.relativeEffort)}` : ''}</span>
@@ -310,7 +310,7 @@ function ActRow({ a, onOpen, compact, sel }: { a: ActivityPage['items'][number];
     <button type="button" className={compact ? 'list-row plain' : 'tr tr-act plain'} onClick={() => onOpen(a.id)} style={sel ? { background: '#1a2230' } : undefined}>
       {!compact && <span className="muted small">{sel != null && <input type="checkbox" readOnly checked={sel} style={{ marginRight: 8 }} />}{fmtWhen(a.startUtc)}</span>}
       <span className="row" style={{ flexWrap: 'nowrap', gap: 10, minWidth: 0, flex: compact ? 1 : undefined }}>
-        <SportIcon sport={sportKey(a)} size={36} rpe={a.rpe} />
+        <SportIcon sport={sportKey(a)} size={36} />
         <span className="stack" style={{ gap: 0, minWidth: 0 }}>
           <span className="ellipsis" style={{ fontWeight: 700 }}>{a.name || sp.name}</span>
           <span className="muted tiny ellipsis">
@@ -698,7 +698,7 @@ function LibraryCard() {
   const hits = useMemo(() => {
     if (!lib) return [];
     const base = q.trim() ? searchExercises(lib.items, q, 60) : lib.items;
-    return base.filter((x) => !eq || x.eq === eq).slice(0, 60);
+    return base.filter((x) => !eq || x.eq === eq || (eq === 'bands' && (lib.bandList ?? []).includes(x.id))).slice(0, 60);
   }, [lib, q, eq]);
   return (
     <section className="card" aria-label="Библиотека упражнений">

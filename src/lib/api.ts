@@ -801,7 +801,7 @@ export type ExerciseItem = {
   /** 1.4: done on each leg / side (reps are per leg); `own` = your own exercise. */
   leg?: boolean; own?: boolean;
 };
-export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[]; runnerOfp?: string[] };
+export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[]; runnerOfp?: string[]; bandList?: string[] };
 /** 1.4: «ОФП и комплексы» — a block is a complex or one exercise; it is saved as ordinary sets. */
 export type ManualState = {
   hrvOn: boolean; vitalsOn: boolean; kind: 'rmssd' | 'sdnn'; today: string;

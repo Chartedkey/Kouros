@@ -98,7 +98,7 @@ export function ExerciseCard({ ex, bodyKg, onClose }: { ex: ExerciseItem; bodyKg
           {ex.st && <span className="muted">Статическое упражнение: важно время под нагрузкой, а не килограммы.</span>}
         </div>
         {ex.leg && <span className="muted small">Делается на каждую ногу (сторону): повторы считаются на одну ногу.</span>}
-        <span className="muted tiny">{ex.own ? 'Твоё упражнение.' : ex.img ? 'Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.' : 'Описание — Kouros.'}</span>
+        <span className="muted tiny">{ex.own ? 'Твоё упражнение.' : ex.id.startsWith('k_') ? (ex.img ? 'Рисунок и описание — Kouros.' : 'Описание — Kouros.') : ex.img ? 'Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.' : 'Описание — Kouros.'}</span>
       </div>
     </div>
   );

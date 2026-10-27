@@ -418,20 +418,6 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
             )}
           </div>
         </section>
-        {s.steps && (s.steps.today != null || s.steps.usual != null) && (
-          <section className="card ring-card" aria-label="Шаги">
-            <MiniRing frac={s.steps.usual ? Math.min(1, (s.steps.today ?? 0) / s.steps.usual) : 0} color="#7FD3FF" label={s.steps.today != null && s.steps.usual ? `${Math.round((s.steps.today / s.steps.usual) * 100)}%` : '—'} />
-            <div className="stack">
-              <span className="label">Шаги</span>
-              <span style={{ fontSize: 20, fontWeight: 700, color: '#7FD3FF' }}>
-                {s.steps.today != null ? `${n0(s.steps.today)} шагов` : 'пока нет данных'}
-              </span>
-              <span className="muted small" style={{ lineHeight: 1.45 }}>
-                {s.steps.usual ? `Обычно ${n0(s.steps.usual)} в день` : 'Обычный день ещё набирается'}{s.steps.avg7 ? `${s.steps.usual ? ' · ' : ''}за 7 дней в среднем ${n0(s.steps.avg7)}` : ''}
-              </span>
-            </div>
-          </section>
-        )}
         <section className="card ring-card" aria-label="Сон">
           <MiniRing frac={(night?.score ?? 0) / 100} color="#A78BFA" label={night ? `${night.score}%` : '—'} />
           <div className="stack">
@@ -443,6 +429,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
           </div>
         </section>
       </div>
+      {s.steps && (s.steps.today != null || s.steps.usual != null) && <StepsToday st={s.steps} today={s.today} onHealthDay={onHealthDay} />}
 
       {!useY && <StressCard st={s.stress?.today} />}
       {s.profile.filled === false && (
@@ -755,4 +742,37 @@ function ReadyDot({ v }: { v: number | null }) {
 function plural(n: number) {
   const m10 = n % 10, m100 = n % 100;
   return `${n} ${m10 === 1 && m100 !== 11 ? 'напоминание' : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? 'напоминания' : 'напоминаний'}`;
+}
+
+/** 1.4.2: steps today as its own card (movable) — today, % of your usual day, the last 7 days. */
+function StepsToday({ st, today, onHealthDay }: { st: NonNullable<EngineSummary['steps']>; today: string; onHealthDay?: (d: string) => void }) {
+  const days = Array.from({ length: 7 }, (_, k) => {
+    const d = new Date(`${today}T12:00:00`); d.setDate(d.getDate() - (6 - k));
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return { key, v: st.last14.find((x) => x[0] === key)?.[1] ?? null, wd: d.toLocaleDateString('ru-RU', { weekday: 'short' }) };
+  });
+  const max = Math.max(1, st.usual ?? 0, ...days.map((d) => d.v ?? 0));
+  const pct = st.today != null && st.usual ? Math.round((st.today / st.usual) * 100) : null;
+  return (
+    <section className="card" aria-label="Шаги">
+      <div className="between" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+        <div className="stack" style={{ gap: 4 }}>
+          <span className="label">Шаги</span>
+          <span style={{ fontFamily: 'var(--display)', fontSize: 30, fontWeight: 700, color: '#7FD3FF' }}>{st.today != null ? n0(st.today) : '—'}</span>
+          <span className="muted small">
+            {pct != null ? `${pct}% от обычного дня` : st.usual ? 'сегодня шагов пока нет' : 'обычный день ещё набирается'}
+            {st.usual ? ` · обычно ${n0(st.usual)}` : ''}{st.avg7 ? ` · за неделю в среднем ${n0(st.avg7)}` : ''}
+          </span>
+        </div>
+        <div className="steps-week" role="img" aria-label="Шаги за 7 дней">
+          {days.map((d) => (
+            <button key={d.key} type="button" className="plain" title={`${d.wd}: ${d.v != null ? n0(d.v) : 'нет данных'}`} onClick={onHealthDay ? () => onHealthDay(d.key) : undefined}>
+              <span className="steps-week-bar"><span style={{ height: `${d.v ? Math.max(4, (d.v / max) * 100) : 0}%`, background: d.key === today ? '#7FD3FF' : st.usual && (d.v ?? 0) >= st.usual ? '#7FD3FF99' : '#7FD3FF44', outline: d.key === today ? '1px dashed #7FD3FF' : undefined }} /></span>
+              <span className="muted tiny">{d.wd}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }

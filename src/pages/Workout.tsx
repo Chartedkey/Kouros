@@ -406,7 +406,7 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
         <div className="stack" style={{ gap: 6, minWidth: 0, flex: '1 1 480px' }}>
           {back}
           <div className="row" style={{ gap: 16, flexWrap: 'nowrap', minWidth: 0 }}>
-            <SportIcon sport={sportKey(a)} size={64} rpe={a.rpe} />
+            <SportIcon sport={sportKey(a)} size={64} />
             <div className="stack" style={{ gap: 6, minWidth: 0 }}>
           <h1 className="ellipsis" style={{ maxWidth: '100%' }}>{a.name || sp.name}</h1>
           <p className="subtitle">
