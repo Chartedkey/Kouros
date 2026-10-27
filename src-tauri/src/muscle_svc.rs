@@ -13,7 +13,7 @@ use rusqlite::{params, Connection};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashMap};
 
-const MV: &str = "m3";
+const MV: &str = "m4";
 
 pub const GROUPS: [(&str, &str); 12] = [
     ("calves", "Икры"),
@@ -251,11 +251,11 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
                     // 1.4 (owner): no exercises → no map fill; ОФП without exercises as before (× 0.4).
                     free = if a.sport == "strength" { total } else { session * 0.4 };
                 } else {
-                    let per = total / sets.len() as f64;
-                    for w in &sets {
+                    let per = total / sets.iter().map(|s| s.1).sum::<f64>().max(1.0);
+                    for (w, k) in &sets {
                         match w {
-                            Some(w) => add(&mut g, w, per),
-                            None => free += per,
+                            Some(w) => add(&mut g, w, per * k),
+                            None => free += per * k,
                         }
                     }
                 }
@@ -269,10 +269,10 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
         }
         // 1.4: ОФП or a complex entered on a run / walk / ride — about 2 units per set on top.
         if !matches!(a.sport.as_str(), "strength" | "workout" | "yoga") {
-            for w in sets_of(conn, &a.id) {
+            for (w, k) in sets_of(conn, &a.id) {
                 match w {
-                    Some(w) => add(&mut g, &w, 2.0),
-                    None => free += 2.0,
+                    Some(w) => add(&mut g, &w, 2.0 * k),
+                    None => free += 2.0 * k,
                 }
             }
         }
@@ -297,20 +297,23 @@ pub fn loads(conn: &Connection, acts: &[Cached], p: &Profile) -> Vec<MLoad> {
 
 /// Muscles of each done set of a workout (None = exercise not recognised). Rest and skipped
 /// rows are left out.
-fn sets_of(conn: &Connection, id: &str) -> Vec<Option<G>> {
+fn sets_of(conn: &Connection, id: &str) -> Vec<(Option<G>, f64)> {
     let custom = crate::exercise_svc::custom_snapshot();
-    let rows: Vec<(Option<i64>, String, Option<String>)> = conn
-        .prepare("SELECT category, COALESCE(exercise, ''), ex_id FROM strength_sets WHERE activity_id = ?1 AND COALESCE(kind, 'active') = 'active'")
+    type Row = (Option<i64>, String, Option<String>, Option<String>, Option<i64>);
+    let rows: Vec<Row> = conn
+        .prepare("SELECT category, COALESCE(exercise, ''), ex_id, cx, sides FROM strength_sets WHERE activity_id = ?1 AND COALESCE(kind, 'active') = 'active'")
         .map(|mut st| {
-            let v: Vec<(Option<i64>, String, Option<String>)> =
-                st.query_map(params![id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).map(|r| r.flatten().collect()).unwrap_or_default();
+            let v: Vec<Row> = st.query_map(params![id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))).map(|r| r.flatten().collect()).unwrap_or_default();
             v
         })
         .unwrap_or_default();
     rows.iter()
-        .map(|(c, n, x)| {
+        .map(|(c, n, x, cx, sides)| {
             // 0.22: an exercise from the library (1.4: or your own) brings its own muscles.
-            x.as_deref().and_then(|x| crate::exercise_svc::groups_in(x, &custom)).or_else(|| exercise_groups(*c, n))
+            let g = x.as_deref().and_then(|x| crate::exercise_svc::groups_in(x, &custom)).or_else(|| exercise_groups(*c, n));
+            // 1.4.3: a one-sided set done on both sides is twice the work of one set.
+            let leg = cx.as_deref().and_then(|t| serde_json::from_str::<Value>(t).ok()).map(|c| c["leg"].as_bool() == Some(true)).unwrap_or(false);
+            (g, crate::activity_svc::side_factor(x.as_deref(), leg, *sides))
         })
         .collect()
 }

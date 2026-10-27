@@ -8,6 +8,8 @@ import { useDataChanged } from '../lib/events';
 import { RouteMap } from './RouteMap';
 import { OfpCard } from '../components/Ofp';
 import { SportIcon, sportKey } from '../components/SportIcon';
+import { StrengthCard } from '../components/Strength';
+import { SportTiles } from '../components/SportTiles';
 
 const ZONE_NAMES = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'];
 const ZONE_COLORS = ['#7FD3FF', '#3DDC97', '#F5B642', '#FF8A65', '#FF6B6B'];
@@ -146,165 +148,6 @@ function EffortCard({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) 
   );
 }
 
-// ---------- strength sets ----------
-
-const LIB = [
-  'Жим штанги лёжа', 'Жим гантелей лёжа', 'Жим гантелей сидя', 'Отжимания', 'Отжимания на брусьях', 'Подтягивания',
-  'Тяга верхнего блока', 'Тяга горизонтального блока', 'Тяга гантели в наклоне', 'Становая тяга', 'Румынская тяга',
-  'Приседания со штангой', 'Гоблет-присед', 'Выпады', 'Болгарские выпады', 'Жим ногами', 'Разгибание ног', 'Сгибание ног',
-  'Подъём на носки', 'Ягодичный мост', 'Махи гантелями в стороны', 'Сгибание рук со штангой', 'Французский жим',
-  'Планка', 'Скручивания', 'Гиперэкстензия', 'Упражнение с резинкой', 'Растяжка',
-];
-
-const epley = (w: number | null, r: number | null) => (w && r && r > 0 && r <= 15 ? w * (1 + r / 30) : null);
-
-function SetsEditor({ d, onSaved }: { d: ActivityDetail; onSaved: () => void }) {
-  const [rows, setRows] = useState<SetRow[]>(d.sets);
-  const [known, setKnown] = useState<string[]>([]);
-  const [bands, setBands] = useState<ResBand[]>([]);
-  const [showRest, setShowRest] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const [dirty, setDirty] = useState(false);
-  const [info, setInfo] = useState<ExerciseItem | null>(null);
-  const [bandRow, setBandRow] = useState<number | null>(null);
-  const lib = useExerciseLib();
-  useEffect(() => { api.exercises().then(setKnown).catch(() => {}); api.bandsGet().then(setBands).catch(() => {}); }, []);
-  const own = useMemo(() => Array.from(new Set([...known, ...LIB])).sort((a, b) => a.localeCompare(b, 'ru')), [known]);
-  const exOf = (r: SetRow) => (r.exId ? lib?.items.find((x) => x.id === r.exId) : undefined);
-  const effOf = (r: SetRow) => effectiveKg(exOf(r), r.weightKg, d.bodyKg, r.band, bands);
-
-  const upd = (i: number, p: Partial<SetRow>) => { setRows((rs) => rs.map((r, k) => (k === i ? { ...r, ...p } : r))); setDirty(true); };
-  const num = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')));
-  function fillDown(i: number) {
-    const src = rows[i];
-    let stop = false;
-    setRows(rows.map((r, k) => {
-      if (k <= i || stop || r.kind !== 'active') return r;
-      if (r.exercise) { stop = true; return r; }
-      return { ...r, exercise: src.exercise, exId: src.exId ?? null, band: src.band ?? null };
-    }));
-    setDirty(true);
-  }
-  function addSet() {
-    const lastA = [...rows].reverse().find((r) => r.kind === 'active');
-    setRows([...rows, { startUtc: null, durationS: null, reps: lastA?.reps ?? 10, weightKg: lastA?.weightKg ?? null, kind: 'active', exercise: lastA?.exercise ?? null, exId: lastA?.exId ?? null, band: lastA?.band ?? null }]);
-    setDirty(true);
-  }
-  function toggleBand(i: number, id: string) {
-    const b = rows[i].band ?? { ids: [], mode: exOf(rows[i])?.en.toLowerCase().includes('assisted') ? 'assist' as const : 'add' as const };
-    const ids = b.ids.includes(id) ? b.ids.filter((x) => x !== id) : [...b.ids, id];
-    upd(i, { band: ids.length ? { ...b, ids } : null });
-  }
-  async function save() {
-    try {
-      await api.strengthSetsSave(d.activity.id, rows);
-      setMsg({ ok: true, text: 'Подходы сохранены.' }); setDirty(false); onSaved();
-    } catch (e) { setMsg({ ok: false, text: errText(e) }); }
-  }
-
-  const active = rows.filter((r) => r.kind === 'active');
-  const tonnage = active.reduce((a, r) => a + (effOf(r) ?? r.weightKg ?? 0) * (r.reps ?? 0), 0);
-  const exCount = new Set(active.map((r) => r.exercise).filter(Boolean)).size;
-  const unnamed = active.filter((r) => !r.exercise).length;
-  const estimated = active.some((r) => { const e = effOf(r); return e != null && e !== r.weightKg; });
-  let n = 0;
-
-  return (
-    <section className="card" aria-label="Подходы">
-      <div className="between">
-        <span className="label">Подходы</span>
-        <label className="row small" style={{ gap: 8, cursor: 'pointer' }}><input type="checkbox" checked={showRest} onChange={(e) => setShowRest(e.target.checked)} /> показывать отдых</label>
-      </div>
-      {unnamed > 0 && rows.length > 0 && (
-        <div className="note-warn">Strava и часы почти не сохраняют названия упражнений. Начни вводить название — Kouros подскажет из библиотеки почти 900 упражнений; кнопка ↓ копирует упражнение на следующие подходы без названия.</div>
-      )}
-      <div className="sets">
-        <div className="set th"><span>#</span><span>Упражнение</span><span>Вес, кг</span><span>Повторы</span><span title="Сколько килограммов на самом деле работало в повторе">Нагрузка</span><span>1ПМ</span><span>Время</span><span /></div>
-        {rows.map((r, i) => {
-          if (r.kind === 'rest' && !showRest) return null;
-          if (r.kind === 'active') n++;
-          const ex = exOf(r);
-          const eff = r.kind === 'active' ? effOf(r) : null;
-          const orm = epley(eff ?? r.weightKg, r.reps);
-          const bandNames = (r.band?.ids ?? []).map((id) => bands.find((b) => b.id === id)?.name).filter(Boolean);
-          return (
-            <div key={i} className="stack" style={{ gap: 4 }}>
-              <div className={`set${r.kind === 'rest' ? ' rest' : ''}`}>
-                <span className="muted small num">{r.kind === 'active' ? n : '—'}</span>
-                {r.kind === 'active' ? (
-                  <span className="row" style={{ flexWrap: 'nowrap', gap: 4 }}>
-                    <ExerciseInput value={r.exercise} exId={r.exId} own={own} lib={lib} onPick={(name, id) => upd(i, { exercise: name, exId: id })} onInfo={setInfo} />
-                    <button type="button" className="xbtn" title="Это же упражнение — на следующие подходы" aria-label="Скопировать вниз" disabled={!r.exercise} onClick={() => fillDown(i)}>↓</button>
-                  </span>
-                ) : <span className="muted small">отдых</span>}
-                {r.kind === 'active'
-                  ? <input className="input sm" inputMode="decimal" aria-label="Вес" placeholder={ex?.bw != null ? 'свой вес' : ex?.st ? 'время' : ''} value={r.weightKg ?? ''} onChange={(e) => upd(i, { weightKg: num(e.target.value) })} />
-                  : <span />}
-                {r.kind === 'active' ? <input className="input sm" inputMode="numeric" aria-label="Повторы" value={r.reps ?? ''} onChange={(e) => upd(i, { reps: num(e.target.value) })} /> : <span />}
-                <span className="num small" style={{ color: eff != null && eff !== r.weightKg ? '#9DB8FF' : 'var(--muted)' }} title={eff != null && eff !== r.weightKg ? 'Оценка: свой вес и резина пересчитаны в килограммы' : ''}>
-                  {r.kind === 'active' ? (eff != null ? `${eff !== r.weightKg ? '≈' : ''}${Math.round(eff)}` : ex?.st ? 'статика' : '') : ''}
-                </span>
-                <span className="num small muted">{orm ? Math.round(orm) : ''}</span>
-                <span className="num tiny muted">{r.durationS ? fmtDur(r.durationS) : ''}</span>
-                <span className="row" style={{ gap: 4, flexWrap: 'nowrap' }}>
-                  {r.kind === 'active' && (
-                    <button type="button" className="xbtn" title="Резина / эспандер" aria-label="Резина" aria-pressed={bandRow === i || !!r.band} style={r.band ? { color: '#3DDC97', borderColor: '#3DDC9766' } : undefined} onClick={() => setBandRow(bandRow === i ? null : i)}>〰</button>
-                  )}
-                  <button type="button" className="xbtn" title={r.kind === 'active' ? 'Сделать отдыхом' : 'Сделать подходом'} aria-label="Подход или отдых" onClick={() => upd(i, { kind: r.kind === 'active' ? 'rest' : 'active' })}>{r.kind === 'active' ? '⏸' : '▶'}</button>
-                  <button type="button" className="xbtn" aria-label="Удалить" onClick={() => { setRows(rows.filter((_, k) => k !== i)); setDirty(true); }}>×</button>
-                </span>
-              </div>
-              {r.kind === 'active' && bandRow !== i && bandNames.length > 0 && (
-                <span className="muted tiny" style={{ paddingLeft: 36 }}>резина: {bandNames.join(' + ')} · {r.band?.mode === 'assist' ? 'помогает' : 'добавляет нагрузку'}</span>
-              )}
-              {r.kind === 'active' && bandRow === i && (
-                <div className="inset" style={{ marginLeft: 36, gap: 8 }}>
-                  {bands.length === 0 ? (
-                    <span className="small muted">Резин пока нет — добавь их в «Тренировки → Инвентарь» с диапазоном нагрузки, который написан на ленте.</span>
-                  ) : (
-                    <>
-                      <div className="row" style={{ gap: 6 }}>
-                        {bands.map((b) => (
-                          <button key={b.id} type="button" className="pill" aria-pressed={r.band?.ids.includes(b.id) ?? false} onClick={() => toggleBand(i, b.id)}>
-                            <span className="dot" style={{ background: b.color || '#9AA3AE', marginRight: 6 }} />{b.name || 'Резина'} · {String(b.lo).replace('.', ',')}–{String(b.hi).replace('.', ',')} {b.unit === 'lb' ? 'lb' : 'кг'}
-                          </button>
-                        ))}
-                      </div>
-                      {r.band && (
-                        <div className="row" role="group" aria-label="Как работает резина" style={{ gap: 6 }}>
-                          <button type="button" className="pill" aria-pressed={r.band.mode === 'add'} onClick={() => upd(i, { band: { ...r.band!, mode: 'add' } })}>Добавляет нагрузку</button>
-                          <button type="button" className="pill" aria-pressed={r.band.mode === 'assist'} onClick={() => upd(i, { band: { ...r.band!, mode: 'assist' } })}>Помогает (подтягивания с резиной)</button>
-                        </div>
-                      )}
-                      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Считается середина диапазона с ленты: «15–35 кг» ≈ 25 кг за повтор. Несколько лент складываются.</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-        {rows.length === 0 && <div className="list-row muted small">В файле тренировки подходов нет — добавь их вручную.</div>}
-      </div>
-      <div className="row"><button type="button" className="btn2" onClick={addSet}>+ подход</button></div>
-      <div className="tiles4">
-        <div className="tile"><span className="num tile-v2">{exCount}</span><span className="muted tiny">упражнений</span></div>
-        <div className="tile"><span className="num tile-v2">{active.length}</span><span className="muted tiny">подходов</span></div>
-        <div className="tile"><span className="num tile-v2">{active.reduce((a, r) => a + (r.reps ?? 0), 0)}</span><span className="muted tiny">повторений</span></div>
-        <div className="tile"><span className="num tile-v2">{tonnage ? `${estimated ? '≈' : ''}${Math.round(tonnage).toLocaleString('ru-RU')}` : '—'}</span><span className="muted tiny">тоннаж, кг</span></div>
-      </div>
-      <div className="row">
-        <button type="button" className="btn" disabled={!dirty} onClick={save}>Сохранить подходы</button>
-        {msg && <span className={msg.ok ? 'small' : 'small note-err'} style={msg.ok ? { color: 'var(--green)' } : undefined}>{msg.text}</span>}
-      </div>
-      <span className="muted tiny" style={{ lineHeight: 1.5 }}>
-        Нагрузка — сколько килограммов работало в повторе: вес снаряда, плюс доля веса тела в упражнениях со своим весом{d.bodyKg ? ` (по твоему весу ${String(d.bodyKg).replace('.', ',')} кг)` : ''}, плюс или минус резина. Значок ≈ — оценка. 1ПМ — расчётный максимум на одно повторение (формула Эпли), чтобы сравнивать 60 × 10 и 70 × 5.
-      </span>
-      {info && <ExerciseCard ex={info} bodyKg={d.bodyKg} onClose={() => setInfo(null)} />}
-    </section>
-  );
-}
-
 // ---------- the page ----------
 
 /** Pace in s/km from the speed stream, or from distance when there is no speed. */
@@ -439,15 +282,7 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
         </section>
       )}
 
-      <div className="tiles">
-        {a.distanceM ? <div className="tile"><span className="num tile-v">{fmtKm(a.distanceM, 2)}</span><span className="muted small">дистанция</span></div> : null}
-        <div className="tile"><span className="num tile-v">{fmtDur(moving)}</span><span className="muted small">{a.movingS ? 'в движении' : 'длительность'}{a.elapsedS && a.movingS && a.elapsedS - a.movingS > 60 ? ` · всего ${fmtDur(a.elapsedS)}` : ''}</span></div>
-        {paceOk && <div className="tile"><span className="num tile-v">{fmtPace(moving! / (a.distanceM! / 1000))}</span><span className="muted small">темп, мин/км</span></div>}
-        <div className="tile"><span className="num tile-v">{a.avgHr ? Math.round(a.avgHr) : '—'}<span className="muted" style={{ fontSize: 16 }}> / {a.maxHr ? Math.round(a.maxHr) : '—'}</span></span><span className="muted small">пульс ср / макс</span></div>
-        {a.elevGainM ? <div className="tile"><span className="num tile-v">{Math.round(a.elevGainM)} м</span><span className="muted small">набор высоты</span></div> : null}
-        {a.calories ? <div className="tile"><span className="num tile-v">{Math.round(a.calories)}</span><span className="muted small">ккал</span></div> : null}
-        {a.relativeEffort ? <div className="tile"><span className="num tile-v">{Math.round(a.relativeEffort)}</span><span className="muted small">Relative Effort (Strava)</span></div> : null}
-      </div>
+      <SportTiles a={a} x={{ weightLiftedKg: d.weightLiftedKg, setsCount: d.sets.filter((r) => r.kind === 'active').length + (d.ofp ?? []).reduce((n, b) => n + b.rounds * b.items.filter((it) => !it.skip).length, 0) || null }} />
 
       {d.muscle && (
         <section className="card" aria-label="Мышечная нагрузка и восстановление">
@@ -523,7 +358,7 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
               </div>
             </section>
           )}
-          {isStrength && <SetsEditor key={d.sets.length + ':' + a.id} d={d} onSaved={load} />}
+          {isStrength && <StrengthCard key={d.sets.length + ':' + a.id} d={d} onSaved={load} />}
           <OfpCard key={'ofp:' + a.id + ':' + (d.ofp?.length ?? 0)} d={d} onSaved={load} />
           {!c && !isStrength && <section className="card"><span className="muted small">У этой тренировки нет графиков — только итоги.{a.hasStreams ? '' : ' Strava догрузит их при следующей синхронизации, если они есть.'}</span></section>}
         </div>

@@ -83,10 +83,11 @@ fn init(app: &AppHandle) {
     }
     *st.data_dir.lock().unwrap() = Some(root.clone());
     match db::open(&root) {
-        Ok(conn) => {
+        Ok(mut conn) => {
             if let Err(e) = db::auto_backup(&conn, &root) {
                 db::log(&conn, "error", &e);
             }
+            activity_svc::recount_once(&mut conn);
             *st.db.lock().unwrap() = Some(conn);
         }
         Err(e) => *st.db_error.lock().unwrap() = Some(e),
@@ -549,6 +550,11 @@ fn complexes_import(text: String, app: AppHandle, st: State<'_, AppState>) -> Re
     let (c, e) = with_db(&st, |c| exercise_svc::import_complexes(c, &text))?;
     let _ = tauri::Emitter::emit(&app, "data-changed", "complexes");
     Ok(serde_json::json!({"complexes": c, "exercises": e}))
+}
+
+#[tauri::command]
+fn exercises_recent(st: State<'_, AppState>) -> Result<Vec<String>, String> {
+    with_db(&st, |c| Ok(activity_svc::recent_exercises(c)))
 }
 
 #[tauri::command]
@@ -1192,6 +1198,7 @@ pub fn run() {
             activity_update,
             strength_sets_save,
             ofp_save,
+            exercises_recent,
             ofp_last,
             complexes_get,
             manual_state,

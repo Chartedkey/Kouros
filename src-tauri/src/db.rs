@@ -396,6 +396,10 @@ const MIGRATIONS: &[&str] = &[
     DELETE FROM activity_metrics WHERE activity_id IN (SELECT id FROM activities WHERE sport IN ('elliptical', 'stepper'));
     DELETE FROM muscle_cache WHERE activity_id IN (SELECT id FROM activities WHERE sport IN ('elliptical', 'stepper'));
     "#,
+    // v22: a one-sided set done on one side only (1.4.3) — NULL = both sides as the exercise says
+    r#"
+    ALTER TABLE strength_sets ADD COLUMN sides INTEGER;
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {

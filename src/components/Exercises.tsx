@@ -97,7 +97,7 @@ export function ExerciseCard({ ex, bodyKg, onClose }: { ex: ExerciseItem; bodyKg
           {ex.bw != null && <span><span className="muted">Свой вес:</span> работает ≈{Math.round(ex.bw * 100)}% веса тела{bodyKg ? ` — ≈${Math.round(ex.bw * bodyKg)} кг при твоих ${String(bodyKg).replace('.', ',')} кг` : ''}.</span>}
           {ex.st && <span className="muted">Статическое упражнение: важно время под нагрузкой, а не килограммы.</span>}
         </div>
-        {ex.leg && <span className="muted small">Делается на каждую ногу (сторону): повторы считаются на одну ногу.</span>}
+        {(ex.leg || ex.side) && <span className="muted small">Делается {ex.side === 'arm' ? 'на каждую руку' : ex.side === 'leg' ? 'на каждую ногу' : 'на каждую сторону'}: повторы пишутся на одну сторону, тоннаж и нагрузка считаются за обе.</span>}
         <span className="muted tiny">{ex.own ? 'Твоё упражнение.' : ex.id.startsWith('k_') ? (ex.img ? 'Рисунок и описание — Kouros.' : 'Описание — Kouros.') : ex.img ? 'Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.' : 'Описание — Kouros.'}</span>
       </div>
     </div>

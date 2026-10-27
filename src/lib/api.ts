@@ -307,6 +307,7 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     }
     case 'activity_get': return demoDetail(String(args.id));
     case 'activity_update': case 'strength_sets_save': case 'shoes_set': return null;
+    case 'exercises_recent': return ['Pushups', 'Bodyweight_Squat'];
     case 'ofp_save': demo.ofp[String(args.id)] = args.blocks as OfpBlock[]; return null;
     case 'ofp_last': return { 'x_demo1': { date: '2026-10-20', block: { cid: 'x_demo1', name: 'Пример: колени', rounds: 3, items: [
       { exId: 'Bodyweight_Squat', name: 'Приседания без веса', reps: 15, sec: null, leg: false, load: { kind: 'none' }, skip: false },
@@ -794,12 +795,16 @@ export type SetRow = {
   kind: 'active' | 'rest' | 'skip'; exercise: string | null; category?: number | null;
   /** 0.22: exercise from the library, bands used, effective load of one repetition (kg). */
   exId?: string | null; band?: { ids: string[]; mode: 'add' | 'assist' } | null; effKg?: number | null;
+  /** 1.4.3: 1 = a one-sided exercise done on one side only. */
+  sides?: number | null;
 };
 export type ExerciseItem = {
   id: string; ru: string; en: string; syn: string[]; tip: string; cat: string | null; eq: string | null; lvl: string | null;
   mech: string | null; force: string | null; p: string[]; s: string[]; bw: number | null; st: boolean; img: number;
   /** 1.4: done on each leg / side (reps are per leg); `own` = your own exercise. */
   leg?: boolean; own?: boolean;
+  /** 1.4.3: one-sided — reps are for one side: arm / leg / side. */
+  side?: 'arm' | 'leg' | 'side';
 };
 export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[]; runnerOfp?: string[]; bandList?: string[] };
 /** 1.4: «ОФП и комплексы» — a block is a complex or one exercise; it is saved as ordinary sets. */
@@ -1013,6 +1018,7 @@ export const api = {
   activityUpdate: (id: string, rpe: number | null, notes: string | null) => call<null>('activity_update', { id, rpe, notes }),
   strengthSetsSave: (id: string, sets: SetRow[]) => call<null>('strength_sets_save', { id, sets }),
   ofpSave: (id: string, blocks: OfpBlock[]) => call<null>('ofp_save', { id, blocks }),
+  exercisesRecent: () => call<string[]>('exercises_recent'),
   ofpLast: (id: string) => call<OfpLast>('ofp_last', { id }),
   manualState: () => call<ManualState>('manual_state'),
   manualSave: (date: string, values: { hrv?: number | null; resp?: number | null; spo2?: number | null; kind?: string }) => call<null>('manual_save', { date, values }),

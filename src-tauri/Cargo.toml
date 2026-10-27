@@ -1,6 +1,6 @@
 [package]
 name = "kouros"
-version = "1.4.2"
+version = "1.4.3"
 description = "Kouros — личное приложение для спорта и здоровья"
 edition = "2021"
 

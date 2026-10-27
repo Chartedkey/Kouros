@@ -4,6 +4,7 @@ import {
   type ActivityDetail, type ActivityPage, type ActivityStats, type EngineSummary, type ListFilter, type Shoe, type ShoeRun, type Split, type TrainingOverview, type ResBand, type ExerciseItem,
 } from '../lib/api';
 import { SportIcon, sportKey } from '../components/SportIcon';
+import { SportTiles } from '../components/SportTiles';
 import { useDataChanged } from '../lib/events';
 import { SpecEditor } from '../components/Shoes';
 import { EQUIP, ExerciseCard, MUSCLE, bandKg, searchExercises, useExerciseLib } from '../components/Exercises';
@@ -240,14 +241,11 @@ function Overview({ s, o, reloadO, onOpen, onAll, onImport }: { s: EngineSummary
                   </span>
                 </span>
               </button>
-              <div className="tiles4">
-                <div className="tile"><span className="num tile-v2">{fmtKm(la.distanceM, 2)}</span><span className="muted tiny">дистанция</span></div>
-                <div className="tile"><span className="num tile-v2">{fmtDur(moving)}</span><span className="muted tiny">в движении</span></div>
-                <div className="tile"><span className="num tile-v2">{la.distanceM && moving ? fmtPace(moving / (la.distanceM / 1000)) : '—'}</span><span className="muted tiny">темп, /км</span></div>
-                <div className="tile"><span className="num tile-v2">{la.avgHr ? Math.round(la.avgHr) : '—'} / {la.maxHr ? Math.round(la.maxHr) : '—'}</span><span className="muted tiny">пульс ср / макс</span></div>
-              </div>
+              <SportTiles a={la} x={last ? { weightLiftedKg: last.weightLiftedKg, setsCount: last.sets.filter((r) => r.kind === 'active').length || null } : null} small />
               {last && last.splits.length > 1 && s && <HrBars splits={last.splits} zones={s.profile.zones} />}
-              {last && last.sets.length > 0 && <span className="muted small">{plural(last.sets.filter((x) => x.kind === 'active').length, 'подход', 'подхода', 'подходов')} — открой разбор, чтобы вписать упражнения и веса.</span>}
+              {last && ['strength', 'workout'].includes(la.sport) && !last.sets.some((x) => x.kind === 'active' && x.exercise) && (
+                <span className="small muted">Упражнения не внесены — <button type="button" className="linkbtn small" onClick={() => onOpen(la.id)}>внеси подходы</button>, и Kouros посчитает тоннаж и мышцы.</span>
+              )}
             </>
           ) : <span className="muted">Загружаю…</span>}
         </section>

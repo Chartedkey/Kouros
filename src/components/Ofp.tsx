@@ -10,6 +10,7 @@ import {
   type ActivityDetail, type Complex, type CustomExercise, type ExerciseItem, type ExerciseLibrary, type OfpBlock, type OfpItem, type OfpLast, type ResBand,
 } from '../lib/api';
 import { ExerciseCard, ExerciseInput, MUSCLE, refreshExerciseLib, useExerciseLib } from './Exercises';
+import { BandButton, ExercisePicker } from './Strength';
 import { useBackendEvent } from '../lib/events';
 
 const ruDay = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
@@ -26,7 +27,7 @@ export const PAIN_AREAS: [string, string][] = [
 ];
 
 function itemOf(ex: ExerciseItem | undefined, exId: string | null, name: string | null, leg?: boolean | null): OfpItem {
-  return { exId, name: ex?.ru ?? name, reps: null, sec: null, leg: leg ?? ex?.leg ?? false, load: { kind: 'none' }, skip: false };
+  return { exId, name: ex?.ru ?? name, reps: null, sec: null, leg: leg ?? (ex?.leg || !!ex?.side), load: { kind: 'none' }, skip: false };
 }
 const timed = (it: OfpItem, ex: ExerciseItem | undefined) => it.sec != null || (it.reps == null && !!ex?.st);
 
@@ -48,27 +49,14 @@ function LoadPick({ it, bands, onChange }: { it: OfpItem; bands: ResBand[]; onCh
     <span className="row" style={{ gap: 4, flexWrap: 'wrap' }}>
       <span className="row" role="group" aria-label="Утяжеление" style={{ gap: 4 }}>
         <button type="button" className="pill sm" aria-pressed={k === 'none'} onClick={() => onChange({ load: { kind: 'none' } })}>без</button>
-        <button type="button" className="pill sm" aria-pressed={k === 'band'} onClick={() => onChange({ load: { kind: 'band', band: it.load.band ?? { ids: bands[0] ? [bands[0].id] : [], mode: 'add' } } })}>резина</button>
+        {k !== 'band' && <button type="button" className="pill sm" onClick={() => onChange({ load: { kind: 'band', band: it.load.band ?? { ids: bands[0] ? [bands[0].id] : [], mode: 'add' } } })}>резина</button>}
         <button type="button" className="pill sm" aria-pressed={k === 'kg'} onClick={() => onChange({ load: { kind: 'kg', kg: it.load.kg ?? null } })}>вес</button>
       </span>
       {k === 'kg' && (
         <input className="input sm" style={{ width: 64 }} inputMode="decimal" aria-label="Вес, кг" placeholder="кг" value={it.load.kg ?? ''}
           onChange={(e) => onChange({ load: { kind: 'kg', kg: num(e.target.value) } })} />
       )}
-      {k === 'band' && (bands.length === 0
-        ? <span className="muted tiny">резины добавь в «Инвентарь»</span>
-        : bands.map((b) => {
-          const on = it.load.band?.ids.includes(b.id) ?? false;
-          return (
-            <button key={b.id} type="button" className="pill sm" aria-pressed={on} title={`${b.lo}–${b.hi} ${b.unit === 'lb' ? 'lb' : 'кг'}`}
-              onClick={() => {
-                const ids = on ? (it.load.band?.ids ?? []).filter((x) => x !== b.id) : [...(it.load.band?.ids ?? []), b.id];
-                onChange({ load: { kind: 'band', band: { ids, mode: it.load.band?.mode ?? 'add' } } });
-              }}>
-              <span className="dot" style={{ background: b.color || '#9AA3AE', marginRight: 5 }} />{b.name || 'Резина'}
-            </button>
-          );
-        }))}
+      {k === 'band' && <BandButton value={it.load.band} bands={bands} onChange={(v) => onChange({ load: v ? { kind: 'band', band: v } : { kind: 'none' } })} />}
     </span>
   );
 }
@@ -113,7 +101,7 @@ function BlockEditor({ b, lib, bands, last, bodyKg, onChange, onRemove }: {
                 <span className="muted tiny num" style={{ width: 16 }}>{i + 1}</span>
                 {ex ? <button type="button" className="linkbtn small ellipsis" style={{ textAlign: 'left' }} title="Как выполнять" onClick={() => setInfo(ex)}>{it.name}</button>
                   : <span className="small ellipsis">{it.name}</span>}
-                {it.leg && <span className="tag tiny">на ногу</span>}
+                {it.leg && <span className="tag tiny">{ex?.side === 'arm' ? 'на руку' : ex?.side === 'side' ? 'на сторону' : 'на ногу'}</span>}
               </span>
               {!it.skip && (
                 <span className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
@@ -139,19 +127,12 @@ function BlockEditor({ b, lib, bands, last, bodyKg, onChange, onRemove }: {
 /** Picker of a complex or a single exercise. */
 function AddBlock({ lib, complexes, onAdd }: { lib: ExerciseLibrary | null; complexes: Complex[]; onAdd: (b: OfpBlock) => void }) {
   const [mode, setMode] = useState<'none' | 'cx' | 'ex'>('none');
-  const runner = useMemo(() => (lib?.runnerOfp ?? []).map((id) => lib?.items.find((x) => x.id === id)).filter((x): x is ExerciseItem => !!x), [lib]);
-  const banded = useMemo(() => (lib?.bandList ?? []).map((id) => lib?.items.find((x) => x.id === id)).filter((x): x is ExerciseItem => !!x), [lib]);
   const exOf = (id: string) => lib?.items.find((x) => x.id === id);
-  const addEx = (ex: ExerciseItem | undefined, id: string | null, name: string | null) => {
-    if (!name) return;
-    onAdd({ cid: null, name: ex?.ru ?? name, rounds: 0, items: [itemOf(ex, id, name)] });
-    setMode('none');
-  };
   return (
     <div className="stack" style={{ gap: 8 }}>
       <div className="row" style={{ gap: 8 }}>
         <button type="button" className="btn2" aria-pressed={mode === 'cx'} onClick={() => setMode(mode === 'cx' ? 'none' : 'cx')}>+ Комплекс</button>
-        <button type="button" className="btn2" aria-pressed={mode === 'ex'} onClick={() => setMode(mode === 'ex' ? 'none' : 'ex')}>+ Упражнение</button>
+        <button type="button" className="btn2" onClick={() => setMode('ex')}>+ ОФП для бега</button>
       </div>
       {mode === 'cx' && (
         complexes.length === 0
@@ -168,25 +149,10 @@ function AddBlock({ lib, complexes, onAdd }: { lib: ExerciseLibrary | null; comp
           )
       )}
       {mode === 'ex' && (
-        <div className="stack" style={{ gap: 8 }}>
-          <ExerciseInput value={null} own={[]} lib={lib} onPick={(name, id) => addEx(id ? exOf(id) : undefined, id, name)} onInfo={() => {}} />
-          {runner.length > 0 && (
-            <>
-              <span className="muted tiny">ОФП для бегунов:</span>
-              <div className="row" style={{ gap: 6 }}>
-                {runner.map((x) => <button key={x.id} type="button" className="pill sm" onClick={() => addEx(x, x.id, x.ru)}>{x.ru}</button>)}
-              </div>
-            </>
-          )}
-          {banded.length > 0 && (
-            <>
-              <span className="muted tiny">Упражнения с резиной:</span>
-              <div className="row" style={{ gap: 6 }}>
-                {banded.map((x) => <button key={x.id} type="button" className="pill sm" onClick={() => addEx(x, x.id, x.ru)}>{x.ru}</button>)}
-              </div>
-            </>
-          )}
-        </div>
+        <ExercisePicker lib={lib} mode="ofp" onClose={() => setMode('none')} onPick={(ex, name) => {
+          onAdd({ cid: null, name: ex?.ru ?? name, rounds: 0, items: [itemOf(ex ?? undefined, ex?.id ?? null, ex?.ru ?? name, ex ? !!ex.side : false)] });
+          setMode('none');
+        }} />
       )}
     </div>
   );

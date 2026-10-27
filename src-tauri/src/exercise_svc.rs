@@ -33,8 +33,46 @@ fn lib() -> &'static Value {
         if let (Some(items), Some(more)) = (v["items"].as_array_mut(), extra()["items"].as_array()) {
             items.extend(more.iter().cloned());
         }
+        if let Some(items) = v["items"].as_array_mut() {
+            for x in items.iter_mut() {
+                if let Some(s) = side_of(x) {
+                    x["side"] = json!(s);
+                }
+            }
+        }
         v
     })
+}
+
+/// 1.4.3: one-sided exercise («на каждую руку / ногу»): reps are entered for one side and the
+/// work counts for both. From the own flag `leg` or the English name; "arm" / "leg" / "side".
+pub fn side_of(x: &Value) -> Option<&'static str> {
+    let en = x["en"].as_str().unwrap_or("").to_lowercase();
+    const SKIP: [&str; 6] = ["heel touchers", "oblique twists", "diagonal bound", "with external rotation", "push up to side plank", "tricep dumbbell kickback"];
+    let by_name = !SKIP.iter().any(|s| en.contains(s))
+        && ["one-arm", "one arm", "single-arm", "single arm", "one-legged", "one legged", "single-leg", "single leg", "one leg", "alternat", "unilateral",
+            "pistol", "lunge", "split squat", "step up", "step-up", "external rotation", "internal rotation", "concentration curl", "side bridge",
+            "glute kickback", "cable kickback", "leg raises"]
+            .iter()
+            .any(|p| en.contains(p));
+    if !(x["leg"].as_bool() == Some(true) || by_name) {
+        return None;
+    }
+    let p: Vec<&str> = x["p"].as_array().map(|a| a.iter().filter_map(|y| y.as_str()).collect()).unwrap_or_default();
+    let legs = ["quadriceps", "hamstrings", "glutes", "calves", "adductors", "abductors"];
+    let arms = ["shoulders", "biceps", "triceps", "forearms", "chest", "lats", "middle back", "traps", "neck"];
+    if p.iter().any(|m| legs.contains(m)) || en.contains("leg") || en.contains("lunge") || en.contains("squat") || en.contains("step") {
+        Some("leg")
+    } else if p.iter().any(|m| arms.contains(m)) || en.contains("arm") {
+        Some("arm")
+    } else {
+        Some("side")
+    }
+}
+
+/// Is this exercise one-sided (by id: library, own or custom)?
+pub fn one_sided(id: &str) -> bool {
+    by_id(id).map(|x| x["side"].is_string() || side_of(&x).is_some()).unwrap_or(false)
 }
 
 /// Your own exercises (1.4, settings `custom_exercises`), kept in memory for the muscle load.
@@ -71,7 +109,12 @@ pub fn by_id(id: &str) -> Option<Value> {
 /// runner's ОФП list (1.4).
 pub fn list() -> Value {
     let mut items = lib()["items"].as_array().cloned().unwrap_or_default();
-    items.extend(custom_snapshot());
+    items.extend(custom_snapshot().into_iter().map(|mut x| {
+        if let Some(s) = side_of(&x) {
+            x["side"] = json!(s);
+        }
+        x
+    }));
     json!({"source": lib()["source"], "version": lib()["version"], "items": items, "runnerOfp": extra()["runnerOfp"], "bandList": extra()["bandList"]})
 }
 

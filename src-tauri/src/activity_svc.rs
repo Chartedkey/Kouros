@@ -89,7 +89,7 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
 
     let mut st = conn
         .prepare(
-            "SELECT idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg FROM strength_sets
+            "SELECT idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg, sides FROM strength_sets
              WHERE activity_id = ?1 AND cx IS NULL ORDER BY idx",
         )
         .map_err(err)?;
@@ -102,6 +102,7 @@ pub fn detail(conn: &Connection, id: &str) -> Result<Value, String> {
                 "exId": r.get::<_, Option<String>>(8)?,
                 "band": r.get::<_, Option<String>>(9)?.and_then(|t| serde_json::from_str::<Value>(&t).ok()),
                 "effKg": r.get::<_, Option<f64>>(10)?,
+                "sides": r.get::<_, Option<i64>>(11)?,
             }))
         })
         .map_err(err)?
@@ -176,24 +177,57 @@ fn insert_set(tx: &rusqlite::Transaction, id: &str, idx: i64, s: &Value, cx: Opt
         tx.execute("INSERT OR IGNORE INTO exercises (name, source) VALUES (?1, 'manual')", params![name]).map_err(err)?;
     }
     tx.execute(
-        "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg, cx)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
-        params![id, idx, s["startUtc"].as_i64(), s["durationS"].as_f64(), reps, w, kind, ex, s["category"].as_i64(), ex_id, band, eff, cx],
+        "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg, cx, sides)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+        params![id, idx, s["startUtc"].as_i64(), s["durationS"].as_f64(), reps, w, kind, ex, s["category"].as_i64(), ex_id, band, eff, cx, s["sides"].as_i64().filter(|x| *x == 1)],
     )
     .map_err(err)?;
     Ok(())
 }
 
+/// 1.4.3: one-sided sets count both sides — the stored totals of older workouts are counted
+/// again once.
+pub fn recount_once(conn: &mut Connection) {
+    if db::get_setting(conn, "recount_sides").is_some() {
+        return;
+    }
+    let ids: Vec<String> = conn
+        .prepare("SELECT DISTINCT activity_id FROM strength_sets")
+        .and_then(|mut st| st.query_map([], |r| r.get::<_, String>(0)).map(|r| r.flatten().collect()))
+        .unwrap_or_default();
+    if let Ok(tx) = conn.transaction() {
+        for id in &ids {
+            let _ = recount(&tx, id);
+        }
+        let _ = tx.commit();
+    }
+    let _ = db::set_setting(conn, "recount_sides", "1");
+}
+
+/// How many sides a set's reps stand for (1.4.3): one-sided exercises count both sides unless
+/// the set says «только одна сторона».
+pub fn side_factor(ex_id: Option<&str>, cx_leg: bool, sides: Option<i64>) -> f64 {
+    let one_sided = cx_leg || ex_id.map(crate::exercise_svc::one_sided).unwrap_or(false);
+    if one_sided && sides != Some(1) { 2.0 } else { 1.0 }
+}
+
 /// Sets, reps and tonnage of the workout from all its rows (ordinary sets and ОФП blocks).
 fn recount(tx: &rusqlite::Transaction, id: &str) -> Result<(), String> {
-    let (n_sets, n_reps, lifted): (i64, i64, f64) = tx
-        .query_row(
-            "SELECT count(*), COALESCE(sum(reps), 0), COALESCE(sum(COALESCE(eff_kg, weight_kg, 0) * COALESCE(reps, 0)), 0)
-             FROM strength_sets WHERE activity_id = ?1 AND COALESCE(kind, 'active') = 'active'",
-            params![id],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
-        )
-        .map_err(err)?;
+    let rows: Vec<(Option<i64>, Option<f64>, Option<String>, Option<String>, Option<i64>)> = {
+        let mut st = tx
+            .prepare("SELECT reps, COALESCE(eff_kg, weight_kg), ex_id, cx, sides FROM strength_sets WHERE activity_id = ?1 AND COALESCE(kind, 'active') = 'active'")
+            .map_err(err)?;
+        let v = st.query_map(params![id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))).map_err(err)?.flatten().collect();
+        v
+    };
+    let (mut n_sets, mut n_reps, mut lifted) = (0i64, 0i64, 0.0f64);
+    for (reps, kg, ex, cx, sides) in &rows {
+        let leg = cx.as_deref().and_then(|t| serde_json::from_str::<Value>(t).ok()).map(|c| c["leg"].as_bool() == Some(true)).unwrap_or(false);
+        let f = side_factor(ex.as_deref(), leg, *sides);
+        n_sets += 1;
+        n_reps += (reps.unwrap_or(0) as f64 * f) as i64;
+        lifted += kg.unwrap_or(0.0) * reps.unwrap_or(0) as f64 * f;
+    }
     tx.execute(
         "UPDATE activities SET total_sets = ?2, total_reps = ?3, weight_lifted_kg = ?4, updated_at = datetime('now') WHERE id = ?1",
         params![id, if n_sets > 0 { Some(n_sets) } else { None }, if n_sets > 0 { Some(n_reps) } else { None }, if lifted > 0.0 { Some(lifted) } else { None }],
@@ -333,6 +367,18 @@ pub fn ofp_last(conn: &Connection, id: &str) -> Value {
         out.entry(key).or_insert_with(|| json!({"date": crate::parse::time::ymd(st, tz), "block": b}));
     }
     Value::Object(out)
+}
+
+/// 1.4.3: exercises of your latest workouts (newest first), for «Недавние» in the picker.
+pub fn recent_exercises(conn: &Connection) -> Vec<String> {
+    let Ok(mut st) = conn.prepare(
+        "SELECT s.ex_id, max(a.start_utc) AS t FROM strength_sets s JOIN va a ON a.id = s.activity_id
+         WHERE s.ex_id IS NOT NULL AND COALESCE(s.kind, 'active') = 'active' GROUP BY s.ex_id ORDER BY t DESC LIMIT 16",
+    ) else {
+        return Vec::new();
+    };
+    let v = st.query_map([], |r| r.get::<_, String>(0)).map(|r| r.flatten().collect()).unwrap_or_default();
+    v
 }
 
 pub fn exercises(conn: &Connection) -> Vec<String> {
