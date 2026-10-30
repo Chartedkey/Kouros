@@ -1,0 +1,19 @@
+{
+  "identifier": "app.kouros",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Kouros"
+      }
+    ]
+  },
+  "bundle": {
+    "android": {
+      "minSdkVersion": 28
+    }
+  },
+  "plugins": {
+    "updater": null
+  }
+}

@@ -62,9 +62,20 @@ pub struct AppState {
 
 const SUBDIRS: [&str; 3] = ["files", "backups", "exports"];
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 fn data_root(app: &AppHandle) -> Result<PathBuf, String> {
     let home = app.path().home_dir().map_err(|e| e.to_string())?;
     Ok(home.join("Kouros"))
+}
+
+/// 2.0, the phone: the app's private folder (no other app can read it); secrets sit beside the
+/// data folder, not inside it, so a backup or export of the data never carries them.
+#[cfg(any(target_os = "android", target_os = "ios"))]
+fn data_root(app: &AppHandle) -> Result<PathBuf, String> {
+    let base = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let _ = std::fs::create_dir_all(&base);
+    secrets::set_dir(base.clone());
+    Ok(base.join("Kouros"))
 }
 
 fn init(app: &AppHandle) {
@@ -1146,12 +1157,14 @@ fn health_setting_set(key: String, value: serde_json::Value, st: State<'_, AppSt
     with_db(&st, |c| health_svc::set(c, &key, &value))
 }
 
+#[cfg_attr(any(target_os = "android", target_os = "ios"), tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_process::init())
+    let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init()).plugin(tauri_plugin_dialog::init());
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build()).plugin(tauri_plugin_process::init());
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    let builder = builder.plugin(tauri_plugin_biometric::init());
+    builder
         .manage(AppState::default())
         .register_asynchronous_uri_scheme_protocol("kmap", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
@@ -1163,6 +1176,7 @@ pub fn run() {
         .setup(|app| {
             init(app.handle());
             sync::start_background(app.handle().clone());
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             hae::start(app.handle().clone());
             Ok(())
         })
