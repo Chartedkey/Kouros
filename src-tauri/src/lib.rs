@@ -153,6 +153,29 @@ struct Status {
     unlocked: bool,
 }
 
+/// 2.0, the phone: is there a newer APK on GitHub? (The computer uses the signed auto-updater.)
+/// Returns {version, notes, url} or null. Only the public release list is read — nothing is sent.
+#[tauri::command]
+async fn mobile_update_check(app: AppHandle) -> Result<Option<serde_json::Value>, String> {
+    let cur = app.package_info().version.to_string();
+    let client = reqwest::Client::builder().user_agent("Kouros").build().map_err(|e| e.to_string())?;
+    let v: serde_json::Value = client
+        .get("https://api.github.com/repos/Chartedkey/Kouros/releases/latest")
+        .send()
+        .await
+        .map_err(|e| format!("GitHub недоступен: {e}"))?
+        .json()
+        .await
+        .map_err(|e| e.to_string())?;
+    let tag = v["tag_name"].as_str().unwrap_or("").trim_start_matches('v').to_string();
+    let num = |s: &str| -> Vec<u64> { s.split('.').map(|x| x.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse().unwrap_or(0)).collect() };
+    if tag.is_empty() || num(&tag) <= num(&cur) {
+        return Ok(None);
+    }
+    let url = v["assets"].as_array().and_then(|a| a.iter().find(|x| x["name"].as_str().map(|n| n.ends_with("_android.apk")).unwrap_or(false))).and_then(|x| x["browser_download_url"].as_str());
+    Ok(url.map(|u| serde_json::json!({"version": tag, "notes": v["body"].as_str().unwrap_or(""), "url": u})))
+}
+
 #[tauri::command]
 async fn app_status(app: AppHandle, st: State<'_, AppState>) -> Result<Status, String> {
     let hello = hello::availability();
@@ -1182,6 +1205,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             app_status,
+            mobile_update_check,
             unlock,
             set_lock_enabled,
             secret_status,

@@ -1,9 +1,9 @@
 import { Logo } from './Logo';
 import { useBoard } from './BoardEditor';
 
-export type Tab = 'today' | 'training' | 'health' | 'nutrition' | 'psychology' | 'coach' | 'settings' | 'help';
+export type Tab = 'today' | 'training' | 'health' | 'nutrition' | 'psychology' | 'coach' | 'settings' | 'help' | 'more';
 
-export const TABS: { id: Exclude<Tab, 'settings' | 'help'>; name: string }[] = [
+export const TABS: { id: Exclude<Tab, 'settings' | 'help' | 'more'>; name: string }[] = [
   { id: 'today', name: 'Сегодня' },
   { id: 'training', name: 'Тренировки' },
   { id: 'health', name: 'Здоровье' },
@@ -17,8 +17,25 @@ function today(): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function Header({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
+/** 2.0, the phone: logo, date and the profile button; sections are in the bottom menu. */
+function CompactHeader({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
+  return (
+    <header className="header header-c">
+      <button type="button" className="brand" onClick={() => onTab('today')} aria-label="Kouros — на главную">
+        <Logo />
+        <span className="stack" style={{ gap: 0, alignItems: 'flex-start' }}>
+          <span className="wordmark" style={{ fontSize: 15 }}>KOUROS</span>
+          <span className="muted tiny">{today()}</span>
+        </span>
+      </button>
+      <button type="button" className="avatar" aria-label="Настройки и профиль" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => onTab('settings')}>Д</button>
+    </header>
+  );
+}
+
+export function Header({ tab, onTab, compact }: { tab: Tab; onTab: (t: Tab) => void; compact?: boolean }) {
   const b = useBoard();
+  if (compact) return <CompactHeader tab={tab} onTab={onTab} />;
   return (
     <header className="header">
       <button type="button" className="brand" onClick={() => onTab('today')} aria-label="Kouros — на главную">

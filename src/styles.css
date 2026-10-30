@@ -452,3 +452,46 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 /* 1.4.4 band per set */
 .pill.band-mini { padding: 3px 8px; font-size: 12px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .setr-act .band-pop { left: auto; right: 0; }
+
+/* ---------- 2.0: phone / narrow layout (html.compact, set by lib/platform.ts) ---------- */
+.bnav { display: none; }
+html.compact .app { padding: 0 12px calc(92px + env(safe-area-inset-bottom)); }
+html.compact .wrap { gap: 14px; }
+html.compact .header-c { flex-wrap: nowrap; padding: calc(12px + env(safe-area-inset-top)) 0 0; }
+html.compact .header-c .wordmark { letter-spacing: .14em; }
+html.compact h1 { font-size: 22px; }
+html.compact .card { padding: 14px; border-radius: 20px; }
+html.compact .footer { display: none; }
+html.compact .bnav {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: #101317; border-top: 1px solid var(--line); padding: 6px 4px calc(8px + env(safe-area-inset-bottom));
+}
+html.compact .bnav button {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px;
+  background: none; border: 0; color: var(--muted); font: inherit; font-size: 11px; cursor: pointer; padding: 0 2px;
+}
+html.compact .bnav button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.compact .bnav button[aria-current='page'] { color: var(--text); font-weight: 700; }
+html.compact .bnav button[aria-current='page'] svg { stroke: var(--green); }
+/* «Сегодня»: three rings in a row, the details stay one tap away */
+html.compact .rings { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+html.compact .ring-card { flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 12px 6px; }
+html.compact .ring-card > div:first-child { width: 92px !important; height: 92px !important; }
+html.compact .ring-card > div:first-child svg { width: 92px; height: 92px; }
+html.compact .ring-card > div:first-child .num { font-size: 21px !important; }
+html.compact .ring-card .stack { align-items: center; gap: 2px; }
+html.compact .ring-card .stack > span:nth-child(2) { font-size: 13px !important; }
+html.compact .ring-card .stack > span:nth-child(n+3) { display: none; }
+html.compact .ring-card .sleepy { font-size: 40px; }
+html.compact .tiles4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html.compact .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+html.compact .subtabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; align-self: stretch; scrollbar-width: none; }
+html.compact .subtabs button { flex: none; height: 40px; padding: 0 14px; }
+/* «Ещё» */
+.more-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.more-slot { min-height: 68px; border-radius: 14px; border: 1px solid var(--green-line); background: var(--green-bg); color: var(--text); font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; padding: 4px; text-align: center; }
+.more-slot:disabled { opacity: .7; cursor: default; }
+.more-list { padding-top: 4px; padding-bottom: 4px; gap: 0; }
+.more-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; background: none; border: 0; border-bottom: 1px solid var(--line); color: var(--text); font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; padding: 0; }
+.more-row:last-child { border-bottom: 0; }
+.more-row span { color: var(--faint); font-size: 20px; }

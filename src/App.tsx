@@ -14,11 +14,15 @@ import { Psychology } from './pages/Psychology';
 import { api, errText, inTauri, type Status } from './lib/api';
 import { scrollToCard, type Go } from './lib/nav';
 import { Help } from './pages/Help';
+import { More } from './pages/More';
+import { BottomNav } from './components/BottomNav';
+import { useCompact } from './lib/platform';
 import { HelpLayer } from './components/HelpLayer';
 import { Tour } from './components/Tour';
 import { HELP_PAGE_EVENT } from './lib/helptips';
 
 export default function App() {
+  const compact = useCompact();
   const [status, setStatus] = useState<Status | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('today');
@@ -70,14 +74,16 @@ export default function App() {
   return (
     <div className="app">
       <div className="wrap" data-page={tab}>
-        <Header tab={tab} onTab={setTab} />
+        <Header tab={tab} onTab={setTab} compact={compact} />
         <UpdateBanner />
         {status.dbError && (
           <div className="note-err" role="alert">
             {status.dbError}
           </div>
         )}
-        {tab === 'help' ? (
+        {tab === 'more' ? (
+          <More onTab={setTab} go={go} />
+        ) : tab === 'help' ? (
           <Help focus={helpFocus} onFocusUsed={() => setHelpFocus(null)} />
         ) : tab === 'settings' ? (
           <Settings status={status} refresh={refresh} goImport={goImport} initialSub={setSub} onSubUsed={() => setSetSub(null)} />
@@ -100,8 +106,9 @@ export default function App() {
         <BoardLayer />
       </div>
       <BoardBar />
+      {compact && <BottomNav tab={tab} onTab={setTab} />}
       <HelpLayer />
-      <Tour go={go} tab={tab} auto={!!status.unlocked} />
+      <Tour go={go} tab={tab} auto={!!status.unlocked && !compact} />
     </div>
   );
 }

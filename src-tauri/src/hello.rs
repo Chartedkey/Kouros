@@ -41,8 +41,10 @@ mod imp {
 mod imp {
     use tauri::WebviewWindow;
 
+    /// 2.0: on the phone the fingerprint / face check runs in the app window (biometric plugin)
+    /// before `unlock`; the lock screen is always shown there.
     pub fn availability() -> &'static str {
-        "unavailable"
+        if cfg!(any(target_os = "android", target_os = "ios")) { "available" } else { "unavailable" }
     }
 
     pub fn verify(_window: &WebviewWindow, _message: &str) -> Result<bool, String> {

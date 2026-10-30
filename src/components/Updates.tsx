@@ -2,6 +2,7 @@
 // release description and installs it with one button (signed — the app checks the signature).
 import { useEffect, useState } from 'react';
 import { errText } from '../lib/api';
+import { isPhone } from '../lib/platform';
 
 const inApp = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in (window as object);
 const LAST = 'kouros_update_checked';
@@ -19,6 +20,21 @@ export function setAutoCheck(on: boolean) {
 /** null = no newer version. */
 export async function checkUpdate(): Promise<Found | null> {
   if (!inApp()) return null;
+  if (isPhone()) {
+    // 2.0: the phone has no signed auto-updater — the new APK opens in the browser to download,
+    // then Android installs it over the old one (same signing key, data stays).
+    const { invoke } = await import('@tauri-apps/api/core');
+    const r = await invoke<{ version: string; notes: string; url: string } | null>('mobile_update_check');
+    if (!r) return null;
+    return {
+      version: r.version,
+      notes: r.notes,
+      install: async (onProgress) => {
+        onProgress(null);
+        await invoke('open_link', { url: r.url });
+      },
+    };
+  }
   const { check } = await import('@tauri-apps/plugin-updater');
   const u = await check();
   if (!u) return null;
@@ -68,12 +84,14 @@ function UpdateCard({ u, onLater }: { u: Found; onLater?: () => void }) {
           {u.notes && <button type="button" className="linkbtn small" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Скрыть' : 'Что нового'}</button>}
           {onLater && pct === undefined && <button type="button" className="btn2" onClick={onLater}>Позже</button>}
           <button type="button" className="btn" disabled={pct !== undefined} onClick={go}>
-            {pct === undefined ? 'Обновить' : pct === null ? 'Скачиваю…' : `Скачиваю ${pct}%`}
+            {pct === undefined ? 'Обновить' : pct === null ? (isPhone() ? 'Открываю…' : 'Скачиваю…') : `Скачиваю ${pct}%`}
           </button>
         </span>
       </div>
       {open && <Notes text={u.notes} />}
-      <span className="muted tiny" style={{ lineHeight: 1.5 }}>Данные не трогаются: обновится только программа, после установки Kouros перезапустится сам.</span>
+      <span className="muted tiny" style={{ lineHeight: 1.5 }}>{isPhone()
+        ? 'Откроется скачивание нового APK. Открой файл — Android поставит его поверх, данные сохранятся.'
+        : 'Данные не трогаются: обновится только программа, после установки Kouros перезапустится сам.'}</span>
       {err && <div className="note-err">Не получилось обновить: {err}. Можно скачать установщик вручную со страницы Releases.</div>}
     </section>
   );
