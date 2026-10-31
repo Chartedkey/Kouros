@@ -456,7 +456,6 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 /* ---------- 2.0: phone / narrow layout (html.compact, set by lib/platform.ts) ---------- */
 .bnav { display: none; }
 html.compact .app { padding: 0 12px calc(92px + env(safe-area-inset-bottom)); }
-html.compact .wrap { gap: 14px; }
 html.compact .header-c { flex-wrap: nowrap; padding: calc(12px + env(safe-area-inset-top)) 0 0; }
 html.compact .header-c .wordmark { letter-spacing: .14em; }
 html.compact h1 { font-size: 22px; }
@@ -478,7 +477,8 @@ html.compact .rings { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px
 html.compact .ring-card { flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 12px 6px; }
 html.compact .ring-card > div:first-child { width: 92px !important; height: 92px !important; }
 html.compact .ring-card > div:first-child svg { width: 92px; height: 92px; }
-html.compact .ring-card > div:first-child .num { font-size: 21px !important; }
+html.compact .ring-card > div:first-child .num { font-size: 19px !important; }
+html.compact .ring-card .label { font-size: 11px; letter-spacing: .04em; }
 html.compact .ring-card .stack { align-items: center; gap: 2px; }
 html.compact .ring-card .stack > span:nth-child(2) { font-size: 13px !important; }
 html.compact .ring-card .stack > span:nth-child(n+3) { display: none; }

@@ -83,9 +83,9 @@ jobs:
 
       - name: Сборка APK
         run: |
-          set -o pipefail
-          npx tauri android build --apk --target aarch64 --ci 2>&1 | tee build.log
-          code=${PIPESTATUS[0]}
+          code=0
+          npx tauri android build --apk --target aarch64 --ci > build.log 2>&1 || code=$?
+          tail -n 200 build.log
           if [ "$code" != "0" ]; then
             # Errors as annotations: the job log is not readable from outside.
             grep -E "error(\[E[0-9]+\])?:|error:|FAILURE|What went wrong|e: |Error " build.log | grep -v "^warning" | head -40 | while IFS= read -r l; do echo "::error::$l"; done
