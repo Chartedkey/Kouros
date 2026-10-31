@@ -38,6 +38,14 @@ jobs:
           yes | "$SDKM" --licenses > /dev/null || true
           "$SDKM" --install "ndk;${NDK_VERSION}" "platforms;android-34" "build-tools;34.0.0" > /dev/null
           echo "NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+          # OpenSSL (for the encrypted database) is built from source and looks for the old
+          # binutils names; the NDK has only the llvm ones.
+          TC="$ANDROID_HOME/ndk/${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          ln -sf "$TC/llvm-ranlib" "$TC/aarch64-linux-android-ranlib"
+          ln -sf "$TC/llvm-ar" "$TC/aarch64-linux-android-ar"
+          echo "$TC" >> "$GITHUB_PATH"
+          echo "RANLIB_aarch64_linux_android=$TC/llvm-ranlib" >> "$GITHUB_ENV"
+          echo "AR_aarch64_linux_android=$TC/llvm-ar" >> "$GITHUB_ENV"
 
       - uses: dtolnay/rust-toolchain@stable
         with:
