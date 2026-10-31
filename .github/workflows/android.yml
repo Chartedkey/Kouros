@@ -82,7 +82,16 @@ jobs:
           fi
 
       - name: Сборка APK
-        run: npx tauri android build --apk --target aarch64 --ci
+        run: |
+          set -o pipefail
+          npx tauri android build --apk --target aarch64 --ci 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" != "0" ]; then
+            # Errors as annotations: the job log is not readable from outside.
+            grep -E "error(\[E[0-9]+\])?:|error:|FAILURE|What went wrong|e: |Error " build.log | grep -v "^warning" | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+            tail -n 25 build.log | while IFS= read -r l; do echo "::warning::$l"; done
+            exit 1
+          fi
 
       - name: Файл APK
         id: apk
