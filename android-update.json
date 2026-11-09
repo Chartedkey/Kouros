@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0-alpha.2",
-  "versionCode": 2000002,
-  "url": "https://raw.githubusercontent.com/Chartedkey/Kouros/671ef5cc01c8d9036aefb24b3389fe7df5d314fa/Kouros_2.0.0-alpha.2_android.apk",
-  "sha256": "3aad37e5435e1b121ff8c1da9e95bd8486b5ea18b4ba2118c058362c6dcd0aa2",
-  "notes": "Автообновление внутри Kouros; исправлено смещение экранов и отображение таблиц на узких экранах. Health Connect пока не подключён."
+  "version": "2.0.0-alpha.3",
+  "versionCode": 2000003,
+  "url": "https://raw.githubusercontent.com/Chartedkey/Kouros/eea011fd6808d957943a2f0deb7e46dfceaddbce/Kouros_2.0.0-alpha.3_android.apk",
+  "sha256": "8d096409e0878fbb7e71fb7405ee5b3d91c873c0058c12e4439176f7ddad2c76",
+  "notes": "Синхронизация Windows и Android по домашнему Wi-Fi. Android открывается без пароля и отпечатка. Фирменная иконка K. Для обмена требуется Kouros 1.6.0 на Windows."
 }
