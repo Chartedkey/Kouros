@@ -1,8 +1,7 @@
 //! Secrets live in the OS credential store (Windows Credential Manager),
 //! never in files next to the data. The UI can save, replace or delete a
 //! secret and ask whether it exists, but never read one back.
-//! 2.0, the phone: Android keeps each app's private folder closed to other apps, and the app is
-//! unlocked with a fingerprint — secrets are a file there (`secrets.json`), outside the data folder.
+//! Android: AES-GCM vault in noBackupFilesDir; encryption key is non-exportable in Android Keystore.
 
 #[allow(dead_code)]
 const SERVICE: &str = "Kouros";
@@ -43,62 +42,38 @@ mod store {
         }
     }
 
-    pub fn set_dir(_dir: std::path::PathBuf) {}
+    pub fn set_dir(_dir: std::path::PathBuf) -> Result<(), String> { Ok(()) }
 }
 
-#[cfg(any(target_os = "android", target_os = "ios"))]
+#[cfg(target_os = "android")]
 mod store {
-    use serde_json::{Map, Value};
-    use std::path::PathBuf;
-    use std::sync::Mutex;
-
-    static DIR: Mutex<Option<PathBuf>> = Mutex::new(None);
-
-    pub fn set_dir(dir: PathBuf) {
-        *DIR.lock().unwrap() = Some(dir);
-    }
-
-    fn path() -> Result<PathBuf, String> {
-        DIR.lock().unwrap().clone().map(|d| d.join("secrets.json")).ok_or_else(|| "Хранилище ключей ещё не готово".to_string())
-    }
-
-    fn load() -> Result<Map<String, Value>, String> {
-        let p = path()?;
-        match std::fs::read_to_string(&p) {
-            Ok(t) => Ok(serde_json::from_str::<Value>(&t).ok().and_then(|v| v.as_object().cloned()).unwrap_or_default()),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Map::new()),
-            Err(e) => Err(format!("Не удалось прочитать ключи: {e}")),
+    pub fn set_dir(dir: std::path::PathBuf) -> Result<(), String> {
+        // Resume-safe migration from the old Android prototype. Never overwrite a conflicting key.
+        let path = dir.join("secrets.json");
+        if !path.exists() { return Ok(()); }
+        let text = std::fs::read_to_string(&path).map_err(|_| "Не удалось прочитать старое хранилище")?;
+        let old: std::collections::BTreeMap<String, String> = serde_json::from_str(&text)
+            .map_err(|_| "Старое хранилище повреждено; данные не сброшены")?;
+        for (name, value) in old {
+            match get(&name)? {
+                Some(current) if current != value => return Err("Конфликт ключей при переносе хранилища".into()),
+                Some(_) => {},
+                None => set(&name, &value)?,
+            }
+            if get(&name)?.as_deref() != Some(&value) { return Err("Не удалось проверить перенос ключа".into()); }
         }
+        std::fs::remove_file(path).map_err(|_| "Ключи перенесены, но старый файл не удалён".into())
     }
-
-    fn save(m: &Map<String, Value>) -> Result<(), String> {
-        let p = path()?;
-        let tmp = p.with_extension("tmp");
-        std::fs::write(&tmp, Value::Object(m.clone()).to_string()).map_err(|e| format!("Не удалось сохранить ключи: {e}"))?;
-        std::fs::rename(&tmp, &p).map_err(|e| format!("Не удалось сохранить ключи: {e}"))
-    }
-
-    pub fn get(name: &str) -> Result<Option<String>, String> {
-        Ok(load()?.get(name).and_then(|v| v.as_str()).map(String::from))
-    }
-
-    pub fn set(name: &str, value: &str) -> Result<(), String> {
-        let mut m = load()?;
-        m.insert(name.to_string(), Value::String(value.to_string()));
-        save(&m)
-    }
-
-    pub fn delete(name: &str) -> Result<(), String> {
-        let mut m = load()?;
-        if m.remove(name).is_some() {
-            save(&m)?;
-        }
-        Ok(())
-    }
+    pub fn get(name: &str) -> Result<Option<String>, String> { crate::mobile::secret("get", name, None) }
+    pub fn set(name: &str, value: &str) -> Result<(), String> { crate::mobile::secret("set", name, Some(value)).map(|_| ()) }
+    pub fn delete(name: &str) -> Result<(), String> { crate::mobile::secret("delete", name, None).map(|_| ()) }
 }
+
+#[cfg(target_os = "ios")]
+compile_error!("iOS secure storage has not been implemented; do not ship the Android adapter on iOS.");
 
 /// Where the phone keeps its secrets (the app's private folder). No-op on the computer.
-pub fn set_dir(dir: std::path::PathBuf) {
+pub fn set_dir(dir: std::path::PathBuf) -> Result<(), String> {
     store::set_dir(dir)
 }
 

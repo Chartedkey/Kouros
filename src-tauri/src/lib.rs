@@ -10,6 +10,7 @@ mod hello;
 mod importer;
 pub mod parse;
 mod secrets;
+mod mobile;
 mod store;
 mod activity_svc;
 mod training_svc;
@@ -74,7 +75,7 @@ fn data_root(app: &AppHandle) -> Result<PathBuf, String> {
 fn data_root(app: &AppHandle) -> Result<PathBuf, String> {
     let base = app.path().app_data_dir().map_err(|e| e.to_string())?;
     let _ = std::fs::create_dir_all(&base);
-    secrets::set_dir(base.clone());
+    secrets::set_dir(base.clone())?;
     Ok(base.join("Kouros"))
 }
 
@@ -106,6 +107,10 @@ fn init(app: &AppHandle) {
     }
 }
 
+#[cfg(target_os = "android")]
+fn lock_enabled(_st: &AppState) -> bool { true }
+
+#[cfg(not(target_os = "android"))]
 fn lock_enabled(st: &AppState) -> bool {
     st.db
         .lock()
@@ -117,6 +122,8 @@ fn lock_enabled(st: &AppState) -> bool {
 }
 
 fn guard(st: &AppState) -> Result<(), String> {
+    #[cfg(target_os = "android")]
+    if !mobile::session_open() { return Err("Сначала войдите в Kouros".into()); }
     if *st.unlocked.lock().unwrap() == Some(true) {
         Ok(())
     } else {
@@ -153,33 +160,63 @@ struct Status {
     unlocked: bool,
 }
 
-/// 2.0, the phone: is there a newer APK on GitHub? (The computer uses the signed auto-updater.)
-/// Returns {version, notes, url} or null. Only the public release list is read — nothing is sent.
+/// Android has its own release channel and numeric versionCode, independent of Windows.
 #[tauri::command]
 async fn mobile_update_check(app: AppHandle) -> Result<Option<serde_json::Value>, String> {
-    let cur = app.package_info().version.to_string();
-    let client = reqwest::Client::builder().user_agent("Kouros").build().map_err(|e| e.to_string())?;
-    let v: serde_json::Value = client
-        .get("https://api.github.com/repos/Chartedkey/Kouros/releases/latest")
-        .send()
-        .await
-        .map_err(|e| format!("GitHub недоступен: {e}"))?
-        .json()
-        .await
-        .map_err(|e| e.to_string())?;
-    let tag = v["tag_name"].as_str().unwrap_or("").trim_start_matches('v').to_string();
-    let num = |s: &str| -> Vec<u64> { s.split('.').map(|x| x.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse().unwrap_or(0)).collect() };
-    if tag.is_empty() || num(&tag) <= num(&cur) {
-        return Ok(None);
+    #[cfg(target_os = "android")]
+    {
+        let current = tauri::async_runtime::spawn_blocking(mobile::version_code).await
+            .map_err(|_| "Не удалось прочитать версию Android".to_string())??;
+        let client = reqwest::Client::builder().user_agent("Kouros").timeout(std::time::Duration::from_secs(30))
+            .build().map_err(|e| e.to_string())?;
+        let response = client.get("https://github.com/Chartedkey/Kouros/releases/download/android/android-update.json")
+            .send().await.map_err(|_| "Не удалось связаться с сервером обновлений")?;
+        if response.status() == reqwest::StatusCode::NOT_FOUND { return Ok(None); }
+        let response = response.error_for_status().map_err(|_| "Сервер обновлений недоступен")?;
+        let bytes = response.bytes().await.map_err(|_| "Не удалось прочитать сведения об обновлении")?;
+        if bytes.len() > 65536 { return Err("Слишком большой ответ сервера обновлений".into()); }
+        let v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|_| "Неверный формат обновления")?;
+        let code = v["versionCode"].as_u64().ok_or("Нет номера сборки Android")?;
+        if code <= current { return Ok(None); }
+        if code > 2_100_000_000 || v["version"].as_str().filter(|s| !s.is_empty()).is_none()
+            || v["url"].as_str().filter(|s| s.starts_with("https://github.com/Chartedkey/Kouros/releases/download/")).is_none() {
+            return Err("Некорректные сведения об Android-обновлении".into());
+        }
+        let _ = app;
+        Ok(Some(v))
     }
-    let url = v["assets"].as_array().and_then(|a| a.iter().find(|x| x["name"].as_str().map(|n| n.ends_with("_android.apk")).unwrap_or(false))).and_then(|x| x["browser_download_url"].as_str());
-    Ok(url.map(|u| serde_json::json!({"version": tag, "notes": v["body"].as_str().unwrap_or(""), "url": u})))
+    #[cfg(not(target_os = "android"))]
+    { let _ = app; Ok(None) }
+}
+
+#[tauri::command]
+async fn mobile_update_install(app: AppHandle, st: State<'_, AppState>) -> Result<(), String> {
+    guard(&st)?;
+    #[cfg(target_os = "android")]
+    {
+        let update = mobile_update_check(app).await?.ok_or("Новой Android-версии нет")?;
+        let url = update["url"].as_str().ok_or("Нет адреса APK")?.to_string();
+        tauri::async_runtime::spawn_blocking(move || mobile::install(&url)).await.map_err(|_| "Не удалось открыть обновление".to_string())?
+    }
+    #[cfg(not(target_os = "android"))]
+    { let _ = app; Err("Доступно только на Android".into()) }
+}
+
+#[tauri::command]
+fn lock_app(st: State<'_, AppState>) -> Result<(), String> {
+    #[cfg(target_os = "android")]
+    mobile::end_session()?;
+    *st.unlocked.lock().unwrap() = Some(false);
+    Ok(())
 }
 
 #[tauri::command]
 async fn app_status(app: AppHandle, st: State<'_, AppState>) -> Result<Status, String> {
     let hello = hello::availability();
     let lock_on = lock_enabled(&st);
+    #[cfg(target_os = "android")]
+    let unlocked = { let open = mobile::session_open(); *st.unlocked.lock().unwrap() = Some(open); open };
+    #[cfg(not(target_os = "android"))]
     let unlocked = {
         let mut u = st.unlocked.lock().unwrap();
         if u.is_none() {
@@ -210,9 +247,13 @@ async fn app_status(app: AppHandle, st: State<'_, AppState>) -> Result<Status, S
 #[tauri::command]
 async fn unlock(window: WebviewWindow, st: State<'_, AppState>) -> Result<bool, String> {
     if *st.unlocked.lock().unwrap() == Some(true) {
+        #[cfg(not(target_os = "android"))]
         return Ok(true);
+        #[cfg(target_os = "android")]
+        if mobile::session_open() { return Ok(true); }
     }
-    let ok = hello::verify(&window, "Вход в Kouros")?;
+    let ok = tauri::async_runtime::spawn_blocking(move || hello::verify(&window, "Вход в Kouros"))
+        .await.map_err(|_| "Не удалось проверить вход".to_string())??;
     if ok {
         *st.unlocked.lock().unwrap() = Some(true);
     }
@@ -226,6 +267,8 @@ async fn set_lock_enabled(
     st: State<'_, AppState>,
 ) -> Result<bool, String> {
     guard(&st)?;
+    #[cfg(target_os = "android")]
+    if !enabled { return Err("На Android вход защищён блокировкой телефона и всегда включён".into()); }
     // Turning protection off must be confirmed by the owner.
     if !enabled && !hello::verify(&window, "Отключить вход по Windows Hello")? {
         return Ok(false);
@@ -1187,6 +1230,8 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build()).plugin(tauri_plugin_process::init());
     #[cfg(any(target_os = "android", target_os = "ios"))]
     let builder = builder.plugin(tauri_plugin_biometric::init());
+    #[cfg(target_os = "android")]
+    let builder = builder.plugin(tauri_plugin_kouros_mobile::init());
     builder
         .manage(AppState::default())
         .register_asynchronous_uri_scheme_protocol("kmap", |ctx, req, responder| {
@@ -1197,6 +1242,8 @@ pub fn run() {
             });
         })
         .setup(|app| {
+            #[cfg(target_os = "android")]
+            mobile::attach(app.handle().clone());
             init(app.handle());
             sync::start_background(app.handle().clone());
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -1206,6 +1253,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_status,
             mobile_update_check,
+            mobile_update_install,
+            lock_app,
             unlock,
             set_lock_enabled,
             secret_status,

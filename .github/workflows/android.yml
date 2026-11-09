@@ -1,12 +1,12 @@
-name: Сборка для Android
+name: Android validation and signed APK
 
 on:
   push:
-    branches: [main, android]
+    branches: [android, android-stage1]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: android-${{ github.ref }}
@@ -20,115 +20,60 @@ jobs:
       NDK_VERSION: 27.2.12479018
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
+          cache: npm
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-
-      - name: Android NDK
+      - name: Android NDK and SDK
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          ls "$ANDROID_HOME/ndk" || true
-          yes | "$SDKM" --licenses > /dev/null || true
-          "$SDKM" --install "ndk;${NDK_VERSION}" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          sdkmanager "ndk;${NDK_VERSION}" "platforms;android-36" "build-tools;35.0.0"
           echo "NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
-          # OpenSSL (for the encrypted database) is built from source and looks for the old
-          # binutils names; the NDK has only the llvm ones.
           TC="$ANDROID_HOME/ndk/${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          ln -sf "$TC/llvm-ranlib" "$TC/aarch64-linux-android-ranlib"
-          ln -sf "$TC/llvm-ar" "$TC/aarch64-linux-android-ar"
           echo "$TC" >> "$GITHUB_PATH"
           echo "RANLIB_aarch64_linux_android=$TC/llvm-ranlib" >> "$GITHUB_ENV"
           echo "AR_aarch64_linux_android=$TC/llvm-ar" >> "$GITHUB_ENV"
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
-
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
           key: android
-
-      - name: Установка зависимостей
-        run: npm install
-
-      # The phone has no auto-updater / restart plugins but has fingerprint unlock.
-      - name: Права приложения для телефона
-        run: |
-          cat > src-tauri/capabilities/default.json <<'JSON'
-          {
-            "identifier": "default",
-            "description": "Права главного окна (телефон)",
-            "windows": ["main"],
-            "permissions": ["core:default", "dialog:default", "biometric:default"]
-          }
-          JSON
-
-      - name: Проект Android
+      - run: npm ci
+      - run: npm run build
+      - name: Generate Android project
         run: |
           npx tauri android init --ci
           npx tauri icon src-tauri/icons/icon.png
-
-      - name: Ключ подписи
+      - name: Configure release signing
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE }}
           KP: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -n "$KS" ]; then
-            echo "$KS" | base64 -d > src-tauri/gen/android/kouros-android.jks
-            printf 'keyAlias=kouros\npassword=%s\nstoreFile=%s\n' "$KP" "$PWD/src-tauri/gen/android/kouros-android.jks" > src-tauri/gen/android/keystore.properties
-            python3 tools/android/patch_gradle.py
-          else
-            echo "::warning::Нет секрета ANDROID_KEYSTORE — APK будет без подписи (поставить на телефон нельзя)."
-          fi
-
-      - name: Сборка APK
+          python3 tools/android/signing.py
+          python3 tools/android/prepare.py
+      - name: Build APK
+        run: npx tauri android build --apk true --aab false --target aarch64 --ci
+      - name: Native update policy tests
+        working-directory: src-tauri/gen/android
+        run: ./gradlew :tauri-plugin-kouros-mobile:testDebugUnitTest
+      - name: Verify and package
         run: |
-          code=0
-          npx tauri android build --apk --target aarch64 --ci > build.log 2>&1 || code=$?
-          tail -n 200 build.log
-          if [ "$code" != "0" ]; then
-            # Errors as annotations: the job log is not readable from outside.
-            grep -E "error(\[E[0-9]+\])?:|error:|FAILURE|What went wrong|e: |Error " build.log | grep -v "^warning" | head -40 | while IFS= read -r l; do echo "::error::$l"; done
-            tail -n 25 build.log | while IFS= read -r l; do echo "::warning::$l"; done
-            exit 1
-          fi
-
-      - name: Файл APK
-        id: apk
-        run: |
-          v=$(node -p "require('./package.json').version")
-          f=$(find src-tauri/gen/android/app/build/outputs/apk -name '*release*.apk' | head -n 1)
-          echo "найден: $f"
           mkdir -p out
-          cp "$f" "out/Kouros_${v}_android.apk"
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
+          V=$(node -p "require('./src-tauri/tauri.android.conf.json').version")
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name '*release*.apk' ! -name '*unsigned*' -print -quit)
+          test -n "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          cp "$APK" "out/Kouros_${V}_android.apk"
+          python3 tools/android/update_manifest.py "out/Kouros_${V}_android.apk" out/android-update.json
       - uses: actions/upload-artifact@v4
         with:
-          name: Kouros-android-apk
-          path: out/*.apk
-
-      # On main: add the APK to the release the Windows build creates (waits for it).
-      - name: APK в релиз
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          tag="v${{ steps.apk.outputs.version }}"
-          for i in $(seq 1 60); do
-            if gh release view "$tag" > /dev/null 2>&1; then
-              gh release upload "$tag" out/*.apk --clobber
-              exit 0
-            fi
-            sleep 60
-          done
-          echo "::error::Релиз $tag так и не появился"
-          exit 1
+          name: Kouros-android-signed
+          path: out/*
+      - name: Remove temporary signing material
+        if: always()
+        run: rm -f src-tauri/gen/android/kouros-android.jks src-tauri/gen/android/keystore.properties

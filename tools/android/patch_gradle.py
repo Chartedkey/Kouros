@@ -18,7 +18,7 @@ block = '''
             val f = rootProject.file("keystore.properties")
             if (f.exists()) {
                 val k = Properties()
-                k.load(FileInputStream(f))
+                k.load(f.reader(Charsets.UTF_8))
                 keyAlias = k["keyAlias"] as String
                 keyPassword = k["password"] as String
                 storeFile = file(k["storeFile"] as String)

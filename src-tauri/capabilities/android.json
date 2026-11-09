@@ -1,0 +1,14 @@
+{
+  "identifier": "android",
+  "description": "Android main window: native auth stays inside Rust",
+  "platforms": [
+    "android"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:default"
+  ]
+}

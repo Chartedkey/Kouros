@@ -37,7 +37,7 @@ mod imp {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(all(not(windows), not(target_os = "android")))]
 mod imp {
     use tauri::WebviewWindow;
 
@@ -52,4 +52,12 @@ mod imp {
     }
 }
 
+#[cfg(target_os = "android")]
+mod imp {
+    use tauri::WebviewWindow;
+    pub fn availability() -> &'static str { "available" }
+    pub fn verify(_window: &WebviewWindow, message: &str) -> Result<bool, String> {
+        crate::mobile::authenticate(message)
+    }
+}
 pub use imp::{availability, verify};

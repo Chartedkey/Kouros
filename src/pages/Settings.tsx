@@ -10,6 +10,7 @@ import { WorkoutSourcesCard } from '../components/Workouts';
 import { setZoom, useZoom, ZOOM_MAX, ZOOM_MIN } from '../lib/zoom';
 import { paceFromThreshold, zonesFromMax } from './TrainingParts';
 import { UpdatesSection } from '../components/Updates';
+import { isPhone } from '../lib/platform';
 
 type Sub = 'sync' | 'prof' | 'view' | 'data' | 'about';
 
@@ -483,7 +484,8 @@ function DataTab({ status, refresh }: { status: Status; refresh: () => void }) {
     } catch (e) { setMsg({ ok: false, text: errText(e) }); }
   }
 
-  const helloText = {
+  const phone = isPhone();
+  const helloText = phone ? 'Подтверждай вход отпечатком или PIN-кодом телефона. При уходе из приложения вход блокируется. Если блокировка экрана не настроена, настрой её в Android.' : {
     available: 'Windows Hello настроен на этом компьютере.',
     not_configured: 'Windows Hello не настроен. Включи PIN-код: Параметры → Учётные записи → Варианты входа. До этого Kouros открывается без проверки.',
     unavailable: 'Windows Hello недоступен на этом устройстве — Kouros открывается без проверки.',
@@ -506,9 +508,9 @@ function DataTab({ status, refresh }: { status: Status; refresh: () => void }) {
             </ul>
           </div>
           <div className="row">
-            <button type="button" className="btn2" onClick={() => api.openDataDir().catch((e) => setMsg({ ok: false, text: errText(e) }))}>
+            {!phone && <button type="button" className="btn2" onClick={() => api.openDataDir().catch((e) => setMsg({ ok: false, text: errText(e) }))}>
               Открыть папку
-            </button>
+            </button>}
           </div>
         </section>
 
@@ -525,12 +527,12 @@ function DataTab({ status, refresh }: { status: Status; refresh: () => void }) {
         <section className="card" aria-label="Вход">
           <div className="between">
             <div className="stack" style={{ gap: 4 }}>
-              <span style={{ fontWeight: 700 }}>Вход через Windows Hello</span>
+              <span style={{ fontWeight: 700 }}>{phone ? 'Отпечаток или PIN-код' : 'Вход через Windows Hello'}</span>
               <span className="muted tiny" style={{ lineHeight: 1.5 }}>{helloText}</span>
             </div>
             <button
               type="button" role="switch" className="switch" aria-checked={status.lockEnabled}
-              aria-label="Вход через Windows Hello" onClick={toggleLock}
+              aria-label={phone ? "Вход на Android всегда защищён" : "Вход через Windows Hello"} disabled={phone} onClick={toggleLock}
             ><span /></button>
           </div>
         </section>

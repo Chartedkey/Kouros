@@ -7,6 +7,7 @@ import { isPhone } from '../lib/platform';
 const inApp = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in (window as object);
 const LAST = 'kouros_update_checked';
 const AUTO = 'kouros_update_auto';
+const PENDING = 'kouros_android_update_pending';
 
 type Found = { version: string; notes: string; install: (onProgress: (pct: number | null) => void) => Promise<void> };
 
@@ -25,13 +26,14 @@ export async function checkUpdate(): Promise<Found | null> {
     // then Android installs it over the old one (same signing key, data stays).
     const { invoke } = await import('@tauri-apps/api/core');
     const r = await invoke<{ version: string; notes: string; url: string } | null>('mobile_update_check');
-    if (!r) return null;
+    if (!r) { try { localStorage.removeItem(PENDING); } catch { /* no storage */ } return null; }
     return {
       version: r.version,
       notes: r.notes,
       install: async (onProgress) => {
         onProgress(null);
-        await invoke('open_link', { url: r.url });
+        try { localStorage.setItem(PENDING, '1'); } catch { /* no storage */ }
+        await invoke('mobile_update_install');
       },
     };
   }
@@ -72,9 +74,10 @@ function UpdateCard({ u, onLater }: { u: Found; onLater?: () => void }) {
   const [open, setOpen] = useState(false);
   const [pct, setPct] = useState<number | null | undefined>(undefined);
   const [err, setErr] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const go = async () => {
-    setErr(null); setPct(null);
-    try { await u.install(setPct); } catch (e) { setErr(errText(e)); setPct(undefined); }
+    setErr(null); setNotice(null); setPct(null);
+    try { await u.install(setPct); if (isPhone()) { setPct(undefined); setNotice("Подтвердите установку в системном окне Android."); } } catch (e) { setErr(errText(e)); setPct(undefined); }
   };
   return (
     <section className="card" aria-label="Обновление" style={{ borderColor: '#3DDC9755' }}>
@@ -84,14 +87,15 @@ function UpdateCard({ u, onLater }: { u: Found; onLater?: () => void }) {
           {u.notes && <button type="button" className="linkbtn small" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Скрыть' : 'Что нового'}</button>}
           {onLater && pct === undefined && <button type="button" className="btn2" onClick={onLater}>Позже</button>}
           <button type="button" className="btn" disabled={pct !== undefined} onClick={go}>
-            {pct === undefined ? 'Обновить' : pct === null ? (isPhone() ? 'Открываю…' : 'Скачиваю…') : `Скачиваю ${pct}%`}
+            {pct === undefined ? 'Обновить' : pct === null ? 'Скачиваю…' : `Скачиваю ${pct}%`}
           </button>
         </span>
       </div>
       {open && <Notes text={u.notes} />}
       <span className="muted tiny" style={{ lineHeight: 1.5 }}>{isPhone()
-        ? 'Откроется скачивание нового APK. Открой файл — Android поставит его поверх, данные сохранятся.'
+        ? 'Kouros скачает и проверит APK. Android попросит подтвердить установку поверх приложения; данные сохранятся.'
         : 'Данные не трогаются: обновится только программа, после установки Kouros перезапустится сам.'}</span>
+      {notice && <div role="status" className="muted small">{notice}</div>}
       {err && <div className="note-err">Не получилось обновить: {err}. Можно скачать установщик вручную со страницы Releases.</div>}
     </section>
   );
@@ -101,10 +105,13 @@ function UpdateCard({ u, onLater }: { u: Found; onLater?: () => void }) {
 export function UpdateBanner() {
   const [u, setU] = useState<Found | null>(null);
   useEffect(() => {
-    if (!inApp() || !autoCheckOn()) return;
+    if (!inApp()) return;
+    let pending = false;
+    try { pending = isPhone() && localStorage.getItem(PENDING) === '1'; } catch { /* no storage */ }
+    if (!autoCheckOn() && !pending) return;
     let last = 0;
     try { last = Number(localStorage.getItem(LAST) ?? 0); } catch { /* no storage */ }
-    if (Date.now() - last < 12 * 3600 * 1000) return;
+    if (!pending && Date.now() - last < 12 * 3600 * 1000) return;
     const t = setTimeout(() => {
       checkUpdate()
         .then((v) => { try { localStorage.setItem(LAST, String(Date.now())); } catch { /* no storage */ } setU(v); })
@@ -113,7 +120,7 @@ export function UpdateBanner() {
     return () => clearTimeout(t);
   }, []);
   if (!u) return null;
-  return <UpdateCard u={u} onLater={() => setU(null)} />;
+  return <UpdateCard u={u} onLater={() => { try { localStorage.removeItem(PENDING); } catch { /* no storage */ } setU(null); }} />;
 }
 
 /** Settings → «О приложении». */
