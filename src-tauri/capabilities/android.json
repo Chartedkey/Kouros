@@ -1,6 +1,6 @@
 {
   "identifier": "android",
-  "description": "Android main window: native auth stays inside Rust",
+  "description": "Android main window; credentials remain inside Rust and Android Keystore",
   "platforms": [
     "android"
   ],

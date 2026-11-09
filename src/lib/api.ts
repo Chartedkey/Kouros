@@ -274,7 +274,7 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
       return {
         version: '1.0.0', platform: 'browser', dataDir: 'C:\\Users\\User\\Kouros', dbOk: true, dbError: null,
         schemaVersion: 1, dbSize: 98304, cipherVersion: '4.6.1 community', hello: 'available',
-        lockEnabled: demo.lock, unlocked: demo.unlocked,
+        lockEnabled: demo.lock, unlocked: /Android/i.test(navigator.userAgent) || demo.unlocked,
       } satisfies Status;
     case 'unlock': demo.unlocked = true; return true;
     case 'set_lock_enabled': demo.lock = Boolean(args.enabled); return true;

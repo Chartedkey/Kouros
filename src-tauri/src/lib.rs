@@ -11,6 +11,10 @@ mod importer;
 pub mod parse;
 mod secrets;
 mod mobile;
+mod peer_data;
+mod peer_wire;
+mod peer_files;
+mod peer;
 mod store;
 mod activity_svc;
 mod training_svc;
@@ -95,6 +99,8 @@ fn init(app: &AppHandle) {
         }
     }
     *st.data_dir.lock().unwrap() = Some(root.clone());
+    #[cfg(target_os = "android")]
+    { *st.unlocked.lock().unwrap() = Some(true); }
     match db::open(&root) {
         Ok(mut conn) => {
             if let Err(e) = db::auto_backup(&conn, &root) {
@@ -108,7 +114,7 @@ fn init(app: &AppHandle) {
 }
 
 #[cfg(target_os = "android")]
-fn lock_enabled(_st: &AppState) -> bool { true }
+fn lock_enabled(_st: &AppState) -> bool { false }
 
 #[cfg(not(target_os = "android"))]
 fn lock_enabled(st: &AppState) -> bool {
@@ -141,6 +147,23 @@ fn with_db<T>(st: &AppState, f: impl FnOnce(&Connection) -> Result<T, String>) -
 fn root(st: &AppState) -> Result<PathBuf, String> {
     st.data_dir.lock().unwrap().clone().ok_or_else(|| "Папка данных недоступна".to_string())
 }
+
+#[tauri::command]
+fn peer_status(app:AppHandle)->Result<serde_json::Value,String>{peer::status(&app)}
+#[tauri::command]
+fn peer_enable(app:AppHandle)->Result<serde_json::Value,String>{peer::enable(&app)}
+#[tauri::command]
+fn peer_address(app:AppHandle,address:String)->Result<(),String>{peer::update_address(&app,&address)}
+#[tauri::command]
+fn peer_forget(app:AppHandle)->Result<(),String>{peer::forget(&app)}
+#[tauri::command]
+async fn peer_pair(app:AppHandle,address:String,code:String,replace:bool)->Result<serde_json::Value,String>{peer::pair(app,address,code,replace).await}
+#[tauri::command]
+async fn peer_sync(app:AppHandle)->Result<serde_json::Value,String>{peer::sync(app).await}
+#[tauri::command]
+async fn peer_conflicts(app:AppHandle)->Result<serde_json::Value,String>{peer::conflicts(app).await}
+#[tauri::command]
+async fn peer_resolve(app:AppHandle,id:i64,choice:String)->Result<(),String>{peer::resolve(app,id,choice).await}
 
 // ---------- commands ----------
 
@@ -275,7 +298,7 @@ async fn set_lock_enabled(
 ) -> Result<bool, String> {
     guard(&st)?;
     #[cfg(target_os = "android")]
-    if !enabled { return Err("На Android вход защищён блокировкой телефона и всегда включён".into()); }
+    { let _ = (&window, enabled); return Ok(true); }
     // Turning protection off must be confirmed by the owner.
     if !enabled && !hello::verify(&window, "Отключить вход по Windows Hello")? {
         return Ok(false);
@@ -1235,8 +1258,6 @@ pub fn run() {
     let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init()).plugin(tauri_plugin_dialog::init());
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build()).plugin(tauri_plugin_process::init());
-    #[cfg(any(target_os = "android", target_os = "ios"))]
-    let builder = builder.plugin(tauri_plugin_biometric::init());
     #[cfg(target_os = "android")]
     let builder = builder.plugin(tauri_plugin_kouros_mobile::init());
     builder
@@ -1253,12 +1274,14 @@ pub fn run() {
             mobile::attach(app.handle().clone());
             init(app.handle());
             sync::start_background(app.handle().clone());
+            peer::start(app.handle().clone());
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             hae::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             app_status,
+            peer_status,peer_enable,peer_address,peer_forget,peer_pair,peer_sync,peer_conflicts,peer_resolve,
             mobile_update_check,
             mobile_update_install,
             lock_app,

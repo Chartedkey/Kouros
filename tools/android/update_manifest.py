@@ -21,6 +21,6 @@ out = {
     "versionCode": config["bundle"]["android"]["versionCode"],
     "url": sys.argv[3],
     "sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
-    "notes": "Автообновление внутри Kouros; исправлено смещение экранов и отображение таблиц на узких экранах. Health Connect пока не подключён.",
+    "notes": "Синхронизация Windows и Android по домашнему Wi-Fi. Android открывается без пароля и отпечатка. Фирменная иконка K. Для обмена требуется Kouros 1.6.0 на Windows.",
 }
 Path(sys.argv[2]).write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n")

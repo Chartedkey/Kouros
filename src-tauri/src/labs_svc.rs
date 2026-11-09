@@ -222,14 +222,14 @@ pub fn save(conn: &mut Connection, files_dir: &std::path::Path, v: &Value) -> Re
     }
     let tx = conn.transaction().map_err(err)?;
     tx.execute(
-        "INSERT INTO lab_reports (date, lab, file, source, created_at) VALUES (?1, ?2, ?3, ?4, ?5)",
+        "INSERT INTO lab_reports (id, date, lab, file, source, created_at) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5)",
         params![date, v["lab"].as_str().unwrap_or(""), file, v["source"].as_str().unwrap_or("manual"), store::now()],
     )
     .map_err(err)?;
     let id = tx.last_insert_rowid();
     {
         let mut st = tx
-            .prepare("INSERT INTO lab_results (report_id, date, key, name, value, value_text, cmp, flag, unit, lo, hi, ref_text, section, comment) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)")
+            .prepare("INSERT INTO lab_results (id, report_id, date, key, name, value, value_text, cmp, flag, unit, lo, hi, ref_text, section, comment) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)")
             .map_err(err)?;
         for r in rows {
             if r["skip"].as_bool() == Some(true) {

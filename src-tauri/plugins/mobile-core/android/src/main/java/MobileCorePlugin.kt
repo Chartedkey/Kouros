@@ -40,20 +40,20 @@ class InstallArgs { lateinit var url: String; lateinit var sha256: String; var v
 @TauriPlugin
 class MobileCorePlugin(private val activity: Activity) : Plugin(activity) {
     private val executor = Executors.newSingleThreadExecutor()
-    @Volatile private var session = false
+    @Volatile private var session = true
     @Volatile private var stopped = false
     private val alias = "kouros.vault.v1"
     private val vault get() = AtomicFile(File(activity.noBackupFilesDir, "kouros-vault.v1"))
 
     init {
         activity.application.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
-            override fun onActivityStopped(a: Activity) { if (a === activity) { stopped = true; session = false } }
+            override fun onActivityStopped(a: Activity) { if (a === activity) { stopped = true } }
             override fun onActivityCreated(a: Activity, b: Bundle?) {}
             override fun onActivityStarted(a: Activity) {}
             override fun onActivityResumed(a: Activity) { if (a === activity) stopped = false }
             override fun onActivityPaused(a: Activity) {}
             override fun onActivitySaveInstanceState(a: Activity, b: Bundle) {}
-            override fun onActivityDestroyed(a: Activity) { if (a === activity) { stopped = true; session = false } }
+            override fun onActivityDestroyed(a: Activity) { if (a === activity) { stopped = true } }
         })
     }
 
@@ -71,7 +71,7 @@ class MobileCorePlugin(private val activity: Activity) : Plugin(activity) {
         if (stopped || activity.isFinishing || activity.isDestroyed) { invoke.reject("Вернитесь в Kouros и подтвердите вход"); return }
         session = true; invoke.resolve()
     }
-    @Command fun endSession(invoke: Invoke) { session = false; invoke.resolve() }
+    @Command fun endSession(invoke: Invoke) { invoke.resolve() }
 
     private fun key(): SecretKey {
         val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }

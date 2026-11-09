@@ -137,7 +137,7 @@ pub fn log_pain(conn: &Connection, date: &str, area: &str, side: &str, level: i6
     conn.execute("DELETE FROM pain_log WHERE date = ?1 AND area = ?2 AND side = ?3 AND context = ?4 AND (activity_id IS ?5)", params![date, area, side, ctx, act])
         .map_err(err)?;
     conn.execute(
-        "INSERT INTO pain_log (date, ts, area, side, level, context, activity_id, note) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO pain_log (id, date, ts, area, side, level, context, activity_id, note) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![date, store::now(), area, side, level.clamp(0, 10), ctx, act, note],
     )
     .map_err(err)?;

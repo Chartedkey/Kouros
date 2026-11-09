@@ -7,3 +7,8 @@ src-tauri/gen/
 
 # Local helper bytecode
 __pycache__/
+
+# Standalone replication tests compile outside the Tauri workspace.
+/tools/peer-tests/target/
+
+/tools/windows-bundler/target/

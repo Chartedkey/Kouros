@@ -114,7 +114,7 @@ pub fn save(conn: &Connection, v: &Value) -> Result<i64, String> {
         Ok(id)
     } else {
         conn.execute(
-            "INSERT INTO meds (kind, name, form, dose, schedule, components, course_from, course_to, notes, archived, extra) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+            "INSERT INTO meds (id, kind, name, form, dose, schedule, components, course_from, course_to, notes, archived, extra) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
             params![kind, name, form, dose, schedule, comps_s, from, to, notes, archived, extra_s],
         )
         .map_err(err)?;
@@ -135,7 +135,7 @@ pub fn take(conn: &Connection, id: i64, date: &str, servings: f64, ts: Option<i6
     conn.execute("DELETE FROM med_log WHERE med_id = ?1 AND date = ?2", params![id, date]).map_err(err)?;
     if servings > 0.0 {
         let t = ts.or(old).unwrap_or_else(store::now);
-        conn.execute("INSERT INTO med_log (med_id, date, ts, servings) VALUES (?1, ?2, ?3, ?4)", params![id, date, t, servings])
+        conn.execute("INSERT INTO med_log (id, med_id, date, ts, servings) VALUES (kouros_id(), ?1, ?2, ?3, ?4)", params![id, date, t, servings])
             .map_err(err)?;
     }
     Ok(())

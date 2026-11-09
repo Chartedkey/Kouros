@@ -19,7 +19,8 @@ async def audit(browser, args, width, height, mobile):
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
     await page.goto(args.url, wait_until='networkidle')
-    await page.get_by_role('button', name='Отпечаток или PIN-код' if mobile else 'Войти через Windows Hello').click()
+    login = page.get_by_role('button', name='Отпечаток или PIN-код' if mobile else 'Войти через Windows Hello')
+    if await login.count(): await login.click()
     await page.locator('.wrap').wait_for()
     await page.evaluate('document.fonts.ready')
     results = []

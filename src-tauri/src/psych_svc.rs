@@ -72,7 +72,7 @@ pub fn save(conn: &Connection, kind: &str, answers: &Value, date: Option<&str>) 
         conn.execute("DELETE FROM surveys WHERE kind = 'hooper' AND date = ?1", params![date]).map_err(err)?;
     }
     conn.execute(
-        "INSERT INTO surveys (kind, date, ts, answers, score, extra) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        "INSERT INTO surveys (id, kind, date, ts, answers, score, extra) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5, ?6)",
         params![kind, date, crate::store::now(), answers.to_string(), sc, extra.to_string()],
     )
     .map_err(err)?;

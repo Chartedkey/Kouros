@@ -174,7 +174,7 @@ fn insert_set(tx: &rusqlite::Transaction, id: &str, idx: i64, s: &Value, cx: Opt
     let band = s["band"].as_object().filter(|b| b.get("ids").and_then(|x| x.as_array()).map(|a| !a.is_empty()).unwrap_or(false)).map(|b| Value::Object(b.clone()).to_string());
     let (eff, _, _) = crate::exercise_svc::effective(s, body, bands);
     if let Some(name) = ex.as_ref().filter(|_| cx.is_none()) {
-        tx.execute("INSERT OR IGNORE INTO exercises (name, source) VALUES (?1, 'manual')", params![name]).map_err(err)?;
+        tx.execute("INSERT OR IGNORE INTO exercises (id, name, source) VALUES (kouros_exercise_id(?1), ?1, 'manual')", params![name]).map_err(err)?;
     }
     tx.execute(
         "INSERT INTO strength_sets (activity_id, idx, start_utc, duration_s, reps, weight_kg, kind, exercise, category, ex_id, band, eff_kg, cx, sides)

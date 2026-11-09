@@ -41,12 +41,21 @@ data is disabled because Keystore keys cannot be restored on another device.
 Existing prototype secrets.json is imported with conflict and read-back checks,
 then removed. Corrupt data/missing keys fail without replacing the database key.
 
-The Rust unlock command performs system biometric/device credential verification;
-JS cannot report success to it. Native activity lifecycle invalidates the session
-when the main activity stops; guarded Rust commands check the native session.
-The UI clears data on document hiding and refreshes status on resume. FLAG_SECURE
-prevents health data appearing in screenshots/app-switcher previews. Android entry
-protection is mandatory; Windows keeps its current lock setting.
+Android alpha.3 opens without a separate password, fingerprint or PIN prompt,
+as explicitly requested by the owner. The Keystore alias, AES-GCM vault and
+SQLCipher database key stay unchanged, so alpha.2 data can be opened in place.
+The biometric plugin is removed. Windows keeps its existing Hello setting.
+FLAG_SECURE still protects app-switcher previews. The native vault bridge still
+rejects WebView invocations; credentials never enter the WebView.
+
+The Android launcher uses the existing Kouros K and green ring. Adaptive icons
+have an API 26 fallback and a separate API 33 monochrome variant. `prepare.py`
+installs these resources without changing Windows icons.
+
+Wi-Fi sync requires Windows 1.6.0 and Android alpha.3. It pairs one phone with one
+computer and transfers encrypted application data over the local network. See
+`tools/peer-tests/README.md` for the independent regression suite. Health Connect
+and direct iPhone-to-Android ingestion remain separate integrations.
 
 The updater fetches the independent manifest from:
 `https://raw.githubusercontent.com/Chartedkey/Kouros/refs/heads/android-updates/android-update.json`.
@@ -61,7 +70,7 @@ settings open and the user returns, authenticates and retries the cached APK.
 
 ## Update-channel publication
 
-The user approved alpha.2 to enable in-app updates and include the layout fixes.
+The user approved alpha.3 for Windows/Android sync, ordinary Android startup and the K icon.
 Publication of application sources is not authorized. Publish artifacts only.
 
 Rename the verified signed artifact to `Kouros_<android-version>_android.apk`.
@@ -69,7 +78,7 @@ Publish it with SHA256SUMS.txt in an isolated APK-only orphan branch, then verif
 its public download. Use the immutable commit URL, never a mutable branch URL:
 
 ```
-python tools/android/update_manifest.py Kouros_2.0.0-alpha.2_android.apk android-update.json https://raw.githubusercontent.com/Chartedkey/Kouros/<40-character-commit>/Kouros_2.0.0-alpha.2_android.apk
+python tools/android/update_manifest.py Kouros_2.0.0-alpha.3_android.apk android-update.json https://raw.githubusercontent.com/Chartedkey/Kouros/<40-character-commit>/Kouros_2.0.0-alpha.3_android.apk
 ```
 
 Publish the manifest last as `android-update.json` on the independent

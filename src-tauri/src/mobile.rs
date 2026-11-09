@@ -8,20 +8,10 @@ mod android {
     static APP: OnceLock<AppHandle> = OnceLock::new();
     pub fn attach(app: AppHandle) { let _ = APP.set(app); }
     fn app() -> Result<&'static AppHandle, String> { APP.get().ok_or_else(|| "Android-модуль ещё не готов".into()) }
-    pub fn session_open() -> bool {
-        #[derive(Deserialize)] struct Status { open: bool }
-        app().and_then(|a| a.mobile_core().call::<Status>("sessionStatus", ())).map(|s| s.open).unwrap_or(false)
-    }
-    pub fn authenticate(reason: &str) -> Result<bool, String> {
-        use tauri_plugin_biometric::{AuthOptions, BiometricExt};
-        let app = app()?;
-        app.biometric().authenticate(reason.into(), AuthOptions {
-            allow_device_credential: true, title: Some("Kouros".into()), ..Default::default()
-        }).map_err(|_| "Вход не подтверждён. Используйте отпечаток или PIN-код телефона.".to_string())?;
-        app.mobile_core().call::<()>("startSession", ())?;
-        Ok(true)
-    }
-    pub fn end_session() -> Result<(), String> { app()?.mobile_core().call("endSession", ()) }
+    // Android opens normally. Keystore encryption and existing keys are retained.
+    pub fn session_open() -> bool { true }
+    pub fn authenticate(_reason: &str) -> Result<bool, String> { Ok(true) }
+    pub fn end_session() -> Result<(), String> { Ok(()) }
     pub fn secret(action: &str, name: &str, value: Option<&str>) -> Result<Option<String>, String> {
         #[derive(Deserialize)] struct Reply { value: Option<String> }
         let result: serde_json::Value = app()?.mobile_core().call("secret", serde_json::json!({"action":action,"name":name,"value":value}))?;

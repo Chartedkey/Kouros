@@ -17,6 +17,7 @@ tree = ET.parse(manifest)
 app = tree.getroot().find("application")
 assert app is not None
 app.set(f"{{{namespace}}}allowBackup", "false")
+app.set(f"{{{namespace}}}roundIcon", "@mipmap/ic_launcher_round")
 app.set(f"{{{namespace}}}fullBackupContent", "false")
 app.set(f"{{{namespace}}}dataExtractionRules", "@xml/kouros_data_extraction_rules")
 tree.write(manifest, encoding="utf-8", xml_declaration=True)
@@ -38,3 +39,20 @@ properties = project / "gradle.properties"
 text = properties.read_text()
 lines = [line for line in text.splitlines() if not line.startswith("org.gradle.configuration-cache=")]
 properties.write_text("\n".join(lines) + "\norg.gradle.configuration-cache=false\n")
+
+# Android-only adaptive/themed resources from the existing Kouros brand mark.
+import shutil
+icons = root / "tools/android/icon"
+res = project / "app/src/main/res"
+for name in ["kouros_foreground", "kouros_monochrome"]:
+    shutil.copy2(icons / (name + ".xml"), res / "drawable" / (name + ".xml"))
+for version in [26, 33]:
+    destination = res / f"mipmap-anydpi-v{version}"
+    destination.mkdir(exist_ok=True)
+    for name in ["ic_launcher", "ic_launcher_round"]:
+        icon_tree = ET.parse(icons / "ic_launcher.xml")
+        if version == 26:
+            for element in list(icon_tree.getroot()):
+                if element.tag == "monochrome": icon_tree.getroot().remove(element)
+        icon_tree.write(destination / (name + ".xml"), encoding="utf-8", xml_declaration=True)
+shutil.copy2(icons / "colors.xml", res / "values/kouros_icon_colors.xml")

@@ -1,0 +1,2 @@
+use std::{fs,path::PathBuf};
+fn main(){let p=PathBuf::from("../../src-tauri/src/db.rs");let text=fs::read_to_string(&p).unwrap();let migrations=text.split("const MIGRATIONS").nth(1).unwrap().split("\n];").next().unwrap();let mut sql=String::new();let mut rest=migrations;while let Some((_,after))=rest.split_once("r#\""){let (part,after)=after.split_once("\"#").unwrap();sql.push_str(part);sql.push('\n');rest=after;}fs::write(PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("schema.sql"),sql).unwrap();println!("cargo:rerun-if-changed={}",p.display());}

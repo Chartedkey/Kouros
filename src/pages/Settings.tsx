@@ -11,6 +11,7 @@ import { setZoom, useZoom, ZOOM_MAX, ZOOM_MIN } from '../lib/zoom';
 import { paceFromThreshold, zonesFromMax } from './TrainingParts';
 import { UpdatesSection } from '../components/Updates';
 import { isPhone } from '../lib/platform';
+import { DeviceSync } from '../components/DeviceSync';
 
 type Sub = 'sync' | 'prof' | 'view' | 'data' | 'about';
 
@@ -90,13 +91,14 @@ function SyncTab({ goImport }: { goImport: () => void }) {
 
   return (
     <>
+      <DeviceSync />
       <section className="card" aria-label="Источники данных">
         <div className="between" style={{ flexWrap: 'wrap' }}>
           <span className="label">Источники данных</span>
           <span className="muted tiny">Тренировки — из Strava (и freddy, если включено), здоровье и питание — через freddy или Health Auto Export</span>
         </div>
         <div className="note-ok">
-          Ключи хранятся в Диспетчере учётных данных Windows, а не в файлах. После сохранения Kouros их больше не показывает
+          {isPhone() ? 'Ключи защищены Android Keystore.' : 'Ключи хранятся в Диспетчере учётных данных Windows.'} После сохранения Kouros их больше не показывает
           — только заменить или удалить.
         </div>
         {err && <div className="note-err">{err}</div>}
@@ -485,7 +487,7 @@ function DataTab({ status, refresh }: { status: Status; refresh: () => void }) {
   }
 
   const phone = isPhone();
-  const helloText = phone ? 'Подтверждай вход отпечатком или PIN-кодом телефона. При уходе из приложения вход блокируется. Если блокировка экрана не настроена, настрой её в Android.' : {
+  const helloText = phone ? 'Kouros открывается без отдельного пароля и отпечатка. База остаётся зашифрованной, ключ хранится в Android Keystore.' : {
     available: 'Windows Hello настроен на этом компьютере.',
     not_configured: 'Windows Hello не настроен. Включи PIN-код: Параметры → Учётные записи → Варианты входа. До этого Kouros открывается без проверки.',
     unavailable: 'Windows Hello недоступен на этом устройстве — Kouros открывается без проверки.',
@@ -527,13 +529,13 @@ function DataTab({ status, refresh }: { status: Status; refresh: () => void }) {
         <section className="card" aria-label="Вход">
           <div className="between">
             <div className="stack" style={{ gap: 4 }}>
-              <span style={{ fontWeight: 700 }}>{phone ? 'Отпечаток или PIN-код' : 'Вход через Windows Hello'}</span>
+              <span style={{ fontWeight: 700 }}>{phone ? 'Обычный запуск приложения' : 'Вход через Windows Hello'}</span>
               <span className="muted tiny" style={{ lineHeight: 1.5 }}>{helloText}</span>
             </div>
-            <button
+            {!phone && <button
               type="button" role="switch" className="switch" aria-checked={status.lockEnabled}
               aria-label={phone ? "Вход на Android всегда защищён" : "Вход через Windows Hello"} disabled={phone} onClick={toggleLock}
-            ><span /></button>
+            ><span /></button>}
           </div>
         </section>
       </div>

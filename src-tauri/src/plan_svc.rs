@@ -567,7 +567,7 @@ fn change_row(r: &rusqlite::Row) -> rusqlite::Result<Value> {
 
 fn add_change(conn: &Connection, d: &str, before: &[Item], after: &[Item], reason: &str, origin: &str, state: &str, group: Option<i64>) -> Result<i64, String> {
     conn.execute(
-        "INSERT INTO plan_changes (ts, date, before, after, reason, origin, state, grp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO plan_changes (id, ts, date, before, after, reason, origin, state, grp) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![store::now(), d, items_json(before).to_string(), items_json(after).to_string(), reason, origin, state, group],
     )
     .map_err(err)?;

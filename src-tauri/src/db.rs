@@ -400,6 +400,8 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE strength_sets ADD COLUMN sides INTEGER;
     "#,
+    // v23: independent, encrypted device-sync state (business migrations stay immutable).
+    r#"CREATE TABLE IF NOT EXISTS peer_state(k TEXT PRIMARY KEY,v TEXT NOT NULL);"#,
 ];
 
 fn key_pragma(hex: &str) -> String {
@@ -424,6 +426,7 @@ pub fn open(root: &Path) -> Result<Connection, String> {
     conn.execute_batch("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;")
         .map_err(err)?;
     migrate(&conn)?;
+    crate::peer_data::init(&conn)?;
     // Every reader goes through the view of the chosen data sources (0.14).
     crate::sources::install_view(&conn)?;
     crate::workouts_svc::install_view(&conn)?;
@@ -552,7 +555,7 @@ pub fn list_backups(root: &Path) -> Vec<BackupInfo> {
 /// Copies the live database into backups/ with the same encryption key.
 pub fn backup_now(conn: &Connection, root: &Path) -> Result<String, String> {
     let hex = crate::secrets::db_key(false)?;
-    let name = format!("kouros-{}.db", chrono::Local::now().format("%Y-%m-%d_%H%M%S"));
+    let name = format!("kouros-{}.db", chrono::Local::now().format("%Y-%m-%d_%H%M%S_%f"));
     let path = backup_dir(root).join(&name);
     std::fs::create_dir_all(backup_dir(root)).map_err(err)?;
     {

@@ -113,7 +113,7 @@ pub fn profile_lines(p: &Value) -> Vec<String> {
 
 fn store_report(conn: &Connection, kind: &str, from: &str, to: &str, title: &str, body: &Value, data: &Value, parent: Option<i64>) -> Result<i64, String> {
     conn.execute(
-        "INSERT INTO coach_reports (kind, ts, period_from, period_to, title, body, data, parent_id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO coach_reports (id, kind, ts, period_from, period_to, title, body, data, parent_id) VALUES (kouros_id(), ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![kind, store::now(), from, to, title, body.to_string(), data.to_string(), parent],
     )
     .map_err(err)?;

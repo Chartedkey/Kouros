@@ -60,14 +60,7 @@ export default function App() {
   useEffect(refresh, [refresh]);
   useEffect(() => {
     if (!inTauri || !/Android/i.test(navigator.userAgent)) return;
-    const onVisibility = async () => {
-      if (document.hidden) {
-        if (!status?.unlocked) return; // Do not cancel a system authentication already in progress.
-        setStatus({ ...status, unlocked: false }); // Unmount health screens before backgrounding.
-        const { invoke } = await import('@tauri-apps/api/core');
-        await invoke('lock_app').catch(() => {});
-      } else refresh();
-    };
+    const onVisibility = () => { if (!document.hidden) refresh(); };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [refresh, status?.unlocked]);
