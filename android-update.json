@@ -1,0 +1,7 @@
+{
+  "version": "2.0.0-alpha.2",
+  "versionCode": 2000002,
+  "url": "https://raw.githubusercontent.com/Chartedkey/Kouros/671ef5cc01c8d9036aefb24b3389fe7df5d314fa/Kouros_2.0.0-alpha.2_android.apk",
+  "sha256": "3aad37e5435e1b121ff8c1da9e95bd8486b5ea18b4ba2118c058362c6dcd0aa2",
+  "notes": "Автообновление внутри Kouros; исправлено смещение экранов и отображение таблиц на узких экранах. Health Connect пока не подключён."
+}
