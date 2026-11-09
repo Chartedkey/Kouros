@@ -204,7 +204,7 @@ export function CoachPlan() {
             <button type="button" className="btn2" style={{ width: 38, padding: 0 }} aria-label="Позже" disabled={off >= st.days.length - 7} onClick={() => setOff(off + 1)}>›</button>
           </span>
         </div>
-        <div className="week">{shown.map((d) => <DayCell key={d.date} d={d} today={st.today} sel={d.date === cur?.date} onPick={() => setSel(d.date)} />)}</div>
+        <div className="week plan-week">{shown.map((d) => <DayCell key={d.date} d={d} today={st.today} sel={d.date === cur?.date} onPick={() => setSel(d.date)} />)}</div>
         {st.week.cap != null && (
           <div className="stack" style={{ gap: 4 }}>
             <div className="between tiny"><span className="muted">Нагрузка недели по плану</span><span className="num">{st.week.plan} из безопасных {st.week.cap}{st.week.usual ? ` · обычно ${st.week.usual}` : ''}</span></div>

@@ -193,7 +193,7 @@ function Hypnogram({ hyp, tz }: { hyp: NonNullable<HealthSummary['hypnogram']>; 
           })}
         </svg>
       </div>
-      <div className="between tiny muted num" style={{ paddingLeft: 96 }}>
+      <div className="between tiny muted num" style={{ paddingLeft: 96, gap: 0 }}>
         {Array.from({ length: ticks }, (_, i) => <span key={i}>{clockAt(hyp.start + (span * i) / (ticks - 1), tz)}</span>)}
       </div>
     </div>

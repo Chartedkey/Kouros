@@ -169,17 +169,22 @@ async fn mobile_update_check(app: AppHandle) -> Result<Option<serde_json::Value>
             .map_err(|_| "Не удалось прочитать версию Android".to_string())??;
         let client = reqwest::Client::builder().user_agent("Kouros").timeout(std::time::Duration::from_secs(30))
             .build().map_err(|e| e.to_string())?;
-        let response = client.get("https://github.com/Chartedkey/Kouros/releases/download/android/android-update.json")
+        let response = client.get("https://raw.githubusercontent.com/Chartedkey/Kouros/refs/heads/android-updates/android-update.json")
             .send().await.map_err(|_| "Не удалось связаться с сервером обновлений")?;
         if response.status() == reqwest::StatusCode::NOT_FOUND { return Ok(None); }
-        let response = response.error_for_status().map_err(|_| "Сервер обновлений недоступен")?;
-        let bytes = response.bytes().await.map_err(|_| "Не удалось прочитать сведения об обновлении")?;
-        if bytes.len() > 65536 { return Err("Слишком большой ответ сервера обновлений".into()); }
+        let mut response = response.error_for_status().map_err(|_| "Сервер обновлений недоступен")?;
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response.chunk().await.map_err(|_| "Не удалось прочитать сведения об обновлении")? {
+            if bytes.len() + chunk.len() > 65536 { return Err("Слишком большой ответ сервера обновлений".into()); }
+            bytes.extend_from_slice(&chunk);
+        }
         let v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|_| "Неверный формат обновления")?;
         let code = v["versionCode"].as_u64().ok_or("Нет номера сборки Android")?;
         if code <= current { return Ok(None); }
         if code > 2_100_000_000 || v["version"].as_str().filter(|s| !s.is_empty()).is_none()
-            || v["url"].as_str().filter(|s| s.starts_with("https://github.com/Chartedkey/Kouros/releases/download/")).is_none() {
+            || v["url"].as_str().filter(|s| s.starts_with("https://raw.githubusercontent.com/Chartedkey/Kouros/")
+                || s.starts_with("https://github.com/Chartedkey/Kouros/releases/download/")).is_none()
+            || v["sha256"].as_str().filter(|s| s.len() == 64 && s.bytes().all(|c| c.is_ascii_hexdigit())).is_none() {
             return Err("Некорректные сведения об Android-обновлении".into());
         }
         let _ = app;
@@ -196,7 +201,9 @@ async fn mobile_update_install(app: AppHandle, st: State<'_, AppState>) -> Resul
     {
         let update = mobile_update_check(app).await?.ok_or("Новой Android-версии нет")?;
         let url = update["url"].as_str().ok_or("Нет адреса APK")?.to_string();
-        tauri::async_runtime::spawn_blocking(move || mobile::install(&url)).await.map_err(|_| "Не удалось открыть обновление".to_string())?
+        let code = update["versionCode"].as_u64().ok_or("Нет номера сборки")?;
+        let sha256 = update["sha256"].as_str().ok_or("Нет контрольной суммы APK")?.to_string();
+        tauri::async_runtime::spawn_blocking(move || mobile::install(&url, code, &sha256)).await.map_err(|_| "Не удалось открыть обновление".to_string())?
     }
     #[cfg(not(target_os = "android"))]
     { let _ = app; Err("Доступно только на Android".into()) }

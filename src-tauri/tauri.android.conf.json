@@ -11,11 +11,11 @@
   "bundle": {
     "android": {
       "minSdkVersion": 28,
-      "versionCode": 2000001
+      "versionCode": 2000002
     }
   },
   "plugins": {
     "updater": null
   },
-  "version": "2.0.0-alpha.1"
+  "version": "2.0.0-alpha.2"
 }

@@ -31,7 +31,7 @@ mod android {
         #[derive(Deserialize)] #[serde(rename_all = "camelCase")] struct Info { version_code: u64 }
         app()?.mobile_core().call::<Info>("installedInfo", ()).map(|i| i.version_code)
     }
-    pub fn install(url: &str) -> Result<(), String> { app()?.mobile_core().call("installUpdate", serde_json::json!({"url":url})) }
+    pub fn install(url: &str, version_code: u64, sha256: &str) -> Result<(), String> { app()?.mobile_core().call("installUpdate", serde_json::json!({"url":url,"versionCode":version_code,"sha256":sha256})) }
 }
 #[cfg(target_os = "android")]
 pub use android::*;

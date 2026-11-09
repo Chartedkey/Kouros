@@ -149,7 +149,7 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .chev { width: 36px; height: 36px; flex: none; border-radius: 10px; background: #1b1f25; border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 18px; line-height: 1; transition: transform .15s; }
 .vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .vital { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 12px; background: var(--card-2); }
-.factor-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
+.factor-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 16px; }
 .factor { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 52px; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid #1c2026; }
 .fbar { position: relative; height: 10px; border-radius: 999px; background: #1c2026; }
 .fmid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: #3a404a; }
@@ -251,8 +251,8 @@ h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; 
 .tile-btn { cursor: pointer; text-align: left; color: inherit; font: inherit; border: 1px solid transparent !important; }
 .tile-btn.on { border-color: var(--green) !important; }
 .iwrow { display: grid; grid-template-columns: 60px minmax(0, 1fr) 110px; gap: 10px; align-items: center; }
-.ztable { display: flex; flex-direction: column; }
-.zt { display: grid; grid-template-columns: 52px minmax(84px, 1fr) minmax(96px, 1fr) minmax(60px, 1.2fr) 30px; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid #1c2026; }
+.ztable { display: flex; flex-direction: column; overflow-x: auto; }
+.zt { display: grid; grid-template-columns: 52px minmax(84px, 1fr) minmax(96px, 1fr) minmax(60px, 1.2fr) 30px; min-width: 362px; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid #1c2026; }
 .zt.plain { width: 100%; cursor: pointer; }
 .zt.plain:hover .num { color: #fff; }
 .zwrap { display: flex; flex-direction: column; }
@@ -485,7 +485,11 @@ html.compact .ring-card .stack > span:nth-child(n+3) { display: none; }
 html.compact .ring-card .sleepy { font-size: 40px; }
 html.compact .tiles4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 html.compact .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-html.compact .subtabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; align-self: stretch; scrollbar-width: none; }
+html.compact .select { max-width: 100%; min-width: 0; }
+html.compact .plan-week { grid-template-columns: repeat(7, minmax(120px, 1fr)); overflow-x: auto; }
+/* The board measures intrinsic height and adds its own row gap. Stretching a tab bar
+   to that row makes every ResizeObserver pass add the gap again indefinitely. */
+html.compact .subtabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; align-self: start; scrollbar-width: none; }
 html.compact .subtabs button { flex: none; height: 40px; padding: 0 14px; }
 /* «Ещё» */
 .more-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }

@@ -90,7 +90,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
         </section>
         <section className="card" aria-label="Настроение недели">
           <span className="label">Настроение недели</span>
-          {brums ? <><span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 700, color: iceberg(brums).color }}>{iceberg(brums).title}</span><span className="muted small">Профиль BRUMS от {dayLabel(brums.date)}</span></> : <span className="muted small">Пройди профиль настроения — 2–3 минуты раз в неделю.</span>}
+          {brums ? <><span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 700, color: iceberg(brums).color, overflowWrap: 'anywhere' }}>{iceberg(brums).title}</span><span className="muted small">Профиль BRUMS от {dayLabel(brums.date)}</span></> : <span className="muted small">Пройди профиль настроения — 2–3 минуты раз в неделю.</span>}
         </section>
       </div>
 
@@ -116,7 +116,7 @@ export function Psychology({ onOpenWorkout }: { onOpenWorkout?: (id: string) => 
           <span className="muted tiny" style={{ lineHeight: 1.5 }}>1 — отлично, 7 — очень плохо. Сумма 4–28: чем меньше, тем лучше. Самочувствие = насколько ты далёк от 28, в процентах.</span>
         </section>
         <section className="card" aria-label="14 дней">
-          <div className="between"><span className="label">14 дней · ощущения и тело</span>
+          <div className="between" style={{ flexWrap: 'wrap' }}><span className="label">14 дней · ощущения и тело</span>
             <span className="row tiny" style={{ gap: 12 }}><span className="row" style={{ gap: 4 }}><span className="dot" style={{ background: '#C792EA' }} />самочувствие</span><span className="row" style={{ gap: 4 }}><span className="dot" style={{ background: '#3DDC97' }} />готовность</span></span></div>
           <DualChart today={today} hooper={p.hooper} ready={ready} />
           <span className="muted tiny" style={{ lineHeight: 1.5 }}>Жёлтая полоса — дни, когда ощущения и часы расходятся на 20+ пунктов. Если часы показывают хорошее восстановление, а самочувствие хуже — обычно это стресс вне спорта: работа, недосып, эмоции. В такие дни лучше снизить интенсивность, даже если HRV в норме.</span>

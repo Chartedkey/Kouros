@@ -49,26 +49,41 @@ prevents health data appearing in screenshots/app-switcher previews. Android ent
 protection is mandatory; Windows keeps its current lock setting.
 
 The updater fetches the independent manifest from:
-`https://github.com/Chartedkey/Kouros/releases/download/android/android-update.json`.
+`https://raw.githubusercontent.com/Chartedkey/Kouros/refs/heads/android-updates/android-update.json`.
 A missing channel (404) means no published Android update. Errors are not treated
 as a successful check. A newer numeric versionCode is required. Downloads allow
-only HTTPS on the repository's release path and known GitHub asset redirect hosts.
+only HTTPS on immutable commit URLs in Chartedkey/Kouros, the repository's release path and known GitHub asset redirect hosts.
 Before opening the system installer, Android parses the APK and checks matching
-package, matching current signing certificates, and a strictly higher versionCode.
+package, matching current signing certificates, SHA-256, and a strictly higher versionCode matching the manifest.
 The system installer performs final signature verification and asks for consent.
 No silent installation is promised. If installation permission is missing,
 settings open and the user returns, authenticates and retries the cached APK.
 
-## Update-channel publication (separate approval)
+## Update-channel publication
+
+The user approved alpha.2 to enable in-app updates and include the layout fixes.
+Publication of application sources is not authorized. Publish artifacts only.
 
 Rename the verified signed artifact to `Kouros_<android-version>_android.apk`.
-Generate `android-update.json` with tools/android/update_manifest.py. After review,
-publish the APK and manifest to the GitHub release tagged `android`; upload the APK
-first and manifest last. The manifest's SHA-256 is useful for diagnostics; APK
-signature comparison, not that checksum alone, establishes signer continuity.
-Keep the same signing key and app identifier for all subsequent updates. Do not
-upload private keys/passwords or personal data. Do not reuse the Windows latest
-release as the Android update channel.
+Publish it with SHA256SUMS.txt in an isolated APK-only orphan branch, then verify
+its public download. Use the immutable commit URL, never a mutable branch URL:
+
+```
+python tools/android/update_manifest.py Kouros_2.0.0-alpha.2_android.apk android-update.json https://raw.githubusercontent.com/Chartedkey/Kouros/<40-character-commit>/Kouros_2.0.0-alpha.2_android.apk
+```
+
+Publish the manifest last as `android-update.json` on the independent
+`android-updates` branch. Preserve any existing channel branch history. This branch
+contains update metadata only. The Android prerelease links directly to the APK.
+Windows latest remains independent. APK signature comparison establishes signer
+continuity; SHA-256 detects incomplete/corrupt downloads. Keep the same signing key
+and app identifier. Never upload keys, passwords, source trees or personal data.
+
+Alpha.1 used an unavailable release-asset manifest path, so alpha.2 needs one last
+manual installation over alpha.1. Subsequent approved builds use this channel.
+Automatic checks run at startup when due and every 30 minutes while open. Users
+can disable checks or check manually under Settings / About. Installation always
+requires Android's confirmation; this is not silent/background installation.
 
 ## Validation
 

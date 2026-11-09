@@ -5,7 +5,7 @@ import { errText } from '../lib/api';
 import { isPhone } from '../lib/platform';
 
 const inApp = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in (window as object);
-const LAST = 'kouros_update_checked';
+const LAST = isPhone() ? 'kouros_android_update_checked_v2' : 'kouros_update_checked';
 const AUTO = 'kouros_update_auto';
 const PENDING = 'kouros_android_update_pending';
 
@@ -16,14 +16,15 @@ export function autoCheckOn(): boolean {
 }
 export function setAutoCheck(on: boolean) {
   try { localStorage.setItem(AUTO, on ? '1' : '0'); } catch { /* no storage */ }
+  window.dispatchEvent(new Event('kouros-update-preference'));
 }
 
 /** null = no newer version. */
 export async function checkUpdate(): Promise<Found | null> {
   if (!inApp()) return null;
   if (isPhone()) {
-    // 2.0: the phone has no signed auto-updater — the new APK opens in the browser to download,
-    // then Android installs it over the old one (same signing key, data stays).
+    // Android downloads inside the app, verifies the artifact and asks the system installer.
+    // No external browser is needed after the one-time alpha.1 -> alpha.2 transition.
     const { invoke } = await import('@tauri-apps/api/core');
     const r = await invoke<{ version: string; notes: string; url: string } | null>('mobile_update_check');
     if (!r) { try { localStorage.removeItem(PENDING); } catch { /* no storage */ } return null; }
@@ -101,24 +102,39 @@ function UpdateCard({ u, onLater }: { u: Found; onLater?: () => void }) {
   );
 }
 
-/** Banner at the top of the app: checks once in 12 hours when auto-check is on. */
+/** Automatic checks while the app is open; failures remain retryable. */
 export function UpdateBanner() {
   const [u, setU] = useState<Found | null>(null);
+  const [auto, setAuto] = useState(autoCheckOn());
+  useEffect(() => {
+    const changed = () => setAuto(autoCheckOn());
+    window.addEventListener('kouros-update-preference', changed);
+    return () => window.removeEventListener('kouros-update-preference', changed);
+  }, []);
   useEffect(() => {
     if (!inApp()) return;
     let pending = false;
     try { pending = isPhone() && localStorage.getItem(PENDING) === '1'; } catch { /* no storage */ }
-    if (!autoCheckOn() && !pending) return;
+    if (!auto && !pending) return;
     let last = 0;
     try { last = Number(localStorage.getItem(LAST) ?? 0); } catch { /* no storage */ }
-    if (!pending && Date.now() - last < 12 * 3600 * 1000) return;
-    const t = setTimeout(() => {
-      checkUpdate()
-        .then((v) => { try { localStorage.setItem(LAST, String(Date.now())); } catch { /* no storage */ } setU(v); })
-        .catch(() => {});
-    }, 4000);
-    return () => clearTimeout(t);
-  }, []);
+    const interval = isPhone() ? 30 * 60 * 1000 : 12 * 3600 * 1000;
+    if (!isPhone() && !pending && Date.now() - last < interval) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const run = async () => {
+      try {
+        const v = await checkUpdate();
+        if (cancelled) return;
+        try { localStorage.setItem(LAST, String(Date.now())); } catch { /* no storage */ }
+        setU(v);
+      } catch { /* A temporary network failure is retried on the next interval. */ }
+      finally { if (!cancelled && isPhone() && auto) timer = setTimeout(run, interval); }
+    };
+    const delay = pending ? 4000 : Math.max(4000, Math.min(interval, interval - (Date.now() - last)));
+    timer = setTimeout(run, delay);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [auto]);
   if (!u) return null;
   return <UpdateCard u={u} onLater={() => { try { localStorage.removeItem(PENDING); } catch { /* no storage */ } setU(null); }} />;
 }
@@ -144,7 +160,7 @@ export function UpdatesSection() {
       </div>
       <label className="row small" style={{ gap: 8, alignItems: 'center' }}>
         <input type="checkbox" checked={auto} onChange={(e) => { setAuto(e.target.checked); setAutoCheck(e.target.checked); }} />
-        Проверять при запуске (раз в 12 часов)
+        {isPhone() ? 'Проверять автоматически при запуске и каждые 30 минут работы' : 'Проверять при запуске (раз в 12 часов)'}
       </label>
       {state === 'none' && <span className="small">У тебя последняя версия.</span>}
       {state === 'error' && <span className="note-err">Не удалось проверить: {msg}</span>}

@@ -35,7 +35,7 @@ import javax.crypto.spec.GCMParameterSpec
 @InvokeArg
 class SecretArgs { lateinit var action: String; lateinit var name: String; var value: String? = null }
 @InvokeArg
-class InstallArgs { lateinit var url: String }
+class InstallArgs { lateinit var url: String; lateinit var sha256: String; var versionCode: Long = 0 }
 
 @TauriPlugin
 class MobileCorePlugin(private val activity: Activity) : Plugin(activity) {
@@ -121,14 +121,15 @@ class MobileCorePlugin(private val activity: Activity) : Plugin(activity) {
     private fun sha256(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
     private fun signers(p: PackageInfo): Set<String> = p.signingInfo?.apkContentsSigners?.map { sha256(it.toByteArray()) }?.toSet() ?: emptySet()
     @Suppress("DEPRECATION")
-    private fun verifyApk(file: File) {
+    private fun verifyApk(file: File, expectedVersion: Long) {
         val pm = activity.packageManager
         val installed = pm.getPackageInfo(activity.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
         val update = pm.getPackageArchiveInfo(file.path, PackageManager.GET_SIGNING_CERTIFICATES) ?: error("Не удалось прочитать APK")
+        require(update.longVersionCode == expectedVersion) { "Номер сборки APK не совпадает с объявленным обновлением" }
         UpdatePolicy.validatePackage(installed.packageName, update.packageName, installed.longVersionCode,
             update.longVersionCode, signers(installed), signers(update))
     }
-    private fun download(url: String, destination: File) {
+    private fun download(url: String, destination: File, expectedVersion: Long, checksum: String) {
         UpdatePolicy.validateUrl(url, initial = true)
         var next = url
         repeat(6) {
@@ -158,7 +159,8 @@ class MobileCorePlugin(private val activity: Activity) : Plugin(activity) {
                             }
                         } }
                         check(total > 0 && (expected < 0 || total == expected)) { "APK загружен не полностью" }
-                        verifyApk(temporary)
+                        UpdatePolicy.verifyChecksum(temporary, checksum)
+                        verifyApk(temporary, expectedVersion)
                         check(temporary.renameTo(destination)) { "Не удалось сохранить обновление" }
                     } finally { temporary.delete() }
                     return
@@ -175,8 +177,11 @@ class MobileCorePlugin(private val activity: Activity) : Plugin(activity) {
                 UpdatePolicy.validateUrl(args.url, initial = true)
                 val dir = File(activity.cacheDir, "updates").apply { mkdirs() }
                 val apk = File(dir, sha256(args.url.toByteArray()) + ".apk")
-                if (!apk.exists()) download(args.url, apk)
-                verifyApk(apk)
+                if (!apk.exists()) download(args.url, apk, args.versionCode, args.sha256)
+                try {
+                    UpdatePolicy.verifyChecksum(apk, args.sha256)
+                    verifyApk(apk, args.versionCode)
+                } catch (e: Exception) { apk.delete(); throw e }
                 activity.runOnUiThread {
                     try {
                         if (!session) { invoke.reject("Сначала войдите в Kouros и повторите обновление"); return@runOnUiThread }
