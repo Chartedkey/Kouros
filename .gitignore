@@ -12,3 +12,5 @@ __pycache__/
 /tools/peer-tests/target/
 
 /tools/windows-bundler/target/
+
+/tools/exercise-tests/target/

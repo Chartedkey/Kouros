@@ -1,0 +1,5098 @@
+{
+  "version": 1,
+  "families": {
+    "pushup": "Отжимания",
+    "pullup": "Подтягивания",
+    "dip": "Отжимания на брусьях",
+    "bench_dip": "Обратные отжимания от скамьи",
+    "squat": "Приседания",
+    "lunge": "Выпады",
+    "split_squat": "Сплит-приседания",
+    "step_up": "Зашагивания на платформу",
+    "single_squat": "Приседания на одной ноге",
+    "bridge": "Ягодичный мост",
+    "bridge_hold": "Удержание плечевого моста",
+    "hip_thrust": "Ягодичный мост с опорой на скамью",
+    "calf_standing": "Подъёмы на носки стоя",
+    "calf_bent": "Подъёмы на носки с согнутыми коленями",
+    "heel_drop": "Эксцентрическое опускание пятки",
+    "plank": "Планка",
+    "core_deadbug": "Мёртвый жук",
+    "core_birddog": "Разноимённое разгибание руки и ноги",
+    "core_crunch": "Скручивания",
+    "core_legraise": "Подъёмы ног",
+    "core_hollow": "Удержание ног на весу",
+    "core_wipers": "Повороты ног лёжа — маятник",
+    "back_floor": "Разгибание спины лёжа",
+    "mobility_scorpion": "Повороты лёжа на животе — скорпион",
+    "inchworm": "Выход в планку шагами рук",
+    "mountain_climber": "Подтягивание коленей в упоре — скалолаз",
+    "burpee": "Бёрпи",
+    "jump": "Прыжковые упражнения",
+    "balance": "Равновесие на одной ноге",
+    "hip_abduction": "Отведение бедра в сторону",
+    "hip_extension": "Отведение ноги назад",
+    "hip_flexion": "Сгибание бедра",
+    "hip_adduction": "Приведение бедра",
+    "clamshell": "Ракушка",
+    "band_walk": "Шаги с мини-лентой",
+    "band_row": "Тяга ленты к поясу",
+    "band_pulldown": "Тяга ленты сверху",
+    "band_hinge": "Наклоны и тяги с лентой",
+    "band_chest": "Жим и сведение рук с лентой",
+    "band_shoulder": "Упражнения для плеч с лентой",
+    "band_pullapart": "Разведение ленты",
+    "band_rotation": "Ротация плеча с лентой",
+    "band_curl": "Сгибание рук с лентой",
+    "band_triceps": "Разгибание рук с лентой",
+    "pallof": "Паллоф-пресс",
+    "woodchop": "Диагональная тяга — дровосек",
+    "band_upright": "Тяга ленты к подбородку",
+    "foot_band": "Упражнения для стопы с лентой",
+    "running_drills": "Беговые упражнения с лентой",
+    "kb_swing": "Махи гирей",
+    "kb_deadlift": "Тяга с гирей",
+    "kb_row": "Тяга гири в наклоне",
+    "kb_press": "Жим гири",
+    "kb_floor_press": "Жим гири лёжа на полу",
+    "kb_clean": "Подъём гири на грудь",
+    "kb_pushpress": "Жимовой швунг с гирей",
+    "kb_jerk": "Толчок гири",
+    "kb_snatch": "Рывок гири",
+    "kb_getup": "Турецкий подъём",
+    "kb_halo": "Обвод гири вокруг головы",
+    "kb_windmill": "Мельница с гирей",
+    "kb_thruster": "Трастер с гирей",
+    "kb_carry": "Переноска отягощения",
+    "bench_press": "Жим лёжа",
+    "chest_fly": "Сведение рук для груди",
+    "overhead_press": "Жим над головой",
+    "row": "Горизонтальная тяга",
+    "pulldown": "Тяга верхнего блока",
+    "rear_shoulder": "Задняя поверхность плеча",
+    "biceps": "Сгибания рук",
+    "triceps": "Разгибания рук",
+    "hinge": "Становая и румынская тяга",
+    "leg_press": "Жим ногами",
+    "hack_squat": "Гакк-приседания в тренажёре",
+    "leg_extension": "Разгибание ног",
+    "leg_curl": "Сгибание ног",
+    "back_extension": "Гиперэкстензия",
+    "foot_control": "Контроль стопы и голеностопа",
+    "extended_3_4_sit-up": "Подъём корпуса на 3/4",
+    "extended_90_90_hamstring": "Растяжка бицепса бедра 90/90",
+    "extended_advanced_kettlebell_windmill": "Мельница с гирей (продвинутая)",
+    "extended_all_fours_quad_stretch": "Растяжка квадрицепса на четвереньках",
+    "extended_alternate_heel_touchers": "Касания пяток лёжа",
+    "extended_alternating_hang_clean": "Попеременный подъём гирь на грудь с виса",
+    "extended_alternating_renegade_row": "Тяга гирь в упоре лёжа",
+    "extended_bench_jump": "Прыжки через скамью",
+    "extended_bent-knee_hip_raise": "Подъём таза с согнутыми коленями",
+    "extended_bent_press": "Боковой жим гири",
+    "extended_body-up": "Из планки на локтях в упор на руках",
+    "extended_body_tricep_press": "Отжимания на трицепс от грифа",
+    "extended_bottoms-up_clean_from_the_hang_position": "Подъём гири на грудь донцем вверх",
+    "extended_bottoms_up": "Подъём таза лёжа",
+    "extended_butt-ups": "Подъём таза в планке на локтях",
+    "extended_clock_push-up": "Отжимания «часы»",
+    "extended_close-grip_push-up_off_of_a_dumbbell": "Отжимания узко от гантели",
+    "extended_cocoons": "«Кокон»",
+    "extended_crunch_-_hands_overhead": "Скручивания с руками за головой вверх",
+    "extended_crunch_-_legs_on_exercise_ball": "Скручивания с ногами на фитболе",
+    "extended_decline_crunch": "Скручивания на скамье с наклоном вниз",
+    "extended_decline_oblique_crunch": "Косые скручивания на скамье с наклоном вниз",
+    "extended_decline_reverse_crunch": "Обратные скручивания на скамье с наклоном вниз",
+    "extended_double_kettlebell_alternating_hang_clean": "Попеременный подъём двух гирь на грудь",
+    "extended_double_kettlebell_snatch": "Рывок двух гирь",
+    "extended_double_kettlebell_windmill": "Мельница с двумя гирями",
+    "extended_double_leg_butt_kick": "Прыжки с захлёстом голеней",
+    "extended_elbow_to_knee": "Локоть к колену",
+    "extended_extended_range_one-arm_kettlebell_floor_press": "Жим гири лёжа с увеличенной амплитудой",
+    "extended_fast_skipping": "Быстрые подскоки",
+    "extended_flat_bench_leg_pull-in": "Подтягивание коленей сидя на скамье",
+    "extended_flat_bench_lying_leg_raise": "Подъём ног лёжа на скамье",
+    "extended_flutter_kicks": "«Ножницы» ногами",
+    "extended_frog_sit-ups": "Скручивания «лягушка»",
+    "extended_front_leg_raises": "Махи ногами вперёд",
+    "extended_glute_kickback": "Отведение ноги назад на четвереньках",
+    "extended_gorilla_chin_crunch": "Подтягивание коленей в висе на согнутых руках",
+    "extended_groiners": "Ноги к рукам в упоре лёжа",
+    "extended_handstand_push-ups": "Отжимания в стойке на руках",
+    "extended_hanging_pike": "Складка в висе",
+    "extended_hip_circles_prone": "Круги бёдрами лёжа",
+    "extended_hyperextensions_with_no_hyperextension_bench": "Гиперэкстензия без станка",
+    "extended_incline_push-up_close-grip": "Отжимания от возвышения узко",
+    "extended_incline_push-up_medium": "Отжимания от возвышения средним хватом",
+    "extended_incline_push-up_reverse_grip": "Отжимания от возвышения обратным хватом",
+    "extended_incline_push-up_wide": "Отжимания от возвышения широко",
+    "extended_isometric_chest_squeezes": "Изометрическое сжатие груди",
+    "extended_isometric_neck_exercise_-_front_and_back": "Изометрия для шеи вперёд-назад",
+    "extended_isometric_neck_exercise_-_sides": "Изометрия для шеи в стороны",
+    "extended_isometric_wipers": "«Дворники» в упоре",
+    "extended_jackknife_sit-up": "Складной нож",
+    "extended_janda_sit-up": "Подъём корпуса Янды",
+    "extended_kettlebell_arnold_press": "Жим Арнольда с гирями",
+    "extended_kettlebell_figure_8": "«Восьмёрка» с гирей",
+    "extended_kettlebell_halo_with_overhead_extension": "Нимб с гирей и жимом",
+    "extended_kettlebell_overhead_triceps_extension": "Разгибание рук с гирей из-за головы",
+    "extended_kettlebell_pass_between_the_legs": "Передача гири между ног",
+    "extended_kettlebell_pirate_ships": "«Пиратские корабли» с гирей",
+    "extended_kettlebell_pistol_squat": "Пистолетик с гирей",
+    "extended_kettlebell_seesaw_press": "Поочерёдный жим гирь «качели»",
+    "extended_kettlebell_sumo_high_pull": "Тяга гири сумо к подбородку",
+    "extended_kettlebell_turkish_get-up_squat_style": "Турецкий подъём с гирей (через присед)",
+    "extended_knee_circles": "Вращения коленями",
+    "extended_knee_tuck_jump": "Прыжки с подтягиванием коленей",
+    "extended_lateral_bound": "Прыжки в стороны с ноги на ногу",
+    "extended_leg-over_floor_press": "Жим гири лёжа с перекрещенной ногой",
+    "extended_leg_lift": "Подъём ноги",
+    "extended_leg_pull-in": "Подтягивание коленей лёжа",
+    "extended_lower_back_curl": "Скручивание поясницы лёжа",
+    "extended_lunge_pass_through": "Выпады с передачей гири",
+    "extended_lying_crossover": "Скрещивания лёжа",
+    "extended_lying_glute": "Растяжка ягодиц лёжа",
+    "extended_lying_prone_quadriceps": "Растяжка квадрицепса лёжа на животе",
+    "extended_natural_glute_ham_raise": "Скандинавские сгибания",
+    "extended_oblique_crunches": "Косые скручивания",
+    "extended_oblique_crunches_-_on_the_floor": "Косые скручивания на полу",
+    "extended_one-arm_kettlebell_clean_and_jerk": "Толчок гири одной рукой с подъёмом на грудь",
+    "extended_one-arm_kettlebell_military_press_to_the_side": "Жим гири одной рукой с наклоном в сторону",
+    "extended_one-arm_kettlebell_para_press": "Жим гири «пара»",
+    "extended_one-arm_kettlebell_split_jerk": "Толчок гири ножницами",
+    "extended_one-arm_kettlebell_split_snatch": "Рывок гири ножницами",
+    "extended_one-arm_open_palm_kettlebell_clean": "Подъём гири на грудь открытой ладонью",
+    "extended_one-arm_overhead_kettlebell_squats": "Приседания с гирей над головой одной рукой",
+    "extended_open_palm_kettlebell_clean": "Подъём гири на грудь открытой ладонью (две руки)",
+    "extended_overhead_triceps": "Растяжка трицепса над головой",
+    "extended_plyo_kettlebell_pushups": "Плиометрические отжимания на гирях",
+    "extended_plyo_push-up": "Плиометрические отжимания",
+    "extended_push-ups_with_feet_elevated": "Отжимания с ногами на возвышении",
+    "extended_push_up_to_side_plank": "Отжимание с переходом в боковую планку",
+    "extended_pushups_close_and_wide_hand_positions": "Отжимания узко и широко",
+    "extended_rear_leg_raises": "Махи ногой назад",
+    "extended_rocket_jump": "Ракетный прыжок",
+    "extended_russian_twist": "«Русские скручивания»",
+    "extended_scissor_kick": "«Ножницы» ногами лёжа",
+    "extended_scissors_jump": "Прыжки «ножницы»",
+    "extended_seated_biceps": "Растяжка бицепса сидя",
+    "extended_seated_flat_bench_leg_pull-in": "Подтягивание коленей сидя на скамье",
+    "extended_seated_front_deltoid": "Растяжка передней дельты сидя",
+    "extended_seated_glute": "Растяжка ягодиц сидя",
+    "extended_seated_leg_tucks": "Подтягивание ног сидя",
+    "extended_side_jackknife": "Боковой складной нож",
+    "extended_side_leg_raises": "Махи ногой в сторону",
+    "extended_single-arm_push-up": "Отжимания на одной руке",
+    "extended_single_leg_butt_kick": "Захлёст голени одной ногой",
+    "extended_sit-up": "Подъём корпуса",
+    "extended_spider_crawl": "«Паук»",
+    "extended_split_jump": "Прыжки со сменой ног в выпаде",
+    "extended_standing_hip_circles": "Круги бёдрами стоя",
+    "extended_standing_long_jump": "Прыжок в длину с места",
+    "extended_standing_towel_triceps_extension": "Разгибание рук с полотенцем стоя",
+    "extended_star_jump": "Прыжки «звёздочка»",
+    "extended_stomach_vacuum": "Вакуум живота",
+    "extended_toe_touchers": "Касания носков лёжа",
+    "extended_tuck_crunch": "Скручивания с подтягиванием коленей",
+    "extended_two-arm_kettlebell_clean": "Подъём гири двумя руками на грудь",
+    "extended_two-arm_kettlebell_jerk": "Толчок гири двумя руками",
+    "extended_v-bar_pullup": "Подтягивания с V-рукоятью",
+    "extended_wide-grip_rear_pull-up": "Подтягивания за голову широким хватом",
+    "extended_wind_sprints": "Ветровые спринты",
+    "extended_wrist_circles": "Вращения запястьями"
+  },
+  "variants": [
+    {
+      "id": "3_4_Sit-Up",
+      "family": "extended_3_4_sit-up",
+      "name": "Подъём корпуса на 3/4",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём корпуса на 3/4"
+      ]
+    },
+    {
+      "id": "90_90_Hamstring",
+      "family": "extended_90_90_hamstring",
+      "name": "Растяжка бицепса бедра 90/90",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка бицепса бедра 90/90"
+      ]
+    },
+    {
+      "id": "Ab_Crunch_Machine",
+      "family": "core_crunch",
+      "name": "Скручивания в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания в тренажёре"
+      ],
+      "media": "ex-kouros/Ab_Crunch_Machine.png"
+    },
+    {
+      "id": "Advanced_Kettlebell_Windmill",
+      "family": "extended_advanced_kettlebell_windmill",
+      "name": "Мельница с гирей (продвинутая)",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Мельница с гирей (продвинутая)"
+      ]
+    },
+    {
+      "id": "Air_Bike",
+      "family": "core_crunch",
+      "name": "Велосипед на пресс",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Велосипед на пресс"
+      ],
+      "media": "ex-kouros/Air_Bike.png"
+    },
+    {
+      "id": "All_Fours_Quad_Stretch",
+      "family": "extended_all_fours_quad_stretch",
+      "name": "Растяжка квадрицепса на четвереньках",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка квадрицепса на четвереньках"
+      ]
+    },
+    {
+      "id": "Alternate_Heel_Touchers",
+      "family": "extended_alternate_heel_touchers",
+      "name": "Касания пяток лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Касания пяток лёжа"
+      ]
+    },
+    {
+      "id": "Alternating_Floor_Press",
+      "family": "kb_floor_press",
+      "name": "Попеременный жим гирь лёжа на полу",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Попеременный жим гирь лёжа на полу"
+      ],
+      "media": "ex-kouros/Alternating_Floor_Press.png"
+    },
+    {
+      "id": "Alternating_Hang_Clean",
+      "family": "extended_alternating_hang_clean",
+      "name": "Попеременный подъём гирь на грудь с виса",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Попеременный подъём гирь на грудь с виса"
+      ]
+    },
+    {
+      "id": "Alternating_Kettlebell_Press",
+      "family": "kb_press",
+      "name": "Попеременный жим гирь стоя",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Попеременный жим гирь стоя"
+      ],
+      "media": "ex-kouros/Alternating_Kettlebell_Press.png"
+    },
+    {
+      "id": "Alternating_Kettlebell_Row",
+      "family": "kb_row",
+      "name": "Попеременная тяга гирь в наклоне",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Попеременная тяга гирь в наклоне"
+      ],
+      "media": "ex-kouros/Alternating_Kettlebell_Row.png"
+    },
+    {
+      "id": "Alternating_Renegade_Row",
+      "family": "extended_alternating_renegade_row",
+      "name": "Тяга гирь в упоре лёжа",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга гирь в упоре лёжа"
+      ]
+    },
+    {
+      "id": "Arnold_Dumbbell_Press",
+      "family": "overhead_press",
+      "name": "Жим Арнольда",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим Арнольда"
+      ],
+      "media": "ex-kouros/Arnold_Dumbbell_Press.png"
+    },
+    {
+      "id": "Back_Flyes_-_With_Bands",
+      "family": "band_pullapart",
+      "name": "Разведения назад с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разведения назад с резиной"
+      ],
+      "media": "ex-kouros/Back_Flyes_-_With_Bands.png"
+    },
+    {
+      "id": "Band_Assisted_Pull-Up",
+      "family": "pullup",
+      "name": "Подтягивания с лентой",
+      "equipment": "long_band+pullup_bar",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивания с резиной"
+      ],
+      "media": "ex-kouros/Band_Assisted_Pull-Up.png"
+    },
+    {
+      "id": "Band_Good_Morning",
+      "family": "band_hinge",
+      "name": "Наклоны с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Наклоны с резиной"
+      ],
+      "media": "ex-kouros/Band_Good_Morning.png"
+    },
+    {
+      "id": "Band_Good_Morning_Pull_Through",
+      "family": "band_hinge",
+      "name": "Протяжка ленты между ног",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Протяжка резины между ног"
+      ],
+      "media": "ex-kouros/Band_Good_Morning_Pull_Through.png"
+    },
+    {
+      "id": "Band_Hip_Adductions",
+      "family": "hip_adduction",
+      "name": "Приведение бедра с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приведение бедра с резиной"
+      ],
+      "media": "ex-kouros/Band_Hip_Adductions.png"
+    },
+    {
+      "id": "Band_Pull_Apart",
+      "family": "band_pullapart",
+      "name": "Разведение ленты перед собой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разведение резины перед собой"
+      ],
+      "media": "ex-kouros/Band_Pull_Apart.png"
+    },
+    {
+      "id": "Band_Skull_Crusher",
+      "family": "band_triceps",
+      "name": "Французский жим с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Французский жим с резиной"
+      ],
+      "media": "ex-kouros/Band_Skull_Crusher.png"
+    },
+    {
+      "id": "Barbell_Bench_Press_-_Medium_Grip",
+      "family": "bench_press",
+      "name": "Жим штанги лёжа",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим штанги лёжа"
+      ],
+      "media": "ex-kouros/Barbell_Bench_Press_-_Medium_Grip.png"
+    },
+    {
+      "id": "Barbell_Deadlift",
+      "family": "hinge",
+      "name": "Становая тяга со штангой",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Становая тяга со штангой"
+      ],
+      "media": "ex-kouros/Barbell_Deadlift.png"
+    },
+    {
+      "id": "Barbell_Hip_Thrust",
+      "family": "hip_thrust",
+      "name": "Ягодичный мост со штангой от скамьи",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ягодичный мост со штангой от скамьи"
+      ],
+      "media": "ex-kouros/Barbell_Hip_Thrust.png"
+    },
+    {
+      "id": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+      "family": "bench_press",
+      "name": "Жим штанги на наклонной скамье",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим штанги на наклонной скамье"
+      ],
+      "media": "ex-kouros/Barbell_Incline_Bench_Press_-_Medium_Grip.png"
+    },
+    {
+      "id": "Barbell_Lunge",
+      "family": "lunge",
+      "name": "Выпады со штангой",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Выпады со штангой"
+      ],
+      "media": "ex-kouros/Barbell_Lunge.png"
+    },
+    {
+      "id": "Barbell_Seated_Calf_Raise",
+      "family": "calf_bent",
+      "name": "Подъём на носки сидя со штангой",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки сидя со штангой"
+      ],
+      "media": "ex-kouros/Barbell_Seated_Calf_Raise.png"
+    },
+    {
+      "id": "Barbell_Squat",
+      "family": "squat",
+      "name": "Приседания со штангой",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приседания со штангой"
+      ],
+      "media": "ex-kouros/Barbell_Squat.png"
+    },
+    {
+      "id": "Barbell_Step_Ups",
+      "family": "step_up",
+      "name": "Зашагивания на платформу со штангой",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Зашагивания на платформу со штангой"
+      ],
+      "media": "ex-kouros/Barbell_Step_Ups.png"
+    },
+    {
+      "id": "Bench_Dips",
+      "family": "bench_dip",
+      "name": "Обратные отжимания от скамьи",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Обратные отжимания от скамьи"
+      ],
+      "media": "ex-kouros/Bench_Dips.png"
+    },
+    {
+      "id": "Bench_Jump",
+      "family": "extended_bench_jump",
+      "name": "Прыжки через скамью",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки через скамью"
+      ]
+    },
+    {
+      "id": "Bench_Press_-_With_Bands",
+      "family": "band_chest",
+      "name": "Жим лёжа с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим лёжа с резиной"
+      ],
+      "media": "ex-kouros/Bench_Press_-_With_Bands.png"
+    },
+    {
+      "id": "Bent-Knee_Hip_Raise",
+      "family": "extended_bent-knee_hip_raise",
+      "name": "Подъём таза с согнутыми коленями",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём таза с согнутыми коленями"
+      ]
+    },
+    {
+      "id": "Bent_Over_Barbell_Row",
+      "family": "row",
+      "name": "Тяга штанги в наклоне",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга штанги в наклоне"
+      ],
+      "media": "ex-kouros/Bent_Over_Barbell_Row.png"
+    },
+    {
+      "id": "Bent_Over_Two-Dumbbell_Row",
+      "family": "row",
+      "name": "Тяга гантелей в наклоне",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга гантелей в наклоне"
+      ],
+      "media": "ex-kouros/Bent_Over_Two-Dumbbell_Row.png"
+    },
+    {
+      "id": "Bent_Press",
+      "family": "extended_bent_press",
+      "name": "Боковой жим гири",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Боковой жим гири"
+      ]
+    },
+    {
+      "id": "Body-Up",
+      "family": "extended_body-up",
+      "name": "Из планки на локтях в упор на руках",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Из планки на локтях в упор на руках"
+      ]
+    },
+    {
+      "id": "Body_Tricep_Press",
+      "family": "extended_body_tricep_press",
+      "name": "Отжимания на трицепс от грифа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания на трицепс от грифа"
+      ]
+    },
+    {
+      "id": "Bodyweight_Squat",
+      "family": "squat",
+      "name": "Приседания без веса",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приседания без веса"
+      ],
+      "media": "ex-kouros/Bodyweight_Squat.png"
+    },
+    {
+      "id": "Bodyweight_Walking_Lunge",
+      "family": "lunge",
+      "name": "Шагающие выпады без веса",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Шагающие выпады без веса"
+      ],
+      "media": "ex-kouros/Bodyweight_Walking_Lunge.png"
+    },
+    {
+      "id": "Bottoms-Up_Clean_From_The_Hang_Position",
+      "family": "extended_bottoms-up_clean_from_the_hang_position",
+      "name": "Подъём гири на грудь донцем вверх",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири на грудь донцем вверх"
+      ]
+    },
+    {
+      "id": "Bottoms_Up",
+      "family": "extended_bottoms_up",
+      "name": "Подъём таза лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём таза лёжа"
+      ]
+    },
+    {
+      "id": "Butt-Ups",
+      "family": "extended_butt-ups",
+      "name": "Подъём таза в планке на локтях",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём таза в планке на локтях"
+      ]
+    },
+    {
+      "id": "Butt_Lift_Bridge",
+      "family": "bridge",
+      "name": "Ягодичный мостик",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ягодичный мостик"
+      ],
+      "media": "ex-kouros/Butt_Lift_Bridge.png"
+    },
+    {
+      "id": "Cable_Crossover",
+      "family": "chest_fly",
+      "name": "Сведение рук в кроссовере",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сведение рук в кроссовере"
+      ],
+      "media": "ex-kouros/Cable_Crossover.png"
+    },
+    {
+      "id": "Cable_Crunch",
+      "family": "core_crunch",
+      "name": "Скручивания на блоке стоя на коленях",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания на блоке стоя на коленях"
+      ],
+      "media": "ex-kouros/Cable_Crunch.png"
+    },
+    {
+      "id": "Calf_Raises_-_With_Bands",
+      "family": "calf_standing",
+      "name": "Подъём на носки с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки с резиной"
+      ],
+      "media": "ex-kouros/Calf_Raises_-_With_Bands.png"
+    },
+    {
+      "id": "Chin-Up",
+      "family": "pullup",
+      "name": "Подтягивания обратным хватом",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивания обратным хватом"
+      ],
+      "media": "ex-kouros/Chin-Up.png"
+    },
+    {
+      "id": "Clock_Push-Up",
+      "family": "extended_clock_push-up",
+      "name": "Отжимания «часы»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания «часы»"
+      ]
+    },
+    {
+      "id": "Close-Grip_Barbell_Bench_Press",
+      "family": "bench_press",
+      "name": "Жим лёжа узким хватом",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим лёжа узким хватом"
+      ],
+      "media": "ex-kouros/Close-Grip_Barbell_Bench_Press.png"
+    },
+    {
+      "id": "Close-Grip_Front_Lat_Pulldown",
+      "family": "pulldown",
+      "name": "Тяга верхнего блока узким хватом к груди",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга верхнего блока узким хватом к груди"
+      ],
+      "media": "ex-kouros/Close-Grip_Front_Lat_Pulldown.png"
+    },
+    {
+      "id": "Close-Grip_Push-Up_off_of_a_Dumbbell",
+      "family": "extended_close-grip_push-up_off_of_a_dumbbell",
+      "name": "Отжимания узко от гантели",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания узко от гантели"
+      ]
+    },
+    {
+      "id": "Cocoons",
+      "family": "extended_cocoons",
+      "name": "«Кокон»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Кокон»"
+      ]
+    },
+    {
+      "id": "Cross-Body_Crunch",
+      "family": "core_crunch",
+      "name": "Скручивания по диагонали",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания по диагонали"
+      ],
+      "media": "ex-kouros/Cross-Body_Crunch.png"
+    },
+    {
+      "id": "Cross_Over_-_With_Bands",
+      "family": "band_chest",
+      "name": "Сведения рук с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сведения рук с резиной"
+      ],
+      "media": "ex-kouros/Cross_Over_-_With_Bands.png"
+    },
+    {
+      "id": "Crunch_-_Hands_Overhead",
+      "family": "extended_crunch_-_hands_overhead",
+      "name": "Скручивания с руками за головой вверх",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания с руками за головой вверх"
+      ]
+    },
+    {
+      "id": "Crunch_-_Legs_On_Exercise_Ball",
+      "family": "extended_crunch_-_legs_on_exercise_ball",
+      "name": "Скручивания с ногами на фитболе",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания с ногами на фитболе"
+      ]
+    },
+    {
+      "id": "Crunches",
+      "family": "core_crunch",
+      "name": "Скручивания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания"
+      ],
+      "media": "ex-kouros/Crunches.png"
+    },
+    {
+      "id": "Dead_Bug",
+      "family": "core_deadbug",
+      "name": "«Мёртвый жук»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Мёртвый жук»"
+      ],
+      "media": "ex-kouros/Dead_Bug.png"
+    },
+    {
+      "id": "Decline_Crunch",
+      "family": "extended_decline_crunch",
+      "name": "Скручивания на скамье с наклоном вниз",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания на скамье с наклоном вниз"
+      ]
+    },
+    {
+      "id": "Decline_Oblique_Crunch",
+      "family": "extended_decline_oblique_crunch",
+      "name": "Косые скручивания на скамье с наклоном вниз",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Косые скручивания на скамье с наклоном вниз"
+      ]
+    },
+    {
+      "id": "Decline_Push-Up",
+      "family": "pushup",
+      "name": "Отжимания с ногами на возвышении",
+      "equipment": "bodyweight+platform",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания с ногами на возвышении"
+      ],
+      "media": "ex-kouros/Decline_Push-Up.png"
+    },
+    {
+      "id": "Decline_Reverse_Crunch",
+      "family": "extended_decline_reverse_crunch",
+      "name": "Обратные скручивания на скамье с наклоном вниз",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Обратные скручивания на скамье с наклоном вниз"
+      ]
+    },
+    {
+      "id": "Dips_-_Chest_Version",
+      "family": "dip",
+      "name": "Отжимания на брусьях на грудь",
+      "equipment": "parallel_bars",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания на брусьях на грудь"
+      ],
+      "media": "ex-kouros/Dips_-_Chest_Version.png"
+    },
+    {
+      "id": "Dips_-_Triceps_Version",
+      "family": "dip",
+      "name": "Отжимания на брусьях на трицепс",
+      "equipment": "parallel_bars",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания на брусьях на трицепс"
+      ],
+      "media": "ex-kouros/Dips_-_Triceps_Version.png"
+    },
+    {
+      "id": "Double_Kettlebell_Alternating_Hang_Clean",
+      "family": "extended_double_kettlebell_alternating_hang_clean",
+      "name": "Попеременный подъём двух гирь на грудь",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Попеременный подъём двух гирь на грудь"
+      ]
+    },
+    {
+      "id": "Double_Kettlebell_Jerk",
+      "family": "kb_jerk",
+      "name": "Толчок двух гирь",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Толчок двух гирь"
+      ],
+      "media": "ex-kouros/Double_Kettlebell_Jerk.png"
+    },
+    {
+      "id": "Double_Kettlebell_Push_Press",
+      "family": "kb_pushpress",
+      "name": "Швунг двух гирь",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Швунг двух гирь"
+      ],
+      "media": "ex-kouros/Double_Kettlebell_Push_Press.png"
+    },
+    {
+      "id": "Double_Kettlebell_Snatch",
+      "family": "extended_double_kettlebell_snatch",
+      "name": "Рывок двух гирь",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Рывок двух гирь"
+      ]
+    },
+    {
+      "id": "Double_Kettlebell_Windmill",
+      "family": "extended_double_kettlebell_windmill",
+      "name": "Мельница с двумя гирями",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Мельница с двумя гирями"
+      ]
+    },
+    {
+      "id": "Double_Leg_Butt_Kick",
+      "family": "extended_double_leg_butt_kick",
+      "name": "Прыжки с захлёстом голеней",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки с захлёстом голеней"
+      ]
+    },
+    {
+      "id": "Dumbbell_Bench_Press",
+      "family": "bench_press",
+      "name": "Жим гантелей лёжа",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гантелей лёжа"
+      ],
+      "media": "ex-kouros/Dumbbell_Bench_Press.png"
+    },
+    {
+      "id": "Dumbbell_Flyes",
+      "family": "chest_fly",
+      "name": "Разведения гантелей лёжа",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разведения гантелей лёжа"
+      ],
+      "media": "ex-kouros/Dumbbell_Flyes.png"
+    },
+    {
+      "id": "Dumbbell_Lunges",
+      "family": "lunge",
+      "name": "Выпады с гантелями",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Выпады с гантелями"
+      ],
+      "media": "ex-kouros/Dumbbell_Lunges.png"
+    },
+    {
+      "id": "Dumbbell_Rear_Lunge",
+      "family": "lunge",
+      "name": "Обратные выпады с гантелями",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Обратные выпады с гантелями"
+      ],
+      "media": "ex-kouros/Dumbbell_Rear_Lunge.png"
+    },
+    {
+      "id": "Dumbbell_Seated_One-Leg_Calf_Raise",
+      "family": "calf_bent",
+      "name": "Подъём на носок одной ноги сидя с гантелью",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носок одной ноги сидя с гантелью"
+      ],
+      "media": "ex-kouros/Dumbbell_Seated_One-Leg_Calf_Raise.png"
+    },
+    {
+      "id": "Dumbbell_Shoulder_Press",
+      "family": "overhead_press",
+      "name": "Жим гантелей сидя",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гантелей сидя"
+      ],
+      "media": "ex-kouros/Dumbbell_Shoulder_Press.png"
+    },
+    {
+      "id": "Dumbbell_Squat",
+      "family": "squat",
+      "name": "Приседания с гантелями",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приседания с гантелями"
+      ],
+      "media": "ex-kouros/Dumbbell_Squat.png"
+    },
+    {
+      "id": "Dumbbell_Step_Ups",
+      "family": "step_up",
+      "name": "Зашагивания на платформу с гантелями",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Зашагивания на платформу с гантелями"
+      ],
+      "media": "ex-kouros/Dumbbell_Step_Ups.png"
+    },
+    {
+      "id": "EZ-Bar_Curl",
+      "family": "biceps",
+      "name": "Сгибание рук с EZ-грифом",
+      "equipment": "ez_bar",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание рук с EZ-грифом"
+      ],
+      "media": "ex-kouros/EZ-Bar_Curl.png"
+    },
+    {
+      "id": "EZ-Bar_Skullcrusher",
+      "family": "triceps",
+      "name": "Французский жим с EZ-грифом лёжа",
+      "equipment": "ez_bar",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Французский жим с EZ-грифом лёжа"
+      ],
+      "media": "ex-kouros/EZ-Bar_Skullcrusher.png"
+    },
+    {
+      "id": "Elbow_to_Knee",
+      "family": "extended_elbow_to_knee",
+      "name": "Локоть к колену",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Локоть к колену"
+      ]
+    },
+    {
+      "id": "Extended_Range_One-Arm_Kettlebell_Floor_Press",
+      "family": "extended_extended_range_one-arm_kettlebell_floor_press",
+      "name": "Жим гири лёжа с увеличенной амплитудой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гири лёжа с увеличенной амплитудой"
+      ]
+    },
+    {
+      "id": "External_Rotation_with_Band",
+      "family": "band_rotation",
+      "name": "Наружная ротация с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Наружная ротация с резиной"
+      ],
+      "media": "ex-kouros/External_Rotation_with_Band.png"
+    },
+    {
+      "id": "Face_Pull",
+      "family": "rear_shoulder",
+      "name": "Тяга каната к лицу",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга каната к лицу"
+      ],
+      "media": "ex-kouros/Face_Pull.png"
+    },
+    {
+      "id": "Farmers_Walk",
+      "family": "kb_carry",
+      "name": "Прогулка фермера",
+      "equipment": "kettlebell_or_dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прогулка фермера"
+      ],
+      "media": "ex-kouros/Farmers_Walk.png"
+    },
+    {
+      "id": "Fast_Skipping",
+      "family": "extended_fast_skipping",
+      "name": "Быстрые подскоки",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Быстрые подскоки"
+      ]
+    },
+    {
+      "id": "Flat_Bench_Leg_Pull-In",
+      "family": "extended_flat_bench_leg_pull-in",
+      "name": "Подтягивание коленей сидя на скамье",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивание коленей сидя на скамье"
+      ]
+    },
+    {
+      "id": "Flat_Bench_Lying_Leg_Raise",
+      "family": "extended_flat_bench_lying_leg_raise",
+      "name": "Подъём ног лёжа на скамье",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём ног лёжа на скамье"
+      ]
+    },
+    {
+      "id": "Flutter_Kicks",
+      "family": "extended_flutter_kicks",
+      "name": "«Ножницы» ногами",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Ножницы» ногами"
+      ]
+    },
+    {
+      "id": "Freehand_Jump_Squat",
+      "family": "jump",
+      "name": "Прыжки из приседа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки из приседа"
+      ],
+      "media": "ex-kouros/Freehand_Jump_Squat.png"
+    },
+    {
+      "id": "Frog_Sit-Ups",
+      "family": "extended_frog_sit-ups",
+      "name": "Скручивания «лягушка»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания «лягушка»"
+      ]
+    },
+    {
+      "id": "Front_Barbell_Squat",
+      "family": "squat",
+      "name": "Фронтальные приседания со штангой",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Фронтальные приседания со штангой"
+      ],
+      "media": "ex-kouros/Front_Barbell_Squat.png"
+    },
+    {
+      "id": "Front_Leg_Raises",
+      "family": "extended_front_leg_raises",
+      "name": "Махи ногами вперёд",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Махи ногами вперёд"
+      ]
+    },
+    {
+      "id": "Front_Squats_With_Two_Kettlebells",
+      "family": "squat",
+      "name": "Фронтальные приседания с двумя гирями",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Фронтальные приседания с двумя гирями"
+      ],
+      "media": "ex-kouros/Front_Squats_With_Two_Kettlebells.png"
+    },
+    {
+      "id": "Glute_Kickback",
+      "family": "extended_glute_kickback",
+      "name": "Отведение ноги назад на четвереньках",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отведение ноги назад на четвереньках"
+      ]
+    },
+    {
+      "id": "Goblet_Squat",
+      "family": "squat",
+      "name": "Гоблет-приседания",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Гоблет-приседания"
+      ],
+      "media": "ex-kouros/Goblet_Squat.png"
+    },
+    {
+      "id": "Gorilla_Chin_Crunch",
+      "family": "extended_gorilla_chin_crunch",
+      "name": "Подтягивание коленей в висе на согнутых руках",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивание коленей в висе на согнутых руках"
+      ]
+    },
+    {
+      "id": "Groiners",
+      "family": "extended_groiners",
+      "name": "Ноги к рукам в упоре лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ноги к рукам в упоре лёжа"
+      ]
+    },
+    {
+      "id": "Hack_Squat",
+      "family": "hack_squat",
+      "name": "Гакк-приседания в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Гакк-приседания в тренажёре"
+      ],
+      "media": "ex-kouros/Hack_Squat.png"
+    },
+    {
+      "id": "Hammer_Curls",
+      "family": "biceps",
+      "name": "Сгибания «молот»",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибания «молот»"
+      ],
+      "media": "ex-kouros/Hammer_Curls.png"
+    },
+    {
+      "id": "Handstand_Push-Ups",
+      "family": "extended_handstand_push-ups",
+      "name": "Отжимания в стойке на руках",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания в стойке на руках"
+      ]
+    },
+    {
+      "id": "Hanging_Leg_Raise",
+      "family": "core_legraise",
+      "name": "Подъём ног в висе",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём ног в висе"
+      ],
+      "media": "ex-kouros/Hanging_Leg_Raise.png"
+    },
+    {
+      "id": "Hanging_Pike",
+      "family": "extended_hanging_pike",
+      "name": "Складка в висе",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Складка в висе"
+      ]
+    },
+    {
+      "id": "Hip_Circles_prone",
+      "family": "extended_hip_circles_prone",
+      "name": "Круги бёдрами лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Круги бёдрами лёжа"
+      ]
+    },
+    {
+      "id": "Hip_Extension_with_Bands",
+      "family": "hip_extension",
+      "name": "Разгибание бедра с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание бедра с резиной"
+      ],
+      "media": "ex-kouros/Hip_Extension_with_Bands.png"
+    },
+    {
+      "id": "Hip_Flexion_with_Band",
+      "family": "hip_flexion",
+      "name": "Сгибание бедра с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание бедра с резиной"
+      ],
+      "media": "ex-kouros/Hip_Flexion_with_Band.png"
+    },
+    {
+      "id": "Hip_Lift_with_Band",
+      "family": "bridge",
+      "name": "Подъём таза с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём таза с резиной"
+      ],
+      "media": "ex-kouros/Hip_Lift_with_Band.png"
+    },
+    {
+      "id": "Hyperextensions_Back_Extensions",
+      "family": "back_extension",
+      "name": "Гиперэкстензия",
+      "equipment": "back_extension_bench",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Гиперэкстензия"
+      ],
+      "media": "ex-kouros/Hyperextensions_Back_Extensions.png"
+    },
+    {
+      "id": "Hyperextensions_With_No_Hyperextension_Bench",
+      "family": "extended_hyperextensions_with_no_hyperextension_bench",
+      "name": "Гиперэкстензия без станка",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Гиперэкстензия без станка"
+      ]
+    },
+    {
+      "id": "Inchworm",
+      "family": "inchworm",
+      "name": "«Гусеница»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Гусеница»"
+      ],
+      "media": "ex-kouros/Inchworm.png"
+    },
+    {
+      "id": "Incline_Dumbbell_Press",
+      "family": "bench_press",
+      "name": "Жим гантелей на наклонной скамье",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гантелей на наклонной скамье"
+      ],
+      "media": "ex-kouros/Incline_Dumbbell_Press.png"
+    },
+    {
+      "id": "Incline_Push-Up",
+      "family": "pushup",
+      "name": "Отжимания с руками на возвышении",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания с руками на возвышении"
+      ],
+      "media": "ex-kouros/Incline_Push-Up.png"
+    },
+    {
+      "id": "Incline_Push-Up_Close-Grip",
+      "family": "extended_incline_push-up_close-grip",
+      "name": "Отжимания от возвышения узко",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания от возвышения узко"
+      ]
+    },
+    {
+      "id": "Incline_Push-Up_Medium",
+      "family": "extended_incline_push-up_medium",
+      "name": "Отжимания от возвышения средним хватом",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания от возвышения средним хватом"
+      ]
+    },
+    {
+      "id": "Incline_Push-Up_Reverse_Grip",
+      "family": "extended_incline_push-up_reverse_grip",
+      "name": "Отжимания от возвышения обратным хватом",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания от возвышения обратным хватом"
+      ]
+    },
+    {
+      "id": "Incline_Push-Up_Wide",
+      "family": "extended_incline_push-up_wide",
+      "name": "Отжимания от возвышения широко",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания от возвышения широко"
+      ]
+    },
+    {
+      "id": "Internal_Rotation_with_Band",
+      "family": "band_rotation",
+      "name": "Внутренняя ротация с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Внутренняя ротация с резиной"
+      ],
+      "media": "ex-kouros/Internal_Rotation_with_Band.png"
+    },
+    {
+      "id": "Isometric_Chest_Squeezes",
+      "family": "extended_isometric_chest_squeezes",
+      "name": "Изометрическое сжатие груди",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Изометрическое сжатие груди"
+      ]
+    },
+    {
+      "id": "Isometric_Neck_Exercise_-_Front_And_Back",
+      "family": "extended_isometric_neck_exercise_-_front_and_back",
+      "name": "Изометрия для шеи вперёд-назад",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Изометрия для шеи вперёд-назад"
+      ]
+    },
+    {
+      "id": "Isometric_Neck_Exercise_-_Sides",
+      "family": "extended_isometric_neck_exercise_-_sides",
+      "name": "Изометрия для шеи в стороны",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Изометрия для шеи в стороны"
+      ]
+    },
+    {
+      "id": "Isometric_Wipers",
+      "family": "extended_isometric_wipers",
+      "name": "«Дворники» в упоре",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "seconds",
+      "search_aliases": [
+        "«Дворники» в упоре"
+      ]
+    },
+    {
+      "id": "Jackknife_Sit-Up",
+      "family": "extended_jackknife_sit-up",
+      "name": "Складной нож",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Складной нож"
+      ]
+    },
+    {
+      "id": "Janda_Sit-Up",
+      "family": "extended_janda_sit-up",
+      "name": "Подъём корпуса Янды",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём корпуса Янды"
+      ]
+    },
+    {
+      "id": "Kettlebell_Arnold_Press",
+      "family": "extended_kettlebell_arnold_press",
+      "name": "Жим Арнольда с гирями",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим Арнольда с гирями"
+      ]
+    },
+    {
+      "id": "Kettlebell_Dead_Clean",
+      "family": "kb_clean",
+      "name": "Подъём гири на грудь с пола",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири на грудь с пола"
+      ],
+      "media": "ex-kouros/Kettlebell_Dead_Clean.png"
+    },
+    {
+      "id": "Kettlebell_Figure_8",
+      "family": "extended_kettlebell_figure_8",
+      "name": "«Восьмёрка» с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Восьмёрка» с гирей"
+      ]
+    },
+    {
+      "id": "Kettlebell_Halo",
+      "family": "kb_halo",
+      "name": "Нимб с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Нимб с гирей"
+      ],
+      "media": "ex-kouros/Kettlebell_Halo.png"
+    },
+    {
+      "id": "Kettlebell_Halo_With_Overhead_Extension",
+      "family": "extended_kettlebell_halo_with_overhead_extension",
+      "name": "Нимб с гирей и жимом",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Нимб с гирей и жимом"
+      ]
+    },
+    {
+      "id": "Kettlebell_Hang_Clean",
+      "family": "kb_clean",
+      "name": "Подъём гири на грудь с виса",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири на грудь с виса"
+      ],
+      "media": "ex-kouros/Kettlebell_Hang_Clean.png"
+    },
+    {
+      "id": "Kettlebell_One-Legged_Deadlift",
+      "family": "kb_deadlift",
+      "name": "Становая тяга с гирей на одной ноге",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Становая тяга с гирей на одной ноге"
+      ],
+      "media": "ex-kouros/Kettlebell_One-Legged_Deadlift.png"
+    },
+    {
+      "id": "Kettlebell_Overhead_Triceps_Extension",
+      "family": "extended_kettlebell_overhead_triceps_extension",
+      "name": "Разгибание рук с гирей из-за головы",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание рук с гирей из-за головы"
+      ]
+    },
+    {
+      "id": "Kettlebell_Pass_Between_The_Legs",
+      "family": "extended_kettlebell_pass_between_the_legs",
+      "name": "Передача гири между ног",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Передача гири между ног"
+      ]
+    },
+    {
+      "id": "Kettlebell_Pirate_Ships",
+      "family": "extended_kettlebell_pirate_ships",
+      "name": "«Пиратские корабли» с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Пиратские корабли» с гирей"
+      ]
+    },
+    {
+      "id": "Kettlebell_Pistol_Squat",
+      "family": "extended_kettlebell_pistol_squat",
+      "name": "Пистолетик с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Пистолетик с гирей"
+      ]
+    },
+    {
+      "id": "Kettlebell_Seated_Press",
+      "family": "kb_press",
+      "name": "Жим гири сидя",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гири сидя"
+      ],
+      "media": "ex-kouros/Kettlebell_Seated_Press.png"
+    },
+    {
+      "id": "Kettlebell_Seesaw_Press",
+      "family": "extended_kettlebell_seesaw_press",
+      "name": "Поочерёдный жим гирь «качели»",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Поочерёдный жим гирь «качели»"
+      ]
+    },
+    {
+      "id": "Kettlebell_Sumo_High_Pull",
+      "family": "extended_kettlebell_sumo_high_pull",
+      "name": "Тяга гири сумо к подбородку",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга гири сумо к подбородку"
+      ]
+    },
+    {
+      "id": "Kettlebell_Thruster",
+      "family": "kb_thruster",
+      "name": "Трастер с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Трастер с гирей"
+      ],
+      "media": "ex-kouros/Kettlebell_Thruster.png"
+    },
+    {
+      "id": "Kettlebell_Turkish_Get-Up_Lunge_style",
+      "family": "kb_getup",
+      "name": "Турецкий подъём с гирей (через выпад)",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Турецкий подъём с гирей (через выпад)"
+      ],
+      "media": "ex-kouros/Kettlebell_Turkish_Get-Up_Lunge_style.png"
+    },
+    {
+      "id": "Kettlebell_Turkish_Get-Up_Squat_style",
+      "family": "extended_kettlebell_turkish_get-up_squat_style",
+      "name": "Турецкий подъём с гирей (через присед)",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Турецкий подъём с гирей (через присед)"
+      ]
+    },
+    {
+      "id": "Kettlebell_Windmill",
+      "family": "kb_windmill",
+      "name": "Мельница с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Мельница с гирей"
+      ],
+      "media": "ex-kouros/Kettlebell_Windmill.png"
+    },
+    {
+      "id": "Knee_Circles",
+      "family": "extended_knee_circles",
+      "name": "Вращения коленями",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Вращения коленями"
+      ]
+    },
+    {
+      "id": "Knee_Tuck_Jump",
+      "family": "extended_knee_tuck_jump",
+      "name": "Прыжки с подтягиванием коленей",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки с подтягиванием коленей"
+      ]
+    },
+    {
+      "id": "Lateral_Bound",
+      "family": "extended_lateral_bound",
+      "name": "Прыжки в стороны с ноги на ногу",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки в стороны с ноги на ногу"
+      ]
+    },
+    {
+      "id": "Lateral_Raise_-_With_Bands",
+      "family": "band_shoulder",
+      "name": "Махи в стороны с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Махи в стороны с резиной"
+      ],
+      "media": "ex-kouros/Lateral_Raise_-_With_Bands.png"
+    },
+    {
+      "id": "Leg-Over_Floor_Press",
+      "family": "extended_leg-over_floor_press",
+      "name": "Жим гири лёжа с перекрещенной ногой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гири лёжа с перекрещенной ногой"
+      ]
+    },
+    {
+      "id": "Leg_Extensions",
+      "family": "leg_extension",
+      "name": "Разгибания ног в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибания ног в тренажёре"
+      ],
+      "media": "ex-kouros/Leg_Extensions.png"
+    },
+    {
+      "id": "Leg_Lift",
+      "family": "extended_leg_lift",
+      "name": "Подъём ноги",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём ноги"
+      ]
+    },
+    {
+      "id": "Leg_Press",
+      "family": "leg_press",
+      "name": "Жим ногами",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим ногами"
+      ],
+      "media": "ex-kouros/Leg_Press.png"
+    },
+    {
+      "id": "Leg_Pull-In",
+      "family": "extended_leg_pull-in",
+      "name": "Подтягивание коленей лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивание коленей лёжа"
+      ]
+    },
+    {
+      "id": "Lower_Back_Curl",
+      "family": "extended_lower_back_curl",
+      "name": "Скручивание поясницы лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивание поясницы лёжа"
+      ]
+    },
+    {
+      "id": "Lunge_Pass_Through",
+      "family": "extended_lunge_pass_through",
+      "name": "Выпады с передачей гири",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Выпады с передачей гири"
+      ]
+    },
+    {
+      "id": "Lying_Crossover",
+      "family": "extended_lying_crossover",
+      "name": "Скрещивания лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скрещивания лёжа"
+      ]
+    },
+    {
+      "id": "Lying_Glute",
+      "family": "extended_lying_glute",
+      "name": "Растяжка ягодиц лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка ягодиц лёжа"
+      ]
+    },
+    {
+      "id": "Lying_Leg_Curls",
+      "family": "leg_curl",
+      "name": "Сгибание ног лёжа в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание ног лёжа в тренажёре"
+      ],
+      "media": "ex-kouros/Lying_Leg_Curls.png"
+    },
+    {
+      "id": "Lying_Prone_Quadriceps",
+      "family": "extended_lying_prone_quadriceps",
+      "name": "Растяжка квадрицепса лёжа на животе",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка квадрицепса лёжа на животе"
+      ]
+    },
+    {
+      "id": "Machine_Bench_Press",
+      "family": "bench_press",
+      "name": "Жим от груди в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим от груди в тренажёре"
+      ],
+      "media": "ex-kouros/Machine_Bench_Press.png"
+    },
+    {
+      "id": "Monster_Walk",
+      "family": "band_walk",
+      "name": "«Шаг монстра»",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Шаг монстра»"
+      ],
+      "media": "ex-kouros/Monster_Walk.png"
+    },
+    {
+      "id": "Mountain_Climbers",
+      "family": "mountain_climber",
+      "name": "Скалолаз",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скалолаз"
+      ],
+      "media": "ex-kouros/Mountain_Climbers.png"
+    },
+    {
+      "id": "Natural_Glute_Ham_Raise",
+      "family": "extended_natural_glute_ham_raise",
+      "name": "Скандинавские сгибания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скандинавские сгибания"
+      ]
+    },
+    {
+      "id": "Oblique_Crunches",
+      "family": "extended_oblique_crunches",
+      "name": "Косые скручивания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Косые скручивания"
+      ]
+    },
+    {
+      "id": "Oblique_Crunches_-_On_The_Floor",
+      "family": "extended_oblique_crunches_-_on_the_floor",
+      "name": "Косые скручивания на полу",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Косые скручивания на полу"
+      ]
+    },
+    {
+      "id": "One-Arm_Dumbbell_Row",
+      "family": "row",
+      "name": "Тяга гантели одной рукой в наклоне",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга гантели одной рукой в наклоне"
+      ],
+      "media": "ex-kouros/One-Arm_Dumbbell_Row.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Clean",
+      "family": "kb_clean",
+      "name": "Подъём гири на грудь одной рукой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири на грудь одной рукой"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Clean.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Clean_and_Jerk",
+      "family": "extended_one-arm_kettlebell_clean_and_jerk",
+      "name": "Толчок гири одной рукой с подъёмом на грудь",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Толчок гири одной рукой с подъёмом на грудь"
+      ]
+    },
+    {
+      "id": "One-Arm_Kettlebell_Floor_Press",
+      "family": "kb_floor_press",
+      "name": "Жим гири одной рукой лёжа на полу",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гири одной рукой лёжа на полу"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Floor_Press.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Jerk",
+      "family": "kb_jerk",
+      "name": "Толчок гири одной рукой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Толчок гири одной рукой"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Jerk.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Military_Press_To_The_Side",
+      "family": "extended_one-arm_kettlebell_military_press_to_the_side",
+      "name": "Жим гири одной рукой с наклоном в сторону",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гири одной рукой с наклоном в сторону"
+      ]
+    },
+    {
+      "id": "One-Arm_Kettlebell_Para_Press",
+      "family": "extended_one-arm_kettlebell_para_press",
+      "name": "Жим гири «пара»",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим гири «пара»"
+      ]
+    },
+    {
+      "id": "One-Arm_Kettlebell_Push_Press",
+      "family": "kb_pushpress",
+      "name": "Швунг гири одной рукой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Швунг гири одной рукой"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Push_Press.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Row",
+      "family": "kb_row",
+      "name": "Тяга гири одной рукой в наклоне",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга гири одной рукой в наклоне"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Row.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Snatch",
+      "family": "kb_snatch",
+      "name": "Рывок гири одной рукой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Рывок гири одной рукой"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Snatch.png"
+    },
+    {
+      "id": "One-Arm_Kettlebell_Split_Jerk",
+      "family": "extended_one-arm_kettlebell_split_jerk",
+      "name": "Толчок гири ножницами",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Толчок гири ножницами"
+      ]
+    },
+    {
+      "id": "One-Arm_Kettlebell_Split_Snatch",
+      "family": "extended_one-arm_kettlebell_split_snatch",
+      "name": "Рывок гири ножницами",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Рывок гири ножницами"
+      ]
+    },
+    {
+      "id": "One-Arm_Kettlebell_Swings",
+      "family": "kb_swing",
+      "name": "Махи гирей одной рукой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Махи гирей одной рукой"
+      ],
+      "media": "ex-kouros/One-Arm_Kettlebell_Swings.png"
+    },
+    {
+      "id": "One-Arm_Open_Palm_Kettlebell_Clean",
+      "family": "extended_one-arm_open_palm_kettlebell_clean",
+      "name": "Подъём гири на грудь открытой ладонью",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири на грудь открытой ладонью"
+      ]
+    },
+    {
+      "id": "One-Arm_Overhead_Kettlebell_Squats",
+      "family": "extended_one-arm_overhead_kettlebell_squats",
+      "name": "Приседания с гирей над головой одной рукой",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приседания с гирей над головой одной рукой"
+      ]
+    },
+    {
+      "id": "One_Arm_Lat_Pulldown",
+      "family": "pulldown",
+      "name": "Тяга верхнего блока одной рукой",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга верхнего блока одной рукой"
+      ],
+      "media": "ex-kouros/One_Arm_Lat_Pulldown.png"
+    },
+    {
+      "id": "Open_Palm_Kettlebell_Clean",
+      "family": "extended_open_palm_kettlebell_clean",
+      "name": "Подъём гири на грудь открытой ладонью (две руки)",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири на грудь открытой ладонью (две руки)"
+      ]
+    },
+    {
+      "id": "Overhead_Triceps",
+      "family": "extended_overhead_triceps",
+      "name": "Растяжка трицепса над головой",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка трицепса над головой"
+      ]
+    },
+    {
+      "id": "Pallof_Press",
+      "family": "pallof",
+      "name": "Жим Паллофа",
+      "equipment": "cable",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим Паллофа"
+      ],
+      "media": "ex-kouros/Pallof_Press.png"
+    },
+    {
+      "id": "Parallel_Bar_Dip",
+      "family": "dip",
+      "name": "Отжимания на брусьях",
+      "equipment": "parallel_bars",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания на брусьях"
+      ],
+      "media": "ex-kouros/Parallel_Bar_Dip.png"
+    },
+    {
+      "id": "Plank",
+      "family": "plank",
+      "name": "Планка",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Планка"
+      ],
+      "media": "ex-kouros/Plank.png"
+    },
+    {
+      "id": "Plyo_Kettlebell_Pushups",
+      "family": "extended_plyo_kettlebell_pushups",
+      "name": "Плиометрические отжимания на гирях",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Плиометрические отжимания на гирях"
+      ]
+    },
+    {
+      "id": "Plyo_Push-up",
+      "family": "extended_plyo_push-up",
+      "name": "Плиометрические отжимания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Плиометрические отжимания"
+      ]
+    },
+    {
+      "id": "Pullups",
+      "family": "pullup",
+      "name": "Подтягивания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивания"
+      ],
+      "media": "ex-kouros/Pullups.png"
+    },
+    {
+      "id": "Push-Up_Wide",
+      "family": "pushup",
+      "name": "Отжимания широким хватом",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания широким хватом"
+      ],
+      "media": "ex-kouros/Push-Up_Wide.png"
+    },
+    {
+      "id": "Push-Ups_-_Close_Triceps_Position",
+      "family": "pushup",
+      "name": "Отжимания узким хватом на трицепс",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания узким хватом на трицепс"
+      ],
+      "media": "ex-kouros/Push-Ups_-_Close_Triceps_Position.png"
+    },
+    {
+      "id": "Push-Ups_With_Feet_Elevated",
+      "family": "extended_push-ups_with_feet_elevated",
+      "name": "Отжимания с ногами на возвышении",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания с ногами на возвышении"
+      ]
+    },
+    {
+      "id": "Push_Up_to_Side_Plank",
+      "family": "extended_push_up_to_side_plank",
+      "name": "Отжимание с переходом в боковую планку",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Отжимание с переходом в боковую планку"
+      ]
+    },
+    {
+      "id": "Pushups",
+      "family": "pushup",
+      "name": "Отжимания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания"
+      ],
+      "media": "ex-kouros/Pushups.png"
+    },
+    {
+      "id": "Pushups_Close_and_Wide_Hand_Positions",
+      "family": "extended_pushups_close_and_wide_hand_positions",
+      "name": "Отжимания узко и широко",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания узко и широко"
+      ]
+    },
+    {
+      "id": "Rear_Leg_Raises",
+      "family": "extended_rear_leg_raises",
+      "name": "Махи ногой назад",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Махи ногой назад"
+      ]
+    },
+    {
+      "id": "Reverse_Crunch",
+      "family": "core_crunch",
+      "name": "Обратные скручивания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Обратные скручивания"
+      ],
+      "media": "ex-kouros/Reverse_Crunch.png"
+    },
+    {
+      "id": "Reverse_Flyes",
+      "family": "rear_shoulder",
+      "name": "Разведения в наклоне",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разведения в наклоне"
+      ],
+      "media": "ex-kouros/Reverse_Flyes.png"
+    },
+    {
+      "id": "Reverse_Machine_Flyes",
+      "family": "rear_shoulder",
+      "name": "Обратные разведения в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Обратные разведения в тренажёре"
+      ],
+      "media": "ex-kouros/Reverse_Machine_Flyes.png"
+    },
+    {
+      "id": "Rocket_Jump",
+      "family": "extended_rocket_jump",
+      "name": "Ракетный прыжок",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ракетный прыжок"
+      ]
+    },
+    {
+      "id": "Romanian_Deadlift",
+      "family": "hinge",
+      "name": "Румынская тяга",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Румынская тяга"
+      ],
+      "media": "ex-kouros/Romanian_Deadlift.png"
+    },
+    {
+      "id": "Russian_Twist",
+      "family": "extended_russian_twist",
+      "name": "«Русские скручивания»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Русские скручивания»"
+      ]
+    },
+    {
+      "id": "Scissor_Kick",
+      "family": "extended_scissor_kick",
+      "name": "«Ножницы» ногами лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Ножницы» ногами лёжа"
+      ]
+    },
+    {
+      "id": "Scissors_Jump",
+      "family": "extended_scissors_jump",
+      "name": "Прыжки «ножницы»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки «ножницы»"
+      ]
+    },
+    {
+      "id": "Seated_Band_Hamstring_Curl",
+      "family": "leg_curl",
+      "name": "Сгибание ног с лентой сидя",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание ног с резиной сидя"
+      ],
+      "media": "ex-kouros/Seated_Band_Hamstring_Curl.png"
+    },
+    {
+      "id": "Seated_Biceps",
+      "family": "extended_seated_biceps",
+      "name": "Растяжка бицепса сидя",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка бицепса сидя"
+      ]
+    },
+    {
+      "id": "Seated_Cable_Rows",
+      "family": "row",
+      "name": "Тяга нижнего блока сидя",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга нижнего блока сидя"
+      ],
+      "media": "ex-kouros/Seated_Cable_Rows.png"
+    },
+    {
+      "id": "Seated_Calf_Raise",
+      "family": "calf_bent",
+      "name": "Подъём на носки сидя в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки сидя в тренажёре"
+      ],
+      "media": "ex-kouros/Seated_Calf_Raise.png"
+    },
+    {
+      "id": "Seated_Flat_Bench_Leg_Pull-In",
+      "family": "extended_seated_flat_bench_leg_pull-in",
+      "name": "Подтягивание коленей сидя на скамье",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивание коленей сидя на скамье"
+      ]
+    },
+    {
+      "id": "Seated_Front_Deltoid",
+      "family": "extended_seated_front_deltoid",
+      "name": "Растяжка передней дельты сидя",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка передней дельты сидя"
+      ]
+    },
+    {
+      "id": "Seated_Glute",
+      "family": "extended_seated_glute",
+      "name": "Растяжка ягодиц сидя",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Растяжка ягодиц сидя"
+      ]
+    },
+    {
+      "id": "Seated_Leg_Curl",
+      "family": "leg_curl",
+      "name": "Сгибание ног сидя в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание ног сидя в тренажёре"
+      ],
+      "media": "ex-kouros/Seated_Leg_Curl.png"
+    },
+    {
+      "id": "Seated_Leg_Tucks",
+      "family": "extended_seated_leg_tucks",
+      "name": "Подтягивание ног сидя",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивание ног сидя"
+      ]
+    },
+    {
+      "id": "Shoulder_Press_-_With_Bands",
+      "family": "band_shoulder",
+      "name": "Жим вверх с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим вверх с резиной"
+      ],
+      "media": "ex-kouros/Shoulder_Press_-_With_Bands.png"
+    },
+    {
+      "id": "Side_Bridge",
+      "family": "plank",
+      "name": "Боковая планка",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Боковая планка"
+      ],
+      "media": "ex-kouros/Side_Bridge.png"
+    },
+    {
+      "id": "Side_Jackknife",
+      "family": "extended_side_jackknife",
+      "name": "Боковой складной нож",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Боковой складной нож"
+      ]
+    },
+    {
+      "id": "Side_Leg_Raises",
+      "family": "extended_side_leg_raises",
+      "name": "Махи ногой в сторону",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Махи ногой в сторону"
+      ]
+    },
+    {
+      "id": "Single-Arm_Push-Up",
+      "family": "extended_single-arm_push-up",
+      "name": "Отжимания на одной руке",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания на одной руке"
+      ]
+    },
+    {
+      "id": "Single_Leg_Butt_Kick",
+      "family": "extended_single_leg_butt_kick",
+      "name": "Захлёст голени одной ногой",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Захлёст голени одной ногой"
+      ]
+    },
+    {
+      "id": "Single_Leg_Glute_Bridge",
+      "family": "bridge",
+      "name": "Ягодичный мост на одной ноге",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ягодичный мост на одной ноге"
+      ],
+      "media": "ex-kouros/Single_Leg_Glute_Bridge.png"
+    },
+    {
+      "id": "Sit-Up",
+      "family": "extended_sit-up",
+      "name": "Подъём корпуса",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём корпуса"
+      ]
+    },
+    {
+      "id": "Smith_Machine_Calf_Raise",
+      "family": "calf_standing",
+      "name": "Подъём на носки в Смите",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки в Смите"
+      ],
+      "media": "ex-kouros/Smith_Machine_Calf_Raise.png"
+    },
+    {
+      "id": "Speed_Band_Overhead_Triceps",
+      "family": "band_triceps",
+      "name": "Разгибание рук с лентой на скорость",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание рук с резиной на скорость"
+      ],
+      "media": "ex-kouros/Speed_Band_Overhead_Triceps.png"
+    },
+    {
+      "id": "Spider_Crawl",
+      "family": "extended_spider_crawl",
+      "name": "«Паук»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Паук»"
+      ]
+    },
+    {
+      "id": "Split_Jump",
+      "family": "extended_split_jump",
+      "name": "Прыжки со сменой ног в выпаде",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки со сменой ног в выпаде"
+      ]
+    },
+    {
+      "id": "Split_Squats",
+      "family": "split_squat",
+      "name": "Сплит-приседания",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сплит-приседания"
+      ],
+      "media": "ex-kouros/Split_Squats.png"
+    },
+    {
+      "id": "Squats_-_With_Bands",
+      "family": "squat",
+      "name": "Приседания с лентой без штанги",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приседания с резиной без штанги"
+      ],
+      "media": "ex-kouros/Squats_-_With_Bands.png"
+    },
+    {
+      "id": "Standing_Calf_Raises",
+      "family": "calf_standing",
+      "name": "Подъём на носки стоя в тренажёре",
+      "equipment": "machine",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки стоя в тренажёре"
+      ],
+      "media": "ex-kouros/Standing_Calf_Raises.png"
+    },
+    {
+      "id": "Standing_Dumbbell_Calf_Raise",
+      "family": "calf_standing",
+      "name": "Подъём на носки с гантелями стоя",
+      "equipment": "dumbbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки с гантелями стоя"
+      ],
+      "media": "ex-kouros/Standing_Dumbbell_Calf_Raise.png"
+    },
+    {
+      "id": "Standing_Hip_Circles",
+      "family": "extended_standing_hip_circles",
+      "name": "Круги бёдрами стоя",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Круги бёдрами стоя"
+      ]
+    },
+    {
+      "id": "Standing_Long_Jump",
+      "family": "extended_standing_long_jump",
+      "name": "Прыжок в длину с места",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжок в длину с места"
+      ]
+    },
+    {
+      "id": "Standing_Military_Press",
+      "family": "overhead_press",
+      "name": "Армейский жим стоя",
+      "equipment": "barbell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Армейский жим стоя"
+      ],
+      "media": "ex-kouros/Standing_Military_Press.png"
+    },
+    {
+      "id": "Standing_Towel_Triceps_Extension",
+      "family": "extended_standing_towel_triceps_extension",
+      "name": "Разгибание рук с полотенцем стоя",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание рук с полотенцем стоя"
+      ]
+    },
+    {
+      "id": "Star_Jump",
+      "family": "extended_star_jump",
+      "name": "Прыжки «звёздочка»",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Прыжки «звёздочка»"
+      ]
+    },
+    {
+      "id": "Step-up_with_Knee_Raise",
+      "family": "step_up",
+      "name": "Зашагивание с подъёмом колена",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Зашагивание с подъёмом колена"
+      ],
+      "media": "ex-kouros/Step-up_with_Knee_Raise.png"
+    },
+    {
+      "id": "Stomach_Vacuum",
+      "family": "extended_stomach_vacuum",
+      "name": "Вакуум живота",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Вакуум живота"
+      ]
+    },
+    {
+      "id": "Superman",
+      "family": "back_floor",
+      "name": "Супермен",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Супермен"
+      ],
+      "media": "ex-kouros/Superman.png"
+    },
+    {
+      "id": "Toe_Touchers",
+      "family": "extended_toe_touchers",
+      "name": "Касания носков лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Касания носков лёжа"
+      ]
+    },
+    {
+      "id": "Triceps_Pushdown",
+      "family": "triceps",
+      "name": "Разгибание рук на верхнем блоке",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание рук на верхнем блоке"
+      ],
+      "media": "ex-kouros/Triceps_Pushdown.png"
+    },
+    {
+      "id": "Triceps_Pushdown_-_Rope_Attachment",
+      "family": "triceps",
+      "name": "Разгибание рук на блоке с канатом",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание рук на блоке с канатом"
+      ],
+      "media": "ex-kouros/Triceps_Pushdown_-_Rope_Attachment.png"
+    },
+    {
+      "id": "Tuck_Crunch",
+      "family": "extended_tuck_crunch",
+      "name": "Скручивания с подтягиванием коленей",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скручивания с подтягиванием коленей"
+      ]
+    },
+    {
+      "id": "Two-Arm_Kettlebell_Clean",
+      "family": "extended_two-arm_kettlebell_clean",
+      "name": "Подъём гири двумя руками на грудь",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём гири двумя руками на грудь"
+      ]
+    },
+    {
+      "id": "Two-Arm_Kettlebell_Jerk",
+      "family": "extended_two-arm_kettlebell_jerk",
+      "name": "Толчок гири двумя руками",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Толчок гири двумя руками"
+      ]
+    },
+    {
+      "id": "Two-Arm_Kettlebell_Military_Press",
+      "family": "kb_press",
+      "name": "Армейский жим гири двумя руками",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Армейский жим гири двумя руками"
+      ],
+      "media": "ex-kouros/Two-Arm_Kettlebell_Military_Press.png"
+    },
+    {
+      "id": "Two-Arm_Kettlebell_Row",
+      "family": "kb_row",
+      "name": "Тяга гири двумя руками в наклоне",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга гири двумя руками в наклоне"
+      ],
+      "media": "ex-kouros/Two-Arm_Kettlebell_Row.png"
+    },
+    {
+      "id": "Upright_Row_-_With_Bands",
+      "family": "band_upright",
+      "name": "Тяга к подбородку с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга к подбородку с резиной"
+      ],
+      "media": "ex-kouros/Upright_Row_-_With_Bands.png"
+    },
+    {
+      "id": "V-Bar_Pullup",
+      "family": "extended_v-bar_pullup",
+      "name": "Подтягивания с V-рукоятью",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивания с V-рукоятью"
+      ]
+    },
+    {
+      "id": "Wide-Grip_Lat_Pulldown",
+      "family": "pulldown",
+      "name": "Тяга верхнего блока широким хватом",
+      "equipment": "cable",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга верхнего блока широким хватом"
+      ],
+      "media": "ex-kouros/Wide-Grip_Lat_Pulldown.png"
+    },
+    {
+      "id": "Wide-Grip_Rear_Pull-Up",
+      "family": "extended_wide-grip_rear_pull-up",
+      "name": "Подтягивания за голову широким хватом",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подтягивания за голову широким хватом"
+      ]
+    },
+    {
+      "id": "Wind_Sprints",
+      "family": "extended_wind_sprints",
+      "name": "Ветровые спринты",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ветровые спринты"
+      ]
+    },
+    {
+      "id": "Wrist_Circles",
+      "family": "extended_wrist_circles",
+      "name": "Вращения запястьями",
+      "equipment": "bodyweight",
+      "purpose": [
+        "mobility"
+      ],
+      "visibility": "expanded",
+      "measurement": "reps",
+      "search_aliases": [
+        "Вращения запястьями"
+      ]
+    },
+    {
+      "id": "k_forward_lunge",
+      "family": "lunge",
+      "name": "Выпады вперёд",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Выпады вперёд"
+      ],
+      "media": "ex-kouros/k_forward_lunge.png"
+    },
+    {
+      "id": "k_single_leg_balance",
+      "family": "balance",
+      "name": "Равновесие на одной ноге, колено вверх",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Равновесие на одной ноге, колено вверх"
+      ],
+      "media": "ex-kouros/k_single_leg_balance.png"
+    },
+    {
+      "id": "k_reverse_lunge",
+      "family": "lunge",
+      "name": "Выпады назад",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Выпады назад"
+      ],
+      "media": "ex-kouros/k_reverse_lunge.png"
+    },
+    {
+      "id": "k_jump_lunge",
+      "family": "jump",
+      "name": "Плиометрические выпады",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Плиометрические выпады"
+      ],
+      "media": "ex-kouros/k_jump_lunge.png"
+    },
+    {
+      "id": "k_single_leg_half_squat",
+      "family": "single_squat",
+      "name": "Полуприсед на одной ноге",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Полуприсед на одной ноге"
+      ],
+      "media": "ex-kouros/k_single_leg_half_squat.png"
+    },
+    {
+      "id": "k_step_calf_raise",
+      "family": "calf_standing",
+      "name": "Подъём на носки со ступеньки",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки со ступеньки"
+      ],
+      "media": "ex-kouros/k_step_calf_raise.png"
+    },
+    {
+      "id": "k_shoulder_bridge",
+      "family": "bridge_hold",
+      "name": "Плечевой мост",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Плечевой мост"
+      ],
+      "media": "ex-kouros/k_shoulder_bridge.png"
+    },
+    {
+      "id": "k_bent_knee_calf_raise",
+      "family": "calf_bent",
+      "name": "Подъём на носки с согнутыми коленями",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носки с согнутыми коленями"
+      ],
+      "media": "ex-kouros/k_bent_knee_calf_raise.png"
+    },
+    {
+      "id": "k_single_leg_step_calf_raise",
+      "family": "calf_standing",
+      "name": "Подъём на носок одной ногой со ступеньки",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём на носок одной ногой со ступеньки"
+      ],
+      "media": "ex-kouros/k_single_leg_step_calf_raise.png"
+    },
+    {
+      "id": "k_eccentric_heel_drop",
+      "family": "heel_drop",
+      "name": "Медленное опускание пятки (эксцентрика)",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Медленное опускание пятки (эксцентрика)"
+      ],
+      "media": "ex-kouros/k_eccentric_heel_drop.png"
+    },
+    {
+      "id": "k_hollow_leg_hold",
+      "family": "core_hollow",
+      "name": "Удержание прямых ног на весу",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "seconds",
+      "search_aliases": [
+        "Удержание прямых ног на весу"
+      ],
+      "media": "ex-kouros/k_hollow_leg_hold.png"
+    },
+    {
+      "id": "k_lying_leg_raise",
+      "family": "core_legraise",
+      "name": "Подъём прямых ног лёжа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём прямых ног лёжа"
+      ],
+      "media": "ex-kouros/k_lying_leg_raise.png"
+    },
+    {
+      "id": "k_windshield_wipers",
+      "family": "core_wipers",
+      "name": "Маятник",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Маятник"
+      ],
+      "media": "ex-kouros/k_windshield_wipers.png"
+    },
+    {
+      "id": "k_bird_dog",
+      "family": "core_birddog",
+      "name": "Разноимённое разгибание руки и ноги — bird dog",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Охотничья собака"
+      ],
+      "media": "ex-kouros/k_bird_dog.png"
+    },
+    {
+      "id": "k_swimmer",
+      "family": "back_floor",
+      "name": "Пловец",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Пловец"
+      ],
+      "media": "ex-kouros/k_swimmer.png"
+    },
+    {
+      "id": "k_scorpion",
+      "family": "mobility_scorpion",
+      "name": "Скорпион",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Скорпион"
+      ],
+      "media": "ex-kouros/k_scorpion.png"
+    },
+    {
+      "id": "k_plank_up_down",
+      "family": "plank",
+      "name": "Динамическая планка",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Динамическая планка"
+      ],
+      "media": "ex-kouros/k_plank_up_down.png"
+    },
+    {
+      "id": "k_burpee",
+      "family": "burpee",
+      "name": "Бёрпи",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Бёрпи"
+      ],
+      "media": "ex-kouros/k_burpee.png"
+    },
+    {
+      "id": "k_mb_bridge",
+      "family": "bridge",
+      "name": "Ягодичный мост с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Ягодичный мост с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_bridge.png"
+    },
+    {
+      "id": "k_mb_clamshell",
+      "family": "clamshell",
+      "name": "«Ракушка» с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Ракушка» с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_clamshell.png"
+    },
+    {
+      "id": "k_mb_lateral_walk",
+      "family": "band_walk",
+      "name": "Боковые шаги с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Боковые шаги с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_lateral_walk.png"
+    },
+    {
+      "id": "k_mb_squat",
+      "family": "squat",
+      "name": "Приседания с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Приседания с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_squat.png"
+    },
+    {
+      "id": "k_mb_kickback_stand",
+      "family": "hip_extension",
+      "name": "Отведение ноги назад стоя с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отведение ноги назад стоя с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_kickback_stand.png"
+    },
+    {
+      "id": "k_mb_abduction_stand",
+      "family": "hip_abduction",
+      "name": "Отведение ноги в сторону стоя с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отведение ноги в сторону стоя с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_abduction_stand.png"
+    },
+    {
+      "id": "k_mb_fire_hydrant",
+      "family": "hip_abduction",
+      "name": "«Пожарный гидрант» с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Пожарный гидрант» с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_fire_hydrant.png"
+    },
+    {
+      "id": "k_mb_donkey_kick",
+      "family": "hip_extension",
+      "name": "Мах ногой назад на четвереньках с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Мах ногой назад на четвереньках с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_donkey_kick.png"
+    },
+    {
+      "id": "k_mb_side_lying_abd",
+      "family": "hip_abduction",
+      "name": "Отведение ноги лёжа на боку с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отведение ноги лёжа на боку с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_side_lying_abd.png"
+    },
+    {
+      "id": "k_mb_plank_leg_lift",
+      "family": "plank",
+      "name": "Планка с подъёмом ноги и мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Планка с подъёмом ноги и мини-резинкой"
+      ],
+      "media": "ex-kouros/k_mb_plank_leg_lift.png"
+    },
+    {
+      "id": "k_lb_row_stand",
+      "family": "band_row",
+      "name": "Тяга ленты к поясу стоя",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга резины к поясу стоя"
+      ],
+      "media": "ex-kouros/k_lb_row_stand.png"
+    },
+    {
+      "id": "k_lb_bent_row",
+      "family": "band_row",
+      "name": "Тяга ленты в наклоне",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга резины в наклоне"
+      ],
+      "media": "ex-kouros/k_lb_bent_row.png"
+    },
+    {
+      "id": "k_lb_rdl",
+      "family": "band_hinge",
+      "name": "Румынская тяга с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Румынская тяга с резиной"
+      ],
+      "media": "ex-kouros/k_lb_rdl.png"
+    },
+    {
+      "id": "k_lb_pulldown",
+      "family": "band_pulldown",
+      "name": "Тяга ленты сверху на коленях",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга резины сверху на коленях"
+      ],
+      "media": "ex-kouros/k_lb_pulldown.png"
+    },
+    {
+      "id": "k_lb_pushup",
+      "family": "pushup",
+      "name": "Отжимания с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания с резиной"
+      ],
+      "media": "ex-kouros/k_lb_pushup.png"
+    },
+    {
+      "id": "k_lb_split_squat",
+      "family": "split_squat",
+      "name": "Выпады на месте с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Выпады на месте с резиной"
+      ],
+      "media": "ex-kouros/k_lb_split_squat.png"
+    },
+    {
+      "id": "k_lb_pallof",
+      "family": "pallof",
+      "name": "Паллоф-пресс с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Паллоф-пресс с резиной"
+      ],
+      "media": "ex-kouros/k_lb_pallof.png"
+    },
+    {
+      "id": "k_lb_woodchop",
+      "family": "woodchop",
+      "name": "«Дровосек» с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«Дровосек» с резиной"
+      ],
+      "media": "ex-kouros/k_lb_woodchop.png"
+    },
+    {
+      "id": "k_lb_overhead_pullapart",
+      "family": "band_pullapart",
+      "name": "Разведение ленты над головой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разведение резины над головой"
+      ],
+      "media": "ex-kouros/k_lb_overhead_pullapart.png"
+    },
+    {
+      "id": "k_lb_front_raise",
+      "family": "band_shoulder",
+      "name": "Подъём рук перед собой с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём рук перед собой с резиной"
+      ],
+      "media": "ex-kouros/k_lb_front_raise.png"
+    },
+    {
+      "id": "k_lb_chest_press",
+      "family": "band_chest",
+      "name": "Жим ленты от груди стоя",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Жим резины от груди стоя"
+      ],
+      "media": "ex-kouros/k_lb_chest_press.png"
+    },
+    {
+      "id": "k_lb_curl",
+      "family": "band_curl",
+      "name": "Сгибание рук с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание рук с резиной"
+      ],
+      "media": "ex-kouros/k_lb_curl.png"
+    },
+    {
+      "id": "k_lb_pushdown",
+      "family": "band_triceps",
+      "name": "Разгибание рук вниз с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Разгибание рук вниз с резиной"
+      ],
+      "media": "ex-kouros/k_lb_pushdown.png"
+    },
+    {
+      "id": "k_lb_seated_row",
+      "family": "band_row",
+      "name": "Тяга ленты сидя",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга резины сидя"
+      ],
+      "media": "ex-kouros/k_lb_seated_row.png"
+    },
+    {
+      "id": "k_fb_dorsiflexion",
+      "family": "foot_band",
+      "name": "Тыльное сгибание стопы с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тыльное сгибание стопы с резиной"
+      ],
+      "media": "ex-kouros/k_fb_dorsiflexion.png"
+    },
+    {
+      "id": "k_fb_plantarflexion",
+      "family": "foot_band",
+      "name": "Носок от себя с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Носок от себя с резиной"
+      ],
+      "media": "ex-kouros/k_fb_plantarflexion.png"
+    },
+    {
+      "id": "k_fb_inversion",
+      "family": "foot_band",
+      "name": "Поворот стопы внутрь с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Поворот стопы внутрь с резиной"
+      ],
+      "media": "ex-kouros/k_fb_inversion.png"
+    },
+    {
+      "id": "k_fb_eversion",
+      "family": "foot_band",
+      "name": "Поворот стопы наружу с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Поворот стопы наружу с резиной"
+      ],
+      "media": "ex-kouros/k_fb_eversion.png"
+    },
+    {
+      "id": "k_rb_resisted_march",
+      "family": "running_drills",
+      "name": "Бег на месте с лентой за пояс",
+      "equipment": "long_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Бег на месте с резиной за пояс"
+      ],
+      "media": "ex-kouros/k_rb_resisted_march.png"
+    },
+    {
+      "id": "k_rb_a_march",
+      "family": "running_drills",
+      "name": "«А-шаг» с мини-лентой",
+      "equipment": "mini_band",
+      "purpose": [
+        "strength",
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "«А-шаг» с мини-резинкой"
+      ],
+      "media": "ex-kouros/k_rb_a_march.png"
+    },
+    {
+      "id": "new_pushup_knees",
+      "family": "pushup",
+      "name": "Отжимания с колен",
+      "equipment": "bodyweight",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Отжимания с колен"
+      ],
+      "media": "ex-kouros/new_pushup_knees.png"
+    },
+    {
+      "id": "new_stepup_body",
+      "family": "step_up",
+      "name": "Зашагивания без отягощения",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps_each_side",
+      "search_aliases": [
+        "Зашагивания без отягощения"
+      ],
+      "media": "ex-kouros/new_stepup_body.png"
+    },
+    {
+      "id": "new_calf_single_flat",
+      "family": "calf_standing",
+      "name": "Подъём на носок одной ногой на полу",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps_each_side",
+      "search_aliases": [
+        "Подъём на носок одной ногой на полу"
+      ],
+      "media": "ex-kouros/new_calf_single_flat.png"
+    },
+    {
+      "id": "new_short_foot",
+      "family": "foot_control",
+      "name": "Короткая стопа",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "seconds_each_side",
+      "search_aliases": [
+        "Короткая стопа"
+      ],
+      "media": "ex-kouros/new_short_foot.png"
+    },
+    {
+      "id": "new_tibialis_wall",
+      "family": "foot_control",
+      "name": "Подъём носков у стены",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Подъём носков у стены"
+      ],
+      "media": "ex-kouros/new_tibialis_wall.png"
+    },
+    {
+      "id": "new_step_down",
+      "family": "single_squat",
+      "name": "Контролируемое опускание со ступеньки",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps_each_side",
+      "search_aliases": [
+        "Контролируемое опускание со ступеньки"
+      ],
+      "media": "ex-kouros/new_step_down.png"
+    },
+    {
+      "id": "new_march",
+      "family": "running_drills",
+      "name": "А-шаг без ленты",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "reps_each_side",
+      "search_aliases": [
+        "А-шаг без ленты"
+      ],
+      "media": "ex-kouros/new_march.png"
+    },
+    {
+      "id": "new_pogo",
+      "family": "jump",
+      "name": "Невысокие подскоки на стопах",
+      "equipment": "bodyweight",
+      "purpose": [
+        "ofp_running"
+      ],
+      "visibility": "primary",
+      "measurement": "contacts",
+      "search_aliases": [
+        "Невысокие подскоки на стопах"
+      ],
+      "media": "ex-kouros/new_pogo.png"
+    },
+    {
+      "id": "new_kb_swing_two",
+      "family": "kb_swing",
+      "name": "Махи гирей двумя руками",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Махи гирей двумя руками"
+      ],
+      "media": "ex-kouros/new_kb_swing_two.png"
+    },
+    {
+      "id": "new_kb_deadlift",
+      "family": "kb_deadlift",
+      "name": "Становая тяга с гирей двумя руками",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Становая тяга с гирей двумя руками"
+      ],
+      "media": "ex-kouros/new_kb_deadlift.png"
+    },
+    {
+      "id": "new_kb_rdl",
+      "family": "kb_deadlift",
+      "name": "Румынская тяга с гирей",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Румынская тяга с гирей"
+      ],
+      "media": "ex-kouros/new_kb_rdl.png"
+    },
+    {
+      "id": "new_kb_suitcase",
+      "family": "kb_carry",
+      "name": "Переноска гири в одной руке",
+      "equipment": "kettlebell",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "distance_each_side",
+      "search_aliases": [
+        "Переноска гири в одной руке"
+      ],
+      "media": "ex-kouros/new_kb_suitcase.png"
+    },
+    {
+      "id": "new_band_facepull",
+      "family": "rear_shoulder",
+      "name": "Тяга ленты к лицу",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Тяга ленты к лицу"
+      ],
+      "media": "ex-kouros/new_band_facepull.png"
+    },
+    {
+      "id": "new_band_hamstring",
+      "family": "leg_curl",
+      "name": "Сгибание ног лёжа с лентой",
+      "equipment": "long_band",
+      "purpose": [
+        "strength"
+      ],
+      "visibility": "primary",
+      "measurement": "reps",
+      "search_aliases": [
+        "Сгибание ног лёжа с лентой"
+      ],
+      "media": "ex-kouros/new_band_hamstring.png"
+    }
+  ],
+  "newItems": [
+    {
+      "id": "new_pushup_knees",
+      "ru": "Отжимания с колен",
+      "en": "",
+      "syn": [
+        "Отжимания с колен"
+      ],
+      "tip": "Упор на ладони и колени. Сохраняй прямую линию от коленей до головы, опускай грудь между ладонями и выжимайся.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "chest",
+        "triceps"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_stepup_body",
+      "ru": "Зашагивания без отягощения",
+      "en": "",
+      "syn": [
+        "Зашагивания без отягощения"
+      ],
+      "tip": "Поставь всю стопу на устойчивую невысокую платформу. Поднимись усилием опорной ноги, спокойно спустись. Повтори другой ногой.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "quadriceps",
+        "glutes"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0,
+      "side": "leg"
+    },
+    {
+      "id": "new_calf_single_flat",
+      "ru": "Подъём на носок одной ногой на полу",
+      "en": "",
+      "syn": [
+        "Подъём на носок одной ногой на полу"
+      ],
+      "tip": "Стой на одной ноге на полу, держись за опору для равновесия. Подними пятку и медленно опусти её на пол. Повтори другой ногой.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "calves"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0,
+      "side": "leg"
+    },
+    {
+      "id": "new_short_foot",
+      "ru": "Короткая стопа",
+      "en": "",
+      "syn": [
+        "Короткая стопа"
+      ],
+      "tip": "Стопа на полу: пятка, основание большого пальца и мизинца сохраняют опору. Мягко подтяни передний отдел к пятке, приподнимая свод; не сгибай пальцы. Удерживай, расслабься и повтори другой стопой.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "foot_intrinsics"
+      ],
+      "s": [],
+      "bw": null,
+      "st": true,
+      "img": 0,
+      "side": "leg"
+    },
+    {
+      "id": "new_tibialis_wall",
+      "ru": "Подъём носков у стены",
+      "en": "",
+      "syn": [
+        "Подъём носков у стены"
+      ],
+      "tip": "Спиной обопрись о стену, поставь стопы немного впереди. Пятки остаются на полу; подними носки, затем плавно опусти.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "tibialis_anterior"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_step_down",
+      "ru": "Контролируемое опускание со ступеньки",
+      "en": "",
+      "syn": [
+        "Контролируемое опускание со ступеньки"
+      ],
+      "tip": "Стой одной ногой на невысокой ступени. Сгибая опорную ногу, плавно опусти свободную пятку к полу и вернись. Колено следует направлению стопы.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "quadriceps",
+        "glutes"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0,
+      "side": "leg"
+    },
+    {
+      "id": "new_march",
+      "ru": "А-шаг без ленты",
+      "en": "",
+      "syn": [
+        "А-шаг без ленты"
+      ],
+      "tip": "Стой прямо. Поочерёдно поднимай согнутое колено, работая противоположной рукой. Сохраняй устойчивый таз, без прыжка.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "hip_flexors",
+        "calves"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0,
+      "side": "leg"
+    },
+    {
+      "id": "new_pogo",
+      "ru": "Невысокие подскоки на стопах",
+      "en": "",
+      "syn": [
+        "Невысокие подскоки на стопах"
+      ],
+      "tip": "Выполняй невысокие упругие подскоки двумя ногами. Приземляйся мягко, сохраняй небольшое сгибание коленей. Считай контакты с полом.",
+      "cat": "strength",
+      "eq": "body only",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "calves"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_kb_swing_two",
+      "ru": "Махи гирей двумя руками",
+      "en": "",
+      "syn": [
+        "Махи гирей двумя руками"
+      ],
+      "tip": "Держи гирю двумя руками. Отведи таз назад, проведи гирю между ногами; разгибанием таза направь её вперёд. Руки направляют гирю, спина сохраняет нейтральное положение.",
+      "cat": "strength",
+      "eq": "kettlebells",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "glutes",
+        "hamstrings"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_kb_deadlift",
+      "ru": "Становая тяга с гирей двумя руками",
+      "en": "",
+      "syn": [
+        "Становая тяга с гирей двумя руками"
+      ],
+      "tip": "Гиря на полу между стопами. Отведи таз назад, согни колени и возьми рукоять двумя руками. Встань разгибанием ног и таза, затем контролируемо верни гирю на пол.",
+      "cat": "strength",
+      "eq": "kettlebells",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "glutes",
+        "hamstrings"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_kb_rdl",
+      "ru": "Румынская тяга с гирей",
+      "en": "",
+      "syn": [
+        "Румынская тяга с гирей"
+      ],
+      "tip": "Держи гирю двумя руками перед собой. Слегка согнув колени, отводи таз назад и опускай гирю близко к ногам. Вернись разгибанием таза; не округляй спину.",
+      "cat": "strength",
+      "eq": "kettlebells",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "glutes",
+        "hamstrings"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_kb_suitcase",
+      "ru": "Переноска гири в одной руке",
+      "en": "",
+      "syn": [
+        "Переноска гири в одной руке"
+      ],
+      "tip": "Держи гирю в одной руке сбоку и иди ровными шагами без наклона корпуса. Смени руку. В этой версии записывай длительность переноски в секундах на сторону.",
+      "cat": "strength",
+      "eq": "kettlebells",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "abdominals",
+        "forearms"
+      ],
+      "s": [],
+      "bw": null,
+      "st": true,
+      "img": 0,
+      "side": "arm"
+    },
+    {
+      "id": "new_band_facepull",
+      "ru": "Тяга ленты к лицу",
+      "en": "",
+      "syn": [
+        "Тяга ленты к лицу"
+      ],
+      "tip": "Закрепи длинную ленту на уровне лица. Тяни концы к лицу, разводя локти в стороны; не запрокидывай голову. Плавно верни руки вперёд.",
+      "cat": "strength",
+      "eq": "bands",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "shoulders",
+        "middle back"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    },
+    {
+      "id": "new_band_hamstring",
+      "ru": "Сгибание ног лёжа с лентой",
+      "en": "",
+      "syn": [
+        "Сгибание ног лёжа с лентой"
+      ],
+      "tip": "Лёжа на животе, сгибай колени, подтягивая пятки к ягодицам против сопротивления закреплённой со стороны стоп ленты. Таз остаётся на опоре; возвращай ноги плавно.",
+      "cat": "strength",
+      "eq": "bands",
+      "lvl": "",
+      "mech": "",
+      "force": "",
+      "p": [
+        "hamstrings"
+      ],
+      "s": [],
+      "bw": null,
+      "st": false,
+      "img": 0
+    }
+  ]
+}

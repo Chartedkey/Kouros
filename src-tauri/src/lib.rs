@@ -654,6 +654,23 @@ fn complexes_save(complexes: Vec<serde_json::Value>, custom: Vec<serde_json::Val
 }
 
 #[tauri::command]
+fn exercise_custom_save(exercise: serde_json::Value, app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let saved = with_db(&st, |c| exercise_svc::save_custom(c, &exercise))?;
+    let _ = tauri::Emitter::emit(&app, "data-changed", "exercises");
+    Ok(saved)
+}
+
+#[tauri::command]
+fn exercise_favorites(st: State<'_, AppState>) -> Result<Vec<String>, String> {
+    with_db(&st, |c| Ok(exercise_svc::favorites(c)))
+}
+
+#[tauri::command]
+fn exercise_favorite_set(id: String, enabled: bool, st: State<'_, AppState>) -> Result<Vec<String>, String> {
+    with_db(&st, |c| exercise_svc::set_favorite(c, &id, enabled))
+}
+
+#[tauri::command]
 fn complexes_import(text: String, app: AppHandle, st: State<'_, AppState>) -> Result<serde_json::Value, String> {
     let (c, e) = with_db(&st, |c| exercise_svc::import_complexes(c, &text))?;
     let _ = tauri::Emitter::emit(&app, "data-changed", "complexes");
@@ -1329,6 +1346,9 @@ pub fn run() {
             open_link,
             shoe_conditions_set,
             exercise_library,
+            exercise_custom_save,
+            exercise_favorites,
+            exercise_favorite_set,
             bands_get,
             bands_set,
             shoes_get,

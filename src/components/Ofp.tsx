@@ -10,6 +10,7 @@ import {
   type ActivityDetail, type Complex, type CustomExercise, type ExerciseItem, type ExerciseLibrary, type OfpBlock, type OfpItem, type OfpLast, type ResBand,
 } from '../lib/api';
 import { ExerciseCard, ExerciseInput, MUSCLE, refreshExerciseLib, useExerciseLib } from './Exercises';
+import { catalogExercise } from '../lib/exerciseCatalog';
 import { BandButton, ExercisePicker } from './Strength';
 import { useBackendEvent } from '../lib/events';
 
@@ -67,7 +68,7 @@ function BlockEditor({ b, lib, bands, last, bodyKg, onChange, onRemove }: {
 }) {
   const [info, setInfo] = useState<ExerciseItem | null>(null);
   const single = !b.cid && b.items.length === 1;
-  const exOf = (it: OfpItem) => (it.exId ? lib?.items.find((x) => x.id === it.exId) : undefined);
+  const exOf = (it: OfpItem) => { const x = it.exId ? lib?.items.find((x) => x.id === it.exId) : undefined; return x && !b.cid ? catalogExercise(x) : x; };
   const upd = (i: number, p: Partial<OfpItem>) => onChange({ ...b, items: b.items.map((x, k) => (k === i ? { ...x, ...p } : x)) });
   return (
     <div className="inset ofp-block" aria-label={b.name}>
@@ -105,7 +106,7 @@ function BlockEditor({ b, lib, bands, last, bodyKg, onChange, onRemove }: {
               </span>
               {!it.skip && (
                 <span className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-                  <input className="input sm num" style={{ width: 76 }} inputMode="numeric" aria-label={tm ? 'Секунд' : 'Повторов'} placeholder={tm ? 'сек' : 'повт.'}
+                  <input className="input sm num" style={{ width: 76 }} inputMode="numeric" aria-label={tm ? 'Секунд' : ex?.measurement === 'contacts' ? 'Контактов' : 'Повторов'} placeholder={tm ? 'сек' : ex?.measurement === 'contacts' ? 'конт.' : 'повт.'}
                     value={(tm ? it.sec : it.reps) ?? ''} onChange={(e) => upd(i, tm ? { sec: num(e.target.value), reps: null } : { reps: num(e.target.value), sec: null })} />
                   <button type="button" className="xbtn" title={tm ? 'Считать повторы' : 'Считать время'} aria-label="Повторы или время"
                     onClick={() => upd(i, tm ? { sec: null, reps: null } : { sec: it.reps ?? 30, reps: null })}>{tm ? 'с' : '×'}</button>

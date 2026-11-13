@@ -1,3 +1,4 @@
+import { ExerciseLibraryCard } from '../components/Strength';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   api, errText, fmtDur, fmtKm, fmtPace, fmtWhen, plural, sportOf,
@@ -594,6 +595,7 @@ function GearTab() {
         </section>
       )}
       <ComplexesCard />
+      <ExerciseLibraryCard />
       <BandsCard />
       <LibraryCard />
     </div>

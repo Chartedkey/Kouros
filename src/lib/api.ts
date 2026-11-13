@@ -1,6 +1,7 @@
 // Thin wrapper over Tauri commands. Outside Tauri (plain `npm run dev` in a
 // browser) it answers with demo data so the UI can be worked on without the app.
 import { invoke } from '@tauri-apps/api/core';
+import appPackage from '../../package.json';
 
 export type Status = {
   version: string;
@@ -272,7 +273,7 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
   switch (cmd) {
     case 'app_status':
       return {
-        version: '1.0.0', platform: 'browser', dataDir: 'C:\\Users\\User\\Kouros', dbOk: true, dbError: null,
+        version: appPackage.version, platform: 'browser', dataDir: 'C:\\Users\\User\\Kouros', dbOk: true, dbError: null,
         schemaVersion: 1, dbSize: 98304, cipherVersion: '4.6.1 community', hello: 'available',
         lockEnabled: demo.lock, unlocked: /Android/i.test(navigator.userAgent) || demo.unlocked,
       } satisfies Status;
@@ -321,17 +322,23 @@ async function demoCall(cmd: string, args: Record<string, unknown> = {}): Promis
     case 'complexes_save': demo.complexes = args.complexes as Complex[]; demo.custom = (args.custom as ExerciseItem[]).map((x) => ({ ...x, en: '', cat: 'strength', eq: 'body only', lvl: '', mech: '', force: '', img: 0, own: true, syn: x.syn ?? [] })); return null;
     case 'complexes_import': return { complexes: 0, exercises: 0 };
     case 'exercises_list': return ['Жим штанги лёжа', 'Приседания со штангой', 'Тяга верхнего блока'];
-    case 'exercise_library': return { source: 'демо', version: 'demo', items: [
-      { id: 'Pushups', ru: 'Отжимания', en: 'Pushups', syn: ['отжимания от пола'], tip: 'Руки на ширине плеч, тело прямое; опускай грудь к полу и выжимай.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'push', p: ['chest'], s: ['shoulders', 'triceps'], bw: 0.64, st: false, img: 2 },
-      { id: 'Pullups', ru: 'Подтягивания', en: 'Pullups', syn: ['подтягивания на турнике'], tip: 'Хват шире плеч; подтягивайся до подбородка над перекладиной.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'pull', p: ['lats'], s: ['biceps', 'middle back'], bw: 0.95, st: false, img: 2 },
-      { id: 'Barbell_Squat', ru: 'Приседания со штангой', en: 'Barbell Squat', syn: ['присед'], tip: 'Штанга на трапециях; садись до параллели, спина прямая.', cat: 'strength', eq: 'barbell', lvl: 'beginner', mech: 'compound', force: 'push', p: ['quadriceps'], s: ['glutes', 'hamstrings', 'calves'], bw: null, st: false, img: 2 },
-      { id: 'Plank', ru: 'Планка', en: 'Plank', syn: [], tip: 'Упор на предплечьях и носках; тело прямое.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'isolation', force: 'static', p: ['abdominals'], s: [], bw: null, st: true, img: 2 },
-      { id: 'Bodyweight_Squat', ru: 'Приседания без веса', en: 'Bodyweight Squat', syn: [], tip: 'Стопы на ширине плеч; садись, отводя таз назад, и вставай.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'push', p: ['quadriceps'], s: ['glutes', 'hamstrings'], bw: 0.8, st: false, img: 2 },
-      { id: 'k_bird_dog', ru: 'Охотничья собака', en: 'Bird dog', syn: [], tip: 'На четвереньках вытяни руку и противоположную ногу, задержись и вернись.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'compound', force: 'static', p: ['lower back'], s: ['glutes', 'abdominals'], bw: null, st: false, leg: true, img: 0 },
-      { id: 'k_eccentric_heel_drop', ru: 'Медленное опускание пятки (эксцентрика)', en: 'Eccentric heel drop', syn: [], tip: 'На ступеньке поднимись на двух ногах и медленно опустись на одной.', cat: 'strength', eq: 'body only', lvl: 'beginner', mech: 'isolation', force: 'push', p: ['calves'], s: [], bw: 0.9, st: false, leg: true, img: 0 },
-      ...demo.custom,
-      { id: 'Band_Pull_Apart', ru: 'Разведение резины перед собой', en: 'Band Pull Apart', syn: [], tip: 'Прямые руки перед собой; растягивай резину в стороны.', cat: 'strength', eq: 'bands', lvl: 'beginner', mech: 'isolation', force: 'pull', p: ['shoulders'], s: ['middle back', 'traps'], bw: null, st: false, img: 2 },
-    ], runnerOfp: ['Bodyweight_Squat', 'Plank', 'Pushups', 'k_bird_dog', 'k_eccentric_heel_drop'] } satisfies ExerciseLibrary;
+    case 'exercise_custom_save': {
+      const x = { ...(args.exercise as ExerciseItem), own: true };
+      demo.custom = [...demo.custom.filter(v => v.id !== x.id), x];
+      return x;
+    }
+    case 'exercise_favorites': return JSON.parse(localStorage.getItem('kouros-demo-exercise-favorites') ?? '[]');
+    case 'exercise_favorite_set': {
+      const old: string[] = JSON.parse(localStorage.getItem('kouros-demo-exercise-favorites') ?? '[]');
+      const next = [...old.filter(x => x !== args.id), ...(args.enabled ? [String(args.id)] : [])];
+      localStorage.setItem('kouros-demo-exercise-favorites', JSON.stringify(next));return next;
+    }
+    case 'exercise_library': {
+      const res = await fetch('exercise-library-demo.json');
+      if (!res.ok) throw new Error('Не удалось загрузить демо-библиотеку.');
+      const lib = await res.json() as ExerciseLibrary;
+      return { ...lib, items: [...lib.items, ...demo.custom] };
+    }
     case 'bands_get': return [{ id: 'b1', name: 'Зелёная', color: '#3DDC97', lo: 15, hi: 35, unit: 'kg' }, { id: 'b2', name: 'Красная', color: '#FF6B6B', lo: 5, hi: 15, unit: 'kg' }] satisfies ResBand[];
     case 'bands_set': return null;
     case 'activity_set_shoe': case 'setting_list_set': case 'map_set_enabled': case 'map_cache_clear': return null;
@@ -807,7 +814,12 @@ export type ExerciseItem = {
   /** 1.4: done on each leg / side (reps are per leg); `own` = your own exercise. */
   leg?: boolean; own?: boolean;
   /** 1.4.3: one-sided — reps are for one side: arm / leg / side. */
-  side?: 'arm' | 'leg' | 'side';
+  side?: 'arm' | 'leg' | 'side' | null;
+  /** Static multi-pose illustration, or a user-provided local GIF. Never a legacy sprite. */
+  media?: string | null; mediaType?: 'illustration' | 'animation' | null;
+  purpose?: string[]; family?: string; catalogEquipment?: string; visibility?: string;
+  measurement?: string; weightMeaning?: string;
+
 };
 export type ExerciseLibrary = { source: string; version: string; items: ExerciseItem[]; runnerOfp?: string[]; bandList?: string[] };
 /** 1.4: «ОФП и комплексы» — a block is a complex or one exercise; it is saved as ordinary sets. */
@@ -1030,6 +1042,9 @@ export const api = {
   complexesSave: (complexes: Complex[], custom: CustomExercise[]) => call<null>('complexes_save', { complexes, custom }),
   complexesImport: (text: string) => call<{ complexes: number; exercises: number }>('complexes_import', { text }),
   exercises: () => call<string[]>('exercises_list'),
+  exerciseCustomSave: (exercise: ExerciseItem) => call<ExerciseItem>('exercise_custom_save', { exercise }),
+  exerciseFavorites: () => call<string[]>('exercise_favorites'),
+  exerciseFavoriteSet: (id: string, enabled: boolean) => call<string[]>('exercise_favorite_set', { id, enabled }),
   exerciseLibrary: () => call<ExerciseLibrary>('exercise_library'),
   bandsGet: () => call<ResBand[]>('bands_get'),
   bandsSet: (bands: ResBand[]) => call<null>('bands_set', { bands }),

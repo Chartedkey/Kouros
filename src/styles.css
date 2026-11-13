@@ -499,3 +499,17 @@ html.compact .subtabs button { flex: none; height: 40px; padding: 0 14px; }
 .more-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; background: none; border: 0; border-bottom: 1px solid var(--line); color: var(--text); font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; padding: 0; }
 .more-row:last-child { border-bottom: 0; }
 .more-row span { color: var(--faint); font-size: 20px; }
+
+/* Curated exercise library: complete illustrations, never cropped as legacy sprites. */
+.ex-illustration { display:block; width:100%; height:auto; object-fit:contain; border-radius:12px; background:#0b0d10; }
+.ex-editor { width:min(760px,94vw); max-height:90vh; overflow-y:auto; gap:12px; }
+.ex-muscle-field { border:1px solid var(--line-2); border-radius:10px; padding:10px; min-width:0; }
+.ex-custom-preview { display:block; width:100%; max-height:280px; object-fit:contain; border-radius:10px; background:#0b0d10; }
+.ex-picker-title { font-family:var(--display); font-size:20px; font-weight:700; }
+.picker-actions { padding:0 8px 8px; gap:6px; }
+.picker-img { height:auto; aspect-ratio:3 / 2; }
+.ex-picker .between { flex-wrap:wrap; }
+.ex-picker select { max-width:100%; }
+@media(max-width:600px) { .ex-editor { width:96vw; } .ex-picker-title {font-size:17px;} }
+
+.ex-modal-illustrated { width:min(840px,100%); }

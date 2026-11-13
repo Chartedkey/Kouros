@@ -27,6 +27,12 @@ jobs:
         run: npx tsc --noEmit
       - name: Сборка интерфейса
         run: npx vite build
+      - name: Проверка библиотеки упражнений
+        run: python tools/exercises/validate_catalog.py
+
+      - name: Тесты сохранности упражнений и комплексов
+        run: cargo test --manifest-path tools/exercise-tests/Cargo.toml -- --test-threads=1
+
       - name: Интерфейс для просмотра (демо) в ветку preview
         shell: bash
         run: |

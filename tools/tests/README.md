@@ -33,3 +33,7 @@ With Vite running, `python tools/tests/android_updates.py` uses mocked Android I
 to check scheduled discovery, transient errors, install retry, system handoff,
 manual checks and the automatic-check preference. Native URL/checksum/signer
 policy is covered separately by JVM tests; these browser tests do not install APKs.
+
+## Exercise library
+
+See [EXERCISE_CHECKS.md](EXERCISE_CHECKS.md) for the Windows 1.7 library browser workflow, asset validation and independent native service tests.

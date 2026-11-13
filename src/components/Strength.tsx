@@ -4,30 +4,23 @@
 // for both; «только одна сторона» per set). Rows are still plain `strength_sets` rows.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, errText, fmtDur, type ActivityDetail, type ExerciseItem, type ExerciseLibrary, type ResBand, type SetRow } from '../lib/api';
+import { catalogExercise, catalogFamilies, catalogItems, equipmentGroup, exerciseImageStyle, filterCatalog, hasExerciseImage, hasPurpose } from '../lib/exerciseCatalog';
+import { ExerciseEditor } from './ExerciseEditor';
 import { EQUIP, ExerciseCard, MUSCLE, bandKg, effectiveKg, searchExercises, useExerciseLib } from './Exercises';
 
 // ---------- facets ----------
 
 export const MUSCLE_GROUPS: [string, string, string[]][] = [
-  ['quads', 'Перед бедра', ['quadriceps']], ['hams', 'Задняя поверхность', ['hamstrings']], ['glutes', 'Ягодицы и бёдра', ['glutes', 'abductors', 'adductors']],
-  ['calves', 'Икры и стопы', ['calves']], ['back', 'Спина', ['lats', 'middle back', 'lower back', 'traps']], ['chest', 'Грудь', ['chest']],
+  ['quads', 'Перед бедра', ['quadriceps']], ['hams', 'Задняя поверхность', ['hamstrings']], ['glutes', 'Ягодицы и бёдра', ['glutes', 'abductors', 'adductors', 'hip_flexors']],
+  ['calves', 'Икры и стопы', ['calves', 'foot_intrinsics', 'tibialis_anterior']], ['back', 'Спина', ['lats', 'middle back', 'lower back', 'traps']], ['chest', 'Грудь', ['chest']],
   ['shoulders', 'Плечи', ['shoulders', 'neck']], ['arms', 'Руки', ['biceps', 'triceps', 'forearms']], ['core', 'Кор', ['abdominals']],
 ];
 export const EQUIP_GROUPS: [string, string][] = [
-  ['body', 'Свой вес'], ['bands', 'Резина'], ['mini', 'Мини-резинка'], ['dumbbell', 'Гантели'], ['barbell', 'Штанга'], ['kb', 'Гиря'], ['machine', 'Тренажёр / блок'],
+  ['body', 'Свой вес'], ['bands', 'Лента'], ['mini', 'Мини-лента'], ['dumbbell', 'Гантели'], ['barbell', 'Штанга'], ['kb', 'Гиря'], ['machine', 'Тренажёр / блок'],
 ];
 const TYPES: [string, string][] = [['strength', 'Силовое'], ['ofp', 'ОФП для бега'], ['stretch', 'Растяжка']];
 
-const eqOf = (x: ExerciseItem, lib: ExerciseLibrary | null): string => {
-  if (x.id.startsWith('k_mb_')) return 'mini';
-  if (x.eq === 'bands' || /^k_(lb|fb|rb)_/.test(x.id) || ((lib?.bandList ?? []).includes(x.id) && x.en.toLowerCase().includes('band'))) return 'bands';
-  if (x.eq === 'body only' || x.own) return 'body';
-  if (x.eq === 'dumbbell') return 'dumbbell';
-  if (x.eq === 'barbell' || x.eq === 'e-z curl bar') return 'barbell';
-  if (x.eq === 'kettlebells') return 'kb';
-  if (x.eq === 'machine' || x.eq === 'cable') return 'machine';
-  return 'other';
-};
+const eqOf = (x: ExerciseItem, _lib: ExerciseLibrary | null): string => equipmentGroup(x);
 export const typeOf = (x: ExerciseItem, lib: ExerciseLibrary | null): string => {
   if ((lib?.runnerOfp ?? []).includes(x.id) || x.id.startsWith('k_rb_') || x.id.startsWith('k_fb_')) return 'ofp';
   if (x.cat === 'stretching') return 'stretch';
@@ -50,88 +43,65 @@ export const forgetRecent = () => { recentCache = null; };
 
 // ---------- picker ----------
 
-/** Window to choose an exercise: search + filters (muscles, equipment, type), «Недавние», «Мои». */
-export function ExercisePicker({ lib, mode, onPick, onClose }: {
-  lib: ExerciseLibrary | null; mode: 'strength' | 'ofp'; onPick: (ex: ExerciseItem | null, name: string) => void; onClose: () => void;
+/** One catalog for strength and running OFP; complexes keep their original library view. */
+export function ExercisePicker({ lib, mode, onPick, onClose, browse = false }: {
+  lib: ExerciseLibrary | null; mode: 'strength' | 'ofp'; onPick: (ex: ExerciseItem | null, name: string) => void; onClose: () => void; browse?: boolean;
 }) {
-  const [q, setQ] = useState('');
-  const [mus, setMus] = useState<string[]>([]);
-  const [eq, setEq] = useState<string[]>([]);
-  const [ty, setTy] = useState<string[]>([mode]);
-  const [own, setOwn] = useState(false);
-  const [more, setMore] = useState(1);
-  const [info, setInfo] = useState<ExerciseItem | null>(null);
-  const recent = useRecentExercises();
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && !info) onClose(); };
-    window.addEventListener('keydown', k);
-    return () => window.removeEventListener('keydown', k);
-  }, [onClose, info]);
-  const items = lib?.items ?? [];
-  const hits = useMemo(() => {
-    const base = q.trim() ? searchExercises(items, q, 400) : items;
-    const mset = MUSCLE_GROUPS.filter((g) => mus.includes(g[0])).flatMap((g) => g[2]);
-    return base.filter((x) =>
-      (!own || x.own)
-      && (!mus.length || x.p.some((m) => mset.includes(m)))
-      && (!eq.length || eq.includes(eqOf(x, lib)))
-      && (!ty.length || ty.includes(typeOf(x, lib))));
-  }, [items, q, mus, eq, ty, own, lib]);
-  const recentItems = recent.map((id) => items.find((x) => x.id === id)).filter((x): x is ExerciseItem => !!x).slice(0, 8);
-  const tog = (arr: string[], set: (v: string[]) => void, k: string) => { set(arr.includes(k) ? arr.filter((x) => x !== k) : [...arr, k]); setMore(1); };
-  const shown = hits.slice(0, 36 * more);
-  const anyFilter = mus.length || eq.length || own || ty.join() !== mode;
-  return (
-    <div className="ex-modal" role="dialog" aria-label="Выбери упражнение" onClick={onClose}>
-      <div className="card ex-picker" onClick={(e) => e.stopPropagation()}>
-        <div className="between">
-          <span style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700 }}>Выбери упражнение</span>
-          <button type="button" className="xbtn" aria-label="Закрыть" onClick={onClose}>×</button>
-        </div>
-        <input className="input" autoFocus placeholder="Поиск: присед, тяга, ротация…" value={q} onChange={(e) => { setQ(e.target.value); setMore(1); }} aria-label="Поиск упражнения" />
-        <div className="picker-facets">
-          <span className="picker-h">Мышцы</span>
-          <div className="row" style={{ gap: 6 }}>{MUSCLE_GROUPS.map(([k, n]) => <button key={k} type="button" className="pill sm" aria-pressed={mus.includes(k)} onClick={() => tog(mus, setMus, k)}>{n}</button>)}</div>
-          <span className="picker-h">Инвентарь</span>
-          <div className="row" style={{ gap: 6 }}>{EQUIP_GROUPS.map(([k, n]) => <button key={k} type="button" className="pill sm" aria-pressed={eq.includes(k)} onClick={() => tog(eq, setEq, k)}>{n}</button>)}</div>
-          <span className="picker-h">Тип</span>
-          <div className="row" style={{ gap: 6, alignItems: 'center' }}>
-            {TYPES.map(([k, n]) => <button key={k} type="button" className="pill sm" aria-pressed={ty.includes(k)} onClick={() => tog(ty, setTy, k)}>{n}</button>)}
-            <button type="button" className="pill sm" aria-pressed={own} onClick={() => { setOwn(!own); setMore(1); }}>Мои</button>
-            <span className="muted tiny" style={{ marginLeft: 'auto' }}>
-              найдено {hits.length}{anyFilter ? <> · <button type="button" className="linkbtn tiny" onClick={() => { setMus([]); setEq([]); setTy([mode]); setOwn(false); }}>сбросить фильтры</button></> : null}
-            </span>
-          </div>
-        </div>
-        {recentItems.length > 0 && !q && (
-          <div className="stack" style={{ gap: 6 }}>
-            <span className="picker-h">Недавние</span>
-            <div className="row" style={{ gap: 6 }}>{recentItems.map((x) => <button key={x.id} type="button" className="pill sm" onClick={() => onPick(x, x.ru)}>{x.ru}</button>)}</div>
-          </div>
-        )}
-        <div className="picker-grid">
-          {shown.map((x) => (
-            <div key={x.id} className="picker-item">
-              <button type="button" className="plain picker-pick" onClick={() => onPick(x, x.ru)} title="Добавить">
-                {x.img > 0 ? <span className="picker-img" style={{ backgroundImage: `url(ex/${x.id}.webp)` }} /> : <span className="picker-img picker-noimg">{x.own ? '★' : 'K'}</span>}
-                <b className="small" style={{ textAlign: 'left' }}>{x.ru}</b>
-                <span className="muted tiny" style={{ textAlign: 'left' }}>{musclesText(x) || '—'} · {EQUIP[x.eq ?? ''] ?? x.eq ?? ''}{sideWord(x) ? ` · ${sideWord(x)}` : ''}</span>
-              </button>
-              <button type="button" className="linkbtn tiny picker-info" onClick={() => setInfo(x)}>как делать</button>
-            </div>
-          ))}
-        </div>
-        {hits.length > shown.length && <button type="button" className="btn2" style={{ alignSelf: 'center' }} onClick={() => setMore(more + 1)}>Показать ещё</button>}
-        {hits.length === 0 && (
-          <div className="stack" style={{ gap: 8 }}>
-            <span className="muted small">Ничего не нашлось{anyFilter ? ' — попробуй убрать фильтры' : ''}.</span>
-            {q.trim() && <button type="button" className="btn2" style={{ alignSelf: 'flex-start' }} onClick={() => onPick(null, q.trim())}>Записать «{q.trim()}» как своё упражнение</button>}
-          </div>
-        )}
-        {info && <ExerciseCard ex={info} onClose={() => setInfo(null)} />}
-      </div>
-    </div>
-  );
+  const [q,setQ]=useState(''); const [mus,setMus]=useState<string[]>([]);const [eq,setEq]=useState<string[]>([]);
+  const [ty,setTy]=useState<string[]>(browse?[]:[mode]);const [scope,setScope]=useState<'primary'|'expanded'|'legacy'>('primary');
+  const [tab,setTab]=useState<'all'|'recent'|'favorites'|'own'>('all');const [family,setFamily]=useState<string|null>(null);
+  const [more,setMore]=useState(1);const [info,setInfo]=useState<ExerciseItem|null>(null);
+  const [edit,setEdit]=useState<{initial?:ExerciseItem;name?:string}|null>(null);
+  const [favorites,setFavorites]=useState<string[]>([]);const [favBusy,setFavBusy]=useState<string|null>(null);const [error,setError]=useState('');
+  const recent=useRecentExercises();
+  useEffect(()=>{api.exerciseFavorites().then(setFavorites).catch(e=>setError(errText(e)));},[]);
+  useEffect(()=>{const k=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!info&&!edit)onClose();};window.addEventListener('keydown',k);return()=>window.removeEventListener('keydown',k);},[onClose,info,edit]);
+  const items=useMemo(()=>catalogItems(lib),[lib]);
+  const hits=useMemo(()=>{
+    let base=tab==='favorites'?items.filter(x=>favorites.includes(x.id)):tab==='recent'?recent.map(id=>items.find(x=>x.id===id)).filter((x):x is ExerciseItem=>!!x):tab==='own'?items.filter(x=>x.own):filterCatalog(items,scope);
+    if(q.trim())base=searchExercises(base,q,base.length);
+    const muscles=MUSCLE_GROUPS.filter(g=>mus.includes(g[0])).flatMap(g=>g[2]);
+    return base.filter(x=>(!mus.length||x.p.some(m=>muscles.includes(m)))&&(!eq.length||(eq.includes(equipmentGroup(x)) || x.catalogEquipment==='kettlebell_or_dumbbell' && eq.includes('dumbbell')))&&(!ty.length||ty.some(t=>hasPurpose(x,t,lib)))&&(!family||(x.family??x.id)===family));
+  },[items,tab,favorites,recent,scope,q,mus,eq,ty,family,lib]);
+  const grouped=!q.trim()&&!family&&tab==='all';
+  const families=useMemo(()=>Array.from(hits.reduce((m,x)=>{const k=x.family??x.id;m.set(k,[...(m.get(k)??[]),x]);return m;},new Map<string,ExerciseItem[]>())).map(([id,variants])=>({id,variants})),[hits]);
+  const shown=grouped?families.slice(0,24*more):hits.slice(0,36*more);
+  const toggle=(arr:string[],set:(v:string[])=>void,k:string)=>{set(arr.includes(k)?arr.filter(x=>x!==k):[...arr,k]);setMore(1);setFamily(null);};
+  async function favorite(x:ExerciseItem){setFavBusy(x.id);setError('');try{setFavorites(await api.exerciseFavoriteSet(x.id,!favorites.includes(x.id)));}catch(e){setError(errText(e));}finally{setFavBusy(null);}}
+  const reset=()=>{setMus([]);setEq([]);setTy(browse?[]:[mode]);setQ('');setFamily(null);setMore(1);};
+  function tile(x:ExerciseItem, group?:{id:string;variants:ExerciseItem[]}){
+    return <div key={group?.id??x.id} className="picker-item">
+      <button type="button" className="plain picker-pick" onClick={()=>{if(group){setFamily(group.id);setMore(1);}else if(browse)setInfo(x);else onPick(x,x.ru);}} title={group?'Выбрать вариант':browse?'Открыть карточку':'Добавить в тренировку'}>
+        {hasExerciseImage(x)?<span className="picker-img" style={exerciseImageStyle(x)}/>:<span className="picker-img picker-noimg">{x.own?'★':'K'}</span>}
+        <b className="small" style={{textAlign:'left'}}>{group?(catalogFamilies[group.id]??x.ru):x.ru}</b>
+        <span className="muted tiny" style={{textAlign:'left'}}>{group?`${group.variants.length} вар. · выбрать`: `${musclesText(x)||'мышцы не указаны'} · ${EQUIP[x.eq??'']??x.eq??''}`}</span>
+      </button>
+      {!group&&<div className="between picker-actions"><button type="button" className="linkbtn tiny" onClick={()=>setInfo(x)}>Как делать</button><button type="button" className="pill sm" aria-label={`${favorites.includes(x.id)?'Убрать из избранного':'В избранное'}: ${x.ru}`} aria-pressed={favorites.includes(x.id)} disabled={favBusy!==null} onClick={()=>void favorite(x)}>{favorites.includes(x.id)?'★':'☆'}</button>{x.own&&<button type="button" className="linkbtn tiny" onClick={()=>setEdit({initial:x})}>Изменить</button>}</div>}
+    </div>;
+  }
+  return <div className="ex-modal" role="dialog" aria-modal="true" aria-label={browse?'Библиотека упражнений':'Выбери упражнение'} onClick={onClose}><div className="card ex-picker" onClick={e=>e.stopPropagation()}>
+    <div className="between"><span className="ex-picker-title">{browse?'Библиотека упражнений':'Выбери упражнение'}</span><div className="row"><button type="button" className="btn2" onClick={()=>setEdit({name:q.trim()})}>+ Добавить упражнение</button><button type="button" className="xbtn" aria-label="Закрыть" onClick={onClose}>×</button></div></div>
+    <input className="input" autoFocus placeholder="Поиск по названию и прежним названиям…" aria-label="Поиск упражнения" value={q} onChange={e=>{setQ(e.target.value);setFamily(null);setMore(1);}}/>
+    <div className="row">{([['all','Каталог'],['recent','Недавние'],['favorites','Избранные'],['own','Мои']] as const).map(([k,n])=><button type="button" className="pill sm" key={k} aria-pressed={tab===k} onClick={()=>{setTab(k);setFamily(null);setMore(1);}}>{n}</button>)}</div>
+    <div className="picker-facets"><span className="picker-h">Мышцы</span><div className="row" style={{gap:6}}>{MUSCLE_GROUPS.map(([k,n])=><button key={k} type="button" className="pill sm" aria-pressed={mus.includes(k)} onClick={()=>toggle(mus,setMus,k)}>{n}</button>)}</div>
+    <span className="picker-h">Инвентарь</span><div className="row" style={{gap:6}}>{EQUIP_GROUPS.map(([k,n])=><button key={k} type="button" className="pill sm" aria-pressed={eq.includes(k)} onClick={()=>toggle(eq,setEq,k)}>{n}</button>)}</div>
+    <span className="picker-h">Назначение</span><div className="row" style={{gap:6}}>{TYPES.map(([k,n])=><button key={k} type="button" className="pill sm" aria-pressed={ty.includes(k)} onClick={()=>toggle(ty,setTy,k)}>{n}</button>)}<button type="button" className="linkbtn tiny" onClick={reset}>Сбросить</button></div></div>
+    {tab==='all'&&<label className="row small">Показывать<select className="input sm" aria-label="Состав каталога" value={scope} onChange={e=>{setScope(e.target.value as typeof scope);setFamily(null);setMore(1);}}><option value="primary">Основная подборка · 190</option><option value="expanded">Основная и расширенная · 310</option><option value="legacy">Весь прежний каталог</option></select></label>}
+    {family&&<button type="button" className="linkbtn small" style={{alignSelf:'flex-start'}} onClick={()=>{setFamily(null);setMore(1);}}>← Все группы</button>}
+    <div className="between"><span className="muted tiny">{family?(catalogFamilies[family]??'Варианты упражнения'):grouped?'Группы движений':'Упражнения'} · {hits.length} вариантов</span>{scope==='legacy'&&<span className="muted tiny">Прежние упражнения доступны для истории и поиска</span>}</div>
+    {error&&<span role="alert" className="note-err small">{error}</span>}
+    {!lib&&<span className="muted small">Загружаю библиотеку…</span>}
+    <div className="picker-grid">{grouped?(shown as typeof families).map(g=>tile(g.variants[0],g)):(shown as ExerciseItem[]).map(x=>tile(x))}</div>
+    {(grouped?families.length:hits.length)>shown.length&&<button type="button" className="btn2" onClick={()=>setMore(v=>v+1)}>Показать ещё</button>}
+    {lib&&!hits.length&&<span className="muted small">Ничего не нашлось. Измени фильтры или добавь своё упражнение.</span>}
+    {info&&<ExerciseCard ex={info} onClose={()=>setInfo(null)}/>}
+    {edit&&<ExerciseEditor initial={edit.initial} name={edit.name} onClose={()=>setEdit(null)} onSaved={x=>{const created=!edit.initial;setEdit(null);if(created&&!browse)onPick(x,x.ru);else setInfo(x);}}/>}
+  </div></div>;
+}
+
+export function ExerciseLibraryCard(){
+  const lib=useExerciseLib();const [open,setOpen]=useState(false);
+  return <section className="card" aria-label="Библиотека упражнений"><span className="label">Библиотека упражнений</span><span className="muted small">Свой вес, ленты, гири, классика зала и ОФП для бега. Группы движений, избранные и свои упражнения.</span><button type="button" className="btn2" style={{alignSelf:'flex-start'}} onClick={()=>setOpen(true)}>Открыть библиотеку</button>{open&&<ExercisePicker lib={lib} mode="strength" browse onClose={()=>setOpen(false)} onPick={()=>{}}/>}</section>;
 }
 
 // ---------- band button ----------
@@ -229,7 +199,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
   const [showRest, setShowRest] = useState(false);
   const lib = useExerciseLib();
   useEffect(() => { api.bandsGet().then(setBands).catch(() => {}); }, []);
-  const exOf = (id: string | null) => (id ? lib?.items.find((x) => x.id === id) : undefined);
+  const exOf = (id: string | null) => { const x = id ? lib?.items.find((x) => x.id === id) : undefined; return x ? catalogExercise(x) : undefined; };
   const set = (bs: Block[]) => { setBlocks(bs); setDirty(true); setMsg(null); };
   const updBlock = (i: number, p: Partial<Block>) => set(blocks.map((b, k) => (k === i ? { ...b, ...p } : b)));
   const updSet = (i: number, j: number, p: Partial<SetRow>) => updBlock(i, { sets: blocks[i].sets.map((s, k) => (k === j ? { ...s, row: { ...s.row, ...p } } : s)) });
@@ -282,6 +252,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
         const ex = exOf(b.exId);
         const side = sideWord(ex);
         const st = !!ex?.st;
+        const contacts = ex?.measurement === 'contacts';
         const bandsAll = b.sets.map((s) => JSON.stringify(s.row.band?.ids ?? []));
         const sameBand = bandsAll.every((x) => x === bandsAll[0]);
         const anyBand = b.sets.some((s) => (s.row.band?.ids.length ?? 0) > 0);
@@ -291,7 +262,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
         return (
           <div key={b.key} className="exb">
             <div className="exh">
-              {ex && ex.img > 0 ? <button type="button" className="thumb" title="Как выполнять" onClick={() => setInfo(ex)} style={{ backgroundImage: `url(ex/${ex.id}.webp)` }} /> : <span className="thumb picker-noimg">{ex?.own ? '★' : 'K'}</span>}
+              {ex && hasExerciseImage(ex) ? <button type="button" className="thumb" title="Как выполнять" onClick={() => setInfo(ex)} style={exerciseImageStyle(ex)} /> : <span className="thumb picker-noimg">{ex?.own ? '★' : 'K'}</span>}
               <span className="stack" style={{ gap: 1, flex: 1, minWidth: 0 }}>
                 {b.name ? (
                   <button type="button" className="plain exh-name" onClick={() => (ex ? setInfo(ex) : setPick({ block: i }))}>{b.name}</button>
@@ -319,7 +290,7 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
                 )}
               </span>
             </div>
-            <div className="setr setr-h muted tiny"><span>#</span><span>{st ? '' : 'вес, кг'}</span><span>{st ? 'секунд' : side ? `повторы / ${sideShort(ex)}` : 'повторы'}</span><span title="Сколько килограммов на самом деле работало в повторе">{st ? '' : 'нагрузка'}</span><span>{st ? '' : '1ПМ'}</span><span /></div>
+            <div className="setr setr-h muted tiny"><span>#</span><span>{st ? '' : 'вес, кг'}</span><span>{st ? 'секунд' : contacts ? 'контакты' : side ? `повторы / ${sideShort(ex)}` : 'повторы'}</span><span title="Сколько килограммов на самом деле работало в повторе">{st ? '' : 'нагрузка'}</span><span>{st ? '' : '1ПМ'}</span><span /></div>
             {b.sets.map((s, j) => {
               const r = s.row;
               const eff = effOf(b, r);
@@ -328,10 +299,10 @@ export function StrengthCard({ d, onSaved }: { d: ActivityDetail; onSaved: () =>
                 <div key={j} className="stack" style={{ gap: 2 }}>
                   <div className="setr">
                     <span className="muted small num">{j + 1}</span>
-                    {st ? <span /> : <input className="input sm" inputMode="decimal" aria-label="Вес" placeholder={ex?.bw != null ? 'свой вес' : '—'} value={r.weightKg ?? ''} onChange={(e) => updSet(i, j, { weightKg: num(e.target.value) })} />}
+                    {st ? <span /> : <input className="input sm" inputMode="decimal" aria-label="Вес" title={side ? "Вес снарядов на одну сторону, кг" : "Общий вес снарядов, кг"} placeholder={ex?.bw != null ? 'свой вес' : '—'} value={r.weightKg ?? ''} onChange={(e) => updSet(i, j, { weightKg: num(e.target.value) })} />}
                     {st
                       ? <input className="input sm" inputMode="numeric" aria-label="Секунд" value={r.durationS ?? ''} onChange={(e) => updSet(i, j, { durationS: num(e.target.value) })} />
-                      : <input className="input sm" inputMode="numeric" aria-label="Повторы" value={r.reps ?? ''} onChange={(e) => updSet(i, j, { reps: num(e.target.value) })} />}
+                      : <input className="input sm" inputMode="numeric" aria-label={contacts ? "Контакты" : "Повторы"} value={r.reps ?? ''} onChange={(e) => updSet(i, j, { reps: num(e.target.value) })} />}
                     <span className="num small" style={{ color: eff != null && eff !== r.weightKg ? '#9DB8FF' : 'var(--muted)' }}>{st ? '' : eff != null ? `${eff !== r.weightKg ? '≈' : ''}${Math.round(eff)}` : ''}</span>
                     <span className="num small muted">{orm ? Math.round(orm) : ''}</span>
                     <span className="row setr-act">

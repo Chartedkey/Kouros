@@ -5,6 +5,7 @@
 //! bands from «Инвентарь») and by the muscle load (groups from the exercise's muscles).
 
 use crate::db;
+use base64::Engine;
 use crate::engine::add_days;
 use rusqlite::{params, Connection};
 use serde_json::{json, Value};
@@ -15,6 +16,11 @@ use std::sync::{OnceLock, RwLock};
 static LIB_GZ: &[u8] = include_bytes!("../resources/exercises.json.gz");
 /// 1.4: Kouros' own exercises for the runner's ОФП list (no photos), merged into the library.
 static EXTRA: &str = include_str!("../resources/exercises_extra.json");
+
+fn catalog() -> &'static Value {
+    static C: OnceLock<Value> = OnceLock::new();
+    C.get_or_init(|| serde_json::from_str(include_str!("../../src/data/exercise-catalog.json")).expect("bundled exercise catalog"))
+}
 
 fn extra() -> &'static Value {
     static E: OnceLock<Value> = OnceLock::new();
@@ -34,10 +40,11 @@ fn lib() -> &'static Value {
             items.extend(more.iter().cloned());
         }
         if let Some(items) = v["items"].as_array_mut() {
+            items.extend(catalog()["newItems"].as_array().into_iter().flatten().cloned());
             for x in items.iter_mut() {
-                if let Some(s) = side_of(x) {
+                if x["side"].is_null() { if let Some(s) = side_of(x) {
                     x["side"] = json!(s);
-                }
+                } }
             }
         }
         v
@@ -110,9 +117,9 @@ pub fn by_id(id: &str) -> Option<Value> {
 pub fn list() -> Value {
     let mut items = lib()["items"].as_array().cloned().unwrap_or_default();
     items.extend(custom_snapshot().into_iter().map(|mut x| {
-        if let Some(s) = side_of(&x) {
+        if x["side"].is_null() { if let Some(s) = side_of(&x) {
             x["side"] = json!(s);
-        }
+        } }
         x
     }));
     json!({"source": lib()["source"], "version": lib()["version"], "items": items, "runnerOfp": extra()["runnerOfp"], "bandList": extra()["bandList"]})
@@ -128,6 +135,20 @@ pub fn complexes(conn: &Connection) -> Value {
     json!({"complexes": cx, "custom": custom_snapshot()})
 }
 
+fn valid_media(media: &str) -> bool {
+    let Some((header, encoded)) = media.split_once(',') else { return false; };
+    if encoded.len() > 2_800_000 { return false; }
+    let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(encoded) else { return false; };
+    if bytes.len() > 2 * 1024 * 1024 { return false; }
+    match header {
+        "data:image/png;base64" => bytes.starts_with(b"\x89PNG\r\n\x1a\n"),
+        "data:image/jpeg;base64" => bytes.starts_with(b"\xff\xd8\xff"),
+        "data:image/gif;base64" => bytes.starts_with(b"GIF87a") || bytes.starts_with(b"GIF89a"),
+        "data:image/webp;base64" => bytes.starts_with(b"RIFF") && bytes.get(8..12) == Some(b"WEBP"),
+        _ => false,
+    }
+}
+
 fn clean_custom(n: usize, x: &Value) -> Option<Value> {
     let ru = x["ru"].as_str()?.trim();
     if ru.is_empty() {
@@ -135,12 +156,19 @@ fn clean_custom(n: usize, x: &Value) -> Option<Value> {
     }
     let id = x["id"].as_str().filter(|s| s.starts_with("c_")).map(String::from).unwrap_or_else(|| format!("c_{}_{n}", crate::store::now()));
     let strs = |v: &Value| -> Vec<String> { v.as_array().map(|a| a.iter().filter_map(|y| y.as_str().map(String::from)).collect()).unwrap_or_default() };
-    Some(json!({
+    let mut out = json!({
         "id": id, "ru": ru, "en": "", "syn": strs(&x["syn"]), "tip": x["tip"].as_str().unwrap_or("").trim(),
-        "cat": "strength", "eq": x["eq"].as_str().unwrap_or("body only"), "lvl": "", "mech": "", "force": "",
+        "cat": x["cat"].as_str().unwrap_or("strength"), "eq": x["eq"].as_str().unwrap_or("body only"), "lvl": "", "mech": "", "force": "",
         "p": strs(&x["p"]), "s": strs(&x["s"]), "bw": x["bw"].as_f64(), "st": x["st"].as_bool().unwrap_or(false),
         "leg": x["leg"].as_bool().unwrap_or(false), "img": 0, "own": true,
-    }))
+    });
+    // Preserve independent-library metadata through the legacy complexes editor.
+    for key in ["media", "mediaType", "purpose", "measurement", "weightMeaning", "side", "libraryManaged"] {
+        if let Some(v) = x.get(key) {
+            if key != "media" || v.is_null() || v.as_str().map(valid_media).unwrap_or(false) { out[key] = v.clone(); }
+        }
+    }
+    Some(out)
 }
 
 fn clean_complex(x: &Value, n: usize) -> Option<Value> {
@@ -162,13 +190,72 @@ fn clean_complex(x: &Value, n: usize) -> Option<Value> {
     }))
 }
 
+fn stored_custom(conn: &Connection) -> Result<Vec<Value>, String> {
+    match db::get_setting(conn, "custom_exercises") {
+        Some(text) => serde_json::from_str(&text).map_err(|_| "Не удалось прочитать сохранённые упражнения. Данные не изменены.".to_string()),
+        None => Ok(Vec::new()),
+    }
+}
+
 pub fn save_complexes(conn: &Connection, cx: &[Value], custom: &[Value]) -> Result<(), String> {
-    let custom: Vec<Value> = custom.iter().enumerate().filter_map(|(n, x)| clean_custom(n, x)).collect();
+    let previous = stored_custom(conn)?;
+    let mut custom: Vec<Value> = custom.iter().enumerate().filter_map(|(n, x)| {
+        let mut merged = previous.iter().find(|old| old["id"] == x["id"]).cloned().unwrap_or_else(|| json!({}));
+        let previous_static = merged["st"].as_bool();
+        let previous_leg = merged["leg"].as_bool();
+        if let Some(fields) = x.as_object() { for (k,v) in fields { merged[k] = v.clone(); } }
+        // Legacy checkboxes remain authoritative when explicitly changed. Keep unrelated
+        // library metadata (image/equipment/categories), without reviving a cleared mode.
+        if x.get("measurement").is_none() && previous_static.is_some() && previous_static != merged["st"].as_bool() {
+            merged["measurement"] = json!(if merged["st"] == true { "seconds" } else { "reps" });
+        }
+        if x.get("side").is_none() && previous_leg == Some(true) && x["leg"] == false {
+            merged["side"] = Value::Null;
+        }
+        clean_custom(n, &merged)
+    }).collect();
+    // An open legacy editor must not delete exercises added through the library meanwhile.
+    for old in previous { if !custom.iter().any(|x| x["id"] == old["id"]) { custom.push(old); } }
     let cx: Vec<Value> = cx.iter().enumerate().filter_map(|(n, x)| clean_complex(x, n)).collect();
     db::set_setting(conn, "custom_exercises", &serde_json::to_string(&custom).unwrap_or_else(|_| "[]".into()))?;
     db::set_setting(conn, "complexes", &serde_json::to_string(&cx).unwrap_or_else(|_| "[]".into()))?;
     load_custom(conn);
     Ok(())
+}
+
+/// Upsert one independent exercise. Never writes the complexes setting or workout rows.
+pub fn save_custom(conn: &Connection, input: &Value) -> Result<Value, String> {
+    let mut rows = stored_custom(conn)?;
+    let mut merged = rows.iter().find(|x| x["id"] == input["id"]).cloned().unwrap_or_else(|| json!({}));
+    if let Some(fields) = input.as_object() { for (k,v) in fields { merged[k] = v.clone(); } }
+    if !merged["media"].is_null() && !merged["media"].as_str().map(valid_media).unwrap_or(false) { return Err("Нужна картинка PNG, JPEG, WebP или GIF до 2 МБ.".into()); }
+    merged["libraryManaged"] = json!(true);
+    let mut clean = clean_custom(rows.len(), &merged).ok_or("Укажи название упражнения.")?;
+    if !clean["purpose"].as_array().map(|v| !v.is_empty() && v.iter().all(|x| ["strength", "ofp_running", "mobility"].contains(&x.as_str().unwrap_or("")))).unwrap_or(false) { return Err("Выбери категорию упражнения.".into()); }
+    if !clean["side"].is_null() && !["arm", "leg", "side"].contains(&clean["side"].as_str().unwrap_or("")) { return Err("Некорректная сторона выполнения.".into()); }
+    clean["st"] = json!(clean["measurement"] == "seconds");
+    if clean["ru"].as_str().unwrap_or("").len() > 240 { return Err("Название слишком длинное.".into()); }
+    let allowed_eq = ["body only", "bands", "mini bands", "dumbbell", "barbell", "kettlebells", "machine", "cable", "other"];
+    if !allowed_eq.contains(&clean["eq"].as_str().unwrap_or("")) { return Err("Выбери инвентарь.".into()); }
+    let measure = clean["measurement"].as_str().unwrap_or("reps");
+    if !["reps", "seconds", "contacts"].contains(&measure) { return Err("Выбери способ учёта.".into()); }
+    if clean["bw"].as_f64().map(|v| !v.is_finite() || !(0.0..=1.0).contains(&v)).unwrap_or(false) { return Err("Некорректная доля веса тела.".into()); }
+    if let Some(i) = rows.iter().position(|x| x["id"] == clean["id"]) { rows[i] = clean.clone(); } else { rows.push(clean.clone()); }
+    db::set_setting(conn, "custom_exercises", &serde_json::to_string(&rows).map_err(|e| e.to_string())?)?;
+    load_custom(conn);
+    Ok(clean)
+}
+
+pub fn favorites(conn: &Connection) -> Vec<String> {
+    db::get_setting(conn, "exercise_favorites").and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_default()
+}
+
+pub fn set_favorite(conn: &Connection, id: &str, enabled: bool) -> Result<Vec<String>, String> {
+    if by_id(id).is_none() { return Err("Упражнение не найдено.".into()); }
+    let mut ids = favorites(conn); ids.retain(|x| x != id);
+    if enabled { ids.push(id.to_string()); }
+    db::set_setting(conn, "exercise_favorites", &serde_json::to_string(&ids).map_err(|e| e.to_string())?)?;
+    Ok(ids)
 }
 
 /// Adds complexes and exercises from a file ({complexes, custom}); ones already there (same id

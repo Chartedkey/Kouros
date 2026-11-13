@@ -24,13 +24,13 @@ export function useExerciseLib(): ExerciseLibrary | null {
 }
 
 export const MUSCLE: Record<string, string> = {
-  abdominals: 'пресс', abductors: 'отводящие бедра', adductors: 'приводящие бедра', biceps: 'бицепс', calves: 'икры', chest: 'грудь',
+  foot_intrinsics: 'мышцы стопы', tibialis_anterior: 'передняя большеберцовая', hip_flexors: 'сгибатели бедра', abdominals: 'пресс', abductors: 'отводящие бедра', adductors: 'приводящие бедра', biceps: 'бицепс', calves: 'икры', chest: 'грудь',
   forearms: 'предплечья', glutes: 'ягодицы', hamstrings: 'задняя поверхность бедра', lats: 'широчайшие', 'lower back': 'поясница',
   'middle back': 'середина спины', neck: 'шея', quadriceps: 'квадрицепсы', shoulders: 'плечи', traps: 'трапеции', triceps: 'трицепс',
 };
 export const EQUIP: Record<string, string> = {
   barbell: 'штанга', dumbbell: 'гантели', 'body only': 'свой вес', cable: 'блок, кроссовер', machine: 'тренажёр', kettlebells: 'гири',
-  bands: 'резина / эспандер', 'medicine ball': 'медбол', 'exercise ball': 'фитбол', 'foam roll': 'роллер', 'e-z curl bar': 'EZ-гриф', other: 'другое',
+  'bands with pullup bar': 'лента и турник', 'kettlebell or dumbbell': 'гиря или гантель', 'mini bands': 'мини-лента', bands: 'лента / эспандер', 'medicine ball': 'медбол', 'exercise ball': 'фитбол', 'foam roll': 'роллер', 'e-z curl bar': 'EZ-гриф', other: 'другое',
 };
 const LEVEL: Record<string, string> = { beginner: 'новичок', intermediate: 'средний', expert: 'опытный' };
 const CAT: Record<string, string> = {
@@ -62,10 +62,11 @@ export function searchExercises(items: ExerciseItem[], q: string, limit = 12): E
 export function ExerciseAnim({ ex, height = 160 }: { ex: ExerciseItem; height?: number }) {
   const [f, setF] = useState(0);
   useEffect(() => {
-    if (ex.img < 2) return;
+    if (ex.media || ex.img < 2) return;
     const t = setInterval(() => setF((x) => 1 - x), 800);
     return () => clearInterval(t);
-  }, [ex.img]);
+  }, [ex.img, ex.media]);
+  if (ex.media) return <img className="ex-illustration" src={ex.media} alt={ex.ru} style={{ maxHeight: Math.max(300, height * 2) }} />;
   if (!ex.img) return null;
   return (
     <div className="ex-anim" style={{ maxWidth: height * 1.5, backgroundImage: `url(ex/${ex.id}.webp)`, backgroundSize: ex.img > 1 ? '200% 100%' : '100% 100%', backgroundPosition: ex.img > 1 ? (f ? '100% 0' : '0 0') : 'center' }} role="img" aria-label={ex.ru} />
@@ -80,7 +81,7 @@ export function ExerciseCard({ ex, bodyKg, onClose }: { ex: ExerciseItem; bodyKg
   }, [onClose]);
   return (
     <div className="ex-modal" role="dialog" aria-label={ex.ru} onClick={onClose}>
-      <div className="card ex-modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className={`card ex-modal-card${ex.media ? ' ex-modal-illustrated' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="between" style={{ alignItems: 'flex-start' }}>
           <span className="stack" style={{ gap: 2 }}>
             <span style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700 }}>{ex.ru}</span>
@@ -89,16 +90,19 @@ export function ExerciseCard({ ex, bodyKg, onClose }: { ex: ExerciseItem; bodyKg
           <button type="button" className="xbtn" aria-label="Закрыть" onClick={onClose}>×</button>
         </div>
         <ExerciseAnim ex={ex} height={220} />
-        <span className="small" style={{ lineHeight: 1.55 }}>{ex.tip}</span>
+        <span className="small" style={{ lineHeight: 1.55 }}>{ex.tip || 'Описание пока не добавлено.'}</span>
+        {ex.id === 'Kettlebell_Turkish_Get-Up_Lunge_style' && ex.media && <span className="muted small">Четыре опорных положения: лёжа → сидя → выпад с колена → стоя. Промежуточные переходы и спуск не показаны.</span>}
+        {(ex.p.some(m=>['foot_intrinsics','tibialis_anterior','hip_flexors'].includes(m))) && <span className="muted small">Мышцы стопы и сгибатели бедра пока не представлены отдельно на карте мышц; оценка нагрузки для этого упражнения неполная.</span>}
+        {ex.own && !ex.p.length && <span className="muted small">Основные мышцы ещё не указаны: оценка нагрузки будет неполной.</span>}
         <div className="stack small" style={{ gap: 4 }}>
           <span><span className="muted">Основные мышцы:</span> {ex.p.map((m) => MUSCLE[m] ?? m).join(', ') || '—'}</span>
           {ex.s.length > 0 && <span><span className="muted">Помогают:</span> {ex.s.map((m) => MUSCLE[m] ?? m).join(', ')}</span>}
           <span><span className="muted">Оборудование:</span> {ex.eq ? EQUIP[ex.eq] ?? ex.eq : '—'} · {CAT[ex.cat ?? ''] ?? ex.cat} · {LEVEL[ex.lvl ?? ''] ?? ex.lvl}</span>
           {ex.bw != null && <span><span className="muted">Свой вес:</span> работает ≈{Math.round(ex.bw * 100)}% веса тела{bodyKg ? ` — ≈${Math.round(ex.bw * bodyKg)} кг при твоих ${String(bodyKg).replace('.', ',')} кг` : ''}.</span>}
-          {ex.st && <span className="muted">Статическое упражнение: важно время под нагрузкой, а не килограммы.</span>}
+          {ex.st && <span className="muted">Упражнение учитывается по времени под нагрузкой.</span>}
         </div>
-        {(ex.leg || ex.side) && <span className="muted small">Делается {ex.side === 'arm' ? 'на каждую руку' : ex.side === 'leg' ? 'на каждую ногу' : 'на каждую сторону'}: повторы пишутся на одну сторону, тоннаж и нагрузка считаются за обе.</span>}
-        <span className="muted tiny">{ex.own ? 'Твоё упражнение.' : ex.id.startsWith('k_') ? (ex.img ? 'Рисунок и описание — Kouros.' : 'Описание — Kouros.') : ex.img ? 'Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.' : 'Описание — Kouros.'}</span>
+        {(ex.leg || ex.side) && <span className="muted small">Делается {ex.side === 'arm' ? 'на каждую руку' : ex.side === 'leg' ? 'на каждую ногу' : 'на каждую сторону'}: значения указываются на одну сторону.</span>}
+        <span className="muted tiny">{ex.media && !ex.own ? 'Иллюстрация — Kouros. Показаны ключевые положения движения.' : ex.own ? 'Твоё упражнение.' : ex.id.startsWith('k_') ? (ex.img ? 'Рисунок и описание — Kouros.' : 'Описание — Kouros.') : ex.img ? 'Фото и описание — Free Exercise DB (общественное достояние), русский текст — Kouros.' : 'Описание — Kouros.'}</span>
       </div>
     </div>
   );

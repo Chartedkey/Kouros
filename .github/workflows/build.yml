@@ -35,6 +35,12 @@ jobs:
       - name: Установка зависимостей
         run: npm install
 
+      - name: Проверка библиотеки упражнений
+        run: python tools/exercises/validate_catalog.py
+
+      - name: Тесты сохранности упражнений и комплексов
+        run: cargo test --manifest-path tools/exercise-tests/Cargo.toml -- --test-threads=1
+
       - name: Описание версии из CHANGELOG.md
         id: notes
         shell: bash
