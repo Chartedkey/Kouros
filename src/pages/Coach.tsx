@@ -321,7 +321,6 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
 
   return (
     <div className="stack" style={{ gap: 16 }}>
-      <CoachNow eng={eng} onPlan={()=>setSub('plan')}/>
       <nav className="subtabs" aria-label="Разделы тренера">
         {SUBS.map(([id, n]) => <button key={id} type="button" aria-pressed={sub === id} onClick={() => { setSub(id); setOpen(null); }}>{n}</button>)}
       </nav>
@@ -342,7 +341,10 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
             </div>
           </section>
           {(openR && openR.kind === 'day' ? openR : lastDay) && <ReportView r={(openR && openR.kind === 'day' ? openR : lastDay)!} all={st.reports} short={short} onSaved={saved} onDelete={del} />}
-
+          <details className="card" aria-label="Рекомендация на сегодня">
+            <summary>Рекомендация на сегодня и оценка тренировки</summary>
+            <CoachNow eng={eng} onPlan={()=>setSub('plan')}/>
+          </details>
         </>
       )}
 
