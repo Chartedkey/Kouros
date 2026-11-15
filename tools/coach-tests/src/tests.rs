@@ -227,3 +227,85 @@ fn new_medication_changes_local_restrictions_and_invalidates_preview() {
         .unwrap()
         .contains(&json!("long")));
 }
+
+#[test]
+fn psychology_latest_today_overrides_earlier_answer_and_invalidates_snapshot() {
+    let mut c = db();
+    let today = engine_svc::today(&engine_svc::profile(&c));
+    psych_svc::save(&c, "tqr", &json!([6]), Some(&today)).unwrap();
+    let snap = ai_context::preview(&mut c, "daily_report", None).unwrap();
+    assert_eq!(snap["allowed_today_tier"], 1);
+    assert_eq!(snap["facts"]["psychology"]["value"]["tqr"]["current"], true);
+    let before = planning::data_revision(&c);
+    psych_svc::save(&c, "tqr", &json!([20]), Some(&today)).unwrap();
+    assert!(planning::data_revision(&c) > before);
+    let s = engine_svc::summary(&mut c).unwrap();
+    assert_eq!(s["day"]["constraints"]["subjectiveLevel"], 0);
+    assert_eq!(s["day"]["constraints"]["hasSurvey"], true);
+    psych_svc::delete(&c, "tqr", &today).unwrap();
+    psych_svc::save(&c, "tqr", &json!([6]), Some(&engine::add_days(&today, -1))).unwrap();
+    let s = engine_svc::summary(&mut c).unwrap();
+    assert_eq!(s["day"]["constraints"]["subjectiveLevel"], 0);
+    assert_eq!(s["day"]["constraints"]["hasSurvey"], false);
+    let snap = ai_context::preview(&mut c, "daily_report", None).unwrap();
+    assert_eq!(
+        snap["facts"]["psychology"]["value"]["tqr"]["current"],
+        false
+    );
+}
+
+#[test]
+fn long_term_goals_extend_strategy_but_do_not_rewrite_accepted_days() {
+    let mut c = db();
+    planning::switch(&c, "deepseek").unwrap();
+    let today = engine_svc::today(&engine_svc::profile(&c));
+    plan_svc::set_day(&c, &today, &json!([{"kind":"walk","min":20}])).unwrap();
+    let mut p = ai::training(&c);
+    p["goals"] = json!([{"id":"pullup","title":"Научиться подтягиваться","baseline":"0 повторений","target":"5 повторений","date":"2027-06-01","primary":true}]);
+    p["program_weeks"] = json!(24);
+    ai::save_training(&c, &p).unwrap();
+    let s = ai_context::preview(&mut c, "training_plan", None).unwrap();
+    assert_eq!(
+        engine::day_num(s["period"]["to"].as_str().unwrap()).unwrap()
+            - engine::day_num(s["period"]["from"].as_str().unwrap()).unwrap(),
+        167
+    );
+    assert_eq!(s["profile"]["goals"][0]["id"], "pullup");
+    let payload = ai::payload(&s, "01234567890123456789012345678901", "deepseek-flash").unwrap();
+    assert!(ai::input_bound(&payload["messages"]) <= ai::limits("training_plan").0);
+    assert!(payload.to_string().contains("24"));
+    let summary = engine_svc::summary(&mut c).unwrap();
+    assert_eq!(summary["day"]["acceptedPlan"]["items"][0]["kind"], "walk");
+    p["program_weeks"] = json!(53);
+    assert!(ai::save_training(&c, &p).is_err());
+}
+
+#[test]
+fn bad_current_self_report_flags_accepted_workout_without_replacing_it() {
+    let mut c = db();
+    let today = engine_svc::today(&engine_svc::profile(&c));
+    plan_svc::set_day(&c, &today, &json!([{"kind":"home","min":40}])).unwrap();
+    let items: String = c
+        .query_row("SELECT items FROM plan_days WHERE date=?1", [&today], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    psych_svc::save(&c, "tqr", &json!([7]), Some(&today)).unwrap();
+    let s = engine_svc::summary(&mut c).unwrap();
+    assert_eq!(s["day"]["acceptedPlan"]["needsReview"], true);
+    let after: String = c
+        .query_row("SELECT items FROM plan_days WHERE date=?1", [&today], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    assert_eq!(after, items);
+    psych_svc::delete(&c, "tqr", &today).unwrap();
+    let mut brums = vec![0; 24];
+    for i in 16..20 {
+        brums[i] = 4;
+    }
+    psych_svc::save(&c, "brums", &json!(brums), Some(&today)).unwrap();
+    let s = engine_svc::summary(&mut c).unwrap();
+    assert_eq!(s["day"]["constraints"]["subjectiveLevel"], 2);
+    assert_eq!(s["day"]["acceptedPlan"]["needsReview"], true);
+}

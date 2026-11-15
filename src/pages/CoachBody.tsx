@@ -36,7 +36,7 @@ function PainAdviceBlock({ a }: { a: PainAdvice }) {
           <span>• {a.temp}</span>
           <span className="muted">• {a.ointment}</span>
           <span style={{ color: '#F5B642' }}>{a.redFlags}</span>
-          <span className="muted tiny">Это общие советы, а не диагноз. План тренировок Kouros поправит сам — предложения появятся в «Плане».</span>
+          <span className="muted tiny">Это общие советы, а не диагноз. Перед следующей тренировкой проверь ограничения и предложения в «Плане».</span>
         </div>
       )}
     </div>
@@ -65,7 +65,11 @@ export function CoachBody() {
   const r = b.return;
   return (
     <div className="stack" style={{ gap: 16 }}>
-      <div className="grid2">
+      <section className="card stack" aria-label="Сводка восстановления"><h3>Боль и ограничения сейчас</h3>
+        {b.pains.filter(p=>p.active).length===0?<span>Активных отметок боли нет. Это не заменяет сегодняшнюю оценку самочувствия.</span>:b.pains.filter(p=>p.active).map(p=><div className="inset stack" key={p.area+p.side}><b>{p.name} · {p.level}/10 · {TREND[p.trend]?.[0]}</b><span className="small">Последняя отметка: {ruDate(p.date)}. Нагрузку на болезненное место нужно пересмотреть.</span>{p.advice?.remove.map(x=><span className="small" key={x}>{x}</span>)}{p.advice?.doctor.map(x=><span className="note-err" key={x}>{x}</span>)}</div>)}
+        <span className="small">{b.tools.best.map(t=>`${t.name}: ${t.text}`).join(' · ')||'Основа восстановления — сон, питание и посильная активность.'}</span>
+      </section>
+      <details className="card"><summary>Отметить боль · дневник и история</summary><div className="grid2">
         <section className="card" aria-label="Дневник боли">
           <span className="label">Дневник боли</span>
           <span className="muted small" style={{ lineHeight: 1.5 }}>Нажми на место, где болит, и выбери силу боли. Отметки после тренировок попадают сюда сами. Через боль тренер не ставит нагрузку на это место — предложит замену в плане.</span>
@@ -108,7 +112,7 @@ export function CoachBody() {
           </section>
         </div>
       </div>
-      <div className="grid2">
+      </details><details className="card"><summary>Возврат к бегу и средства восстановления</summary><div className="grid2">
         <section className="card" aria-label="Возврат к бегу">
           <span className="label">Возврат к бегу</span>
           {r.active ? (
@@ -154,7 +158,7 @@ export function CoachBody() {
             </>
           )}
         </section>
-      </div>
+      </div></details>
     </div>
   );
 }

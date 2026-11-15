@@ -429,7 +429,7 @@ pub fn readiness_day(conn: &mut Connection, date: &str) -> Result<Value, String>
         .and_then(|s| serde_json::from_str(&s).ok())
         .unwrap_or(Value::Null);
     let psych: Vec<Value> = {
-        let mut st = conn.prepare("SELECT kind, score, extra, ts FROM surveys WHERE date = ?1 ORDER BY ts").map_err(err)?;
+        let mut st = conn.prepare("SELECT kind, score, extra, ts FROM surveys WHERE date = ?1 AND id = (SELECT s.id FROM surveys s WHERE s.date=surveys.date AND s.kind=surveys.kind ORDER BY s.ts DESC,s.rowid DESC LIMIT 1) ORDER BY ts").map_err(err)?;
         let v = st
             .query_map(params![date], |q| {
                 let extra: Option<String> = q.get(2)?;
@@ -742,7 +742,7 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
         .any(|a| a.zone_s[4] + a.zone_s[5] >= 600.0 || a.zone_s[3] + a.zone_s[4] + a.zone_s[5] >= 1200.0);
     let body_warning = sig.iter().any(|g| g.code == "rhr_up" || g.code == "low_rhr_low_hrv");
     let surveys: Vec<(String, Option<f64>, Value, Value)> = {
-        let mut st = conn.prepare("SELECT kind, score, answers, extra FROM surveys WHERE date = ?1 ORDER BY ts").map_err(err)?;
+        let mut st = conn.prepare("SELECT kind, score, answers, extra FROM surveys WHERE date = ?1 AND id = (SELECT s.id FROM surveys s WHERE s.date=surveys.date AND s.kind=surveys.kind ORDER BY s.ts DESC,s.rowid DESC LIMIT 1) ORDER BY ts").map_err(err)?;
         let v = st
             .query_map(params![today], |q| {
                 let a: String = q.get(2)?;
@@ -783,6 +783,11 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
                         bump(2, "по индексу Хупера сильная усталость".into());
                     } else if item(3) >= 6.0 {
                         bump(2, "по индексу Хупера сильно болят мышцы".into());
+                    }
+                }
+                "brums" => {
+                    if extra["fatigue"].as_f64().unwrap_or(0.0)>=12.0 && extra["vigour"].as_f64().unwrap_or(16.0)<=4.0 {
+                        bump(2,"сегодня по BRUMS выражена усталость и мало бодрости; это оценка настроения, не диагноз".into());
                     }
                 }
                 "stressrec" => {
@@ -956,12 +961,12 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
         "vitals": vitals,
     });
 
-    day["constraints"] = json!({"tier":plan.tier,"qualityDataReady":gates.intensity_limits.is_empty(),"reasons":day["advice"]["reasons"]});
+    day["constraints"] = json!({"tier":plan.tier,"qualityDataReady":gates.intensity_limits.is_empty(),"subjectiveLevel":gates.feel,"hasSurvey":gates.has_survey,"reasons":day["advice"]["reasons"]});
     day["planner"] = crate::planning::state(conn);
     let accepted: Option<(String,String)> = conn.query_row("SELECT items,source FROM plan_days WHERE date=?1",[&today],|r|Ok((r.get(0)?,r.get(1)?))).ok();
     if let Some((items,source)) = accepted {
         let items: Value = serde_json::from_str(&items).unwrap_or(json!([]));
-        let unsafe_plan = items.as_array().map(|xs|xs.iter().any(|x|crate::ai::tier(x["kind"].as_str().unwrap_or("rest"))>plan.tier || crate::ai_context::forbidden(conn,&today).contains(&x["kind"].as_str().unwrap_or("").to_string()))).unwrap_or(true);
+        let unsafe_plan = (plan.tier<=3 && crate::schedule::prescribed_effort(conn,&today)>5.0) || items.as_array().map(|xs|xs.iter().any(|x|crate::ai::tier(x["kind"].as_str().unwrap_or("rest"))>plan.tier || crate::ai_context::forbidden(conn,&today).contains(&x["kind"].as_str().unwrap_or("").to_string()))).unwrap_or(true);
         day["acceptedPlan"] = json!({"items":items,"source":source,"needsReview":unsafe_plan});
         day["advice"]["title"] = json!(if unsafe_plan {"План требует пересмотра"} else {"Тренировка по принятому плану"});
         day["advice"]["text"] = json!(if unsafe_plan {"Текущие ограничения строже принятого плана. Пересмотри занятие перед тренировкой.".to_string()} else {format!("Автор: {}. Подробности — в плане тренера.",if source=="deepseek" {"DeepSeek"} else {"Kouros / твой выбор"})});

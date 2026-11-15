@@ -180,7 +180,7 @@ impl Data {
     let d = Data::healthy(30); let mut gates = d.gates();
     gates.feel = 3; gates.feel_reason = Some("низкий TQR".into());
     let p = daily::plan_day(Some(80.0), &Profile::default().zones, &gates);
-    assert_eq!(p.tier, 4); assert!(p.reasons.iter().any(|r| r.contains("TQR")));
+    assert_eq!(p.tier, 1); assert!(p.reasons.iter().any(|r| r.contains("TQR")));
 }
 
 #[test] fn a_high_evening_score_cannot_bypass_the_same_evidence_cap() {
@@ -200,4 +200,22 @@ impl Data {
     let mut d = Data::healthy(0); d.hrv.clear(); d.rhr.clear(); d.sleep.clear();
     let p = daily::plan_day(None, &Profile::default().zones, &d.gates());
     assert_eq!(p.tier, 3); assert!(!p.reasons.is_empty());
+}
+
+#[test]
+fn subjective_exhaustion_caps_even_excellent_or_unknown_objective_readiness() {
+    let d = Data::healthy(30);
+    for score in [None, Some(100.0), Some(70.0), Some(10.0)] {
+        for (feel, cap) in [(2, 2), (3, 1)] {
+            let mut gates = d.gates();
+            gates.feel = feel;
+            gates.feel_reason = Some("Сильная усталость по личной оценке".into());
+            let p = daily::plan_day(score, &Profile::default().zones, &gates);
+            assert!(p.tier <= cap, "score={score:?},feel={feel},tier={}", p.tier);
+            assert!(p.reasons.iter().any(|x| x.contains("усталость")));
+            if let Some(s) = score {
+                assert_eq!(p.body_tier, daily::tier_of(s));
+            }
+        }
+    }
 }

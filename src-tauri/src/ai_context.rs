@@ -57,13 +57,39 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
         return Err("Начало блока: сегодня или ближайшие 28 дней".into());
     }
     let to = if kind == "training_plan" {
-        add_days(&from, 27)
+        add_days(
+            &from,
+            ai::training(c)["program_weeks"]
+                .as_i64()
+                .unwrap_or(4)
+                .clamp(1, 52)
+                * 7
+                - 1,
+        )
     } else if kind == "weekly_report" {
         add_days(today, -1)
     } else {
         today.into()
     };
     let mut facts = json!({});
+    let psych = crate::psych_svc::summary(c)?;
+    let mut questionnaires = json!({});
+    for kind in ["hooper", "tqr", "brums", "stressrec"] {
+        let rows = psych[kind].as_array().cloned().unwrap_or_default();
+        let latest = rows
+            .iter()
+            .filter(|r| r["date"].as_str().unwrap_or("") <= today)
+            .max_by_key(|r| {
+                (
+                    r["date"].as_str().unwrap_or(""),
+                    r["ts"].as_i64().unwrap_or(0),
+                )
+            });
+        questionnaires[kind] = json!({"latest":latest,"current":latest.map(|r|r["date"]==today).unwrap_or(false),
+            "history":rows.iter().filter(|r|r["date"].as_str().unwrap_or("")<=today).rev().take(7).collect::<Vec<_>>()});
+    }
+    fact(&mut facts,"psychology",questionnaires,"questionnaires","Личные ответы: проверяй дату; отсутствие ответа — неизвестно. BRUMS описывает настроение, не диагноз.");
+
     for (k, path, u) in [
         ("readiness", "/readiness/score", "points"),
         ("load_today", "/load/today", "load"),
@@ -379,6 +405,16 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
             if let Some(a) = body["facts"][key]["value"].as_array_mut() {
                 if a.len() > 1 {
                     a.pop();
+                    reduced = true;
+                }
+            }
+        }
+        for kind in ["hooper", "tqr", "brums", "stressrec"] {
+            if let Some(history) =
+                body["facts"]["psychology"]["value"][kind]["history"].as_array_mut()
+            {
+                if !history.is_empty() {
+                    history.pop();
                     reduced = true;
                 }
             }

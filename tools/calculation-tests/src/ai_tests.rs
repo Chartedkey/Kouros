@@ -436,3 +436,29 @@ fn ai_preserves_user_transferred_locked_day_outside_usual_weekdays() {
     assert!(s["locked_days"].get(d).is_some());
     ai::validate_proposal(&s, &p).unwrap();
 }
+
+#[test]
+fn extended_strategy_validates_and_applies_only_first_seven_days() {
+    for weeks in [1, 12, 24, 52] {
+        let mut c = db();
+        let mut s = fixture(&c, "deepseek", "training_plan");
+        let from = s["period"]["from"].as_str().unwrap().to_string();
+        s["period"]["to"] = json!(engine::add_days(&from, weeks * 7 - 1));
+        let s = ai::save_snapshot(&c, s).unwrap();
+        let mut p = proposal(&s);
+        p["week_outline"]=json!((0..weeks).map(|i|json!({"index":i+1,"from":engine::add_days(&from,i*7),"focus":"База и постепенная адаптация","progression_condition":"Только при достаточном восстановлении"})).collect::<Vec<_>>());
+        ai::validate_proposal(&s, &p).unwrap();
+        let job = prepare(&c, &s);
+        let mut r = report(&s, &job);
+        r["proposal"] = p.clone();
+        ai::take_request(&c, &job).unwrap();
+        assert_eq!(ai::finish(&c, &job, &provider(&r)).unwrap()["status"],"ready");
+        ai::accept_with_tier(&mut c, &job, Some(3)).unwrap();
+        let count: i64 = c
+            .query_row("SELECT count(*) FROM ai_prescriptions", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(count, 7);
+        p["week_outline"].as_array_mut().unwrap().pop();
+        assert!(ai::validate_proposal(&s, &p).is_err());
+    }
+}

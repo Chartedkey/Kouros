@@ -594,19 +594,20 @@ pub fn plan_day(score: Option<f64>, zones: &[f64; 6], g: &Gates) -> DayPlan {
     let z2 = zones[2] as i64;
     let Some(sc) = score else {
         return DayPlan {
-            tier: 3, body_tier: 3,
-            title: "Мало данных для совета".into(),
-            text: "Пока нет достаточных данных для оценки. Интенсивную тренировку Kouros не рекомендует; дождись актуальных измерений и личной базы.".into(),
-            reasons: g.intensity_limits.clone(), hint: None, lo: 0.6, hi: 1.0,
+            tier: if g.feel >= 3 { 1 } else if g.feel >= 2 { 2 } else { 3 }, body_tier: 3,
+            title: if g.feel>=2 {"Сегодня только восстановление"}else{"Мало данных для совета"}.into(),
+            text: if g.feel>=2 {"Сегодняшняя личная оценка требует восстановления: отдых или короткая спокойная прогулка по самочувствию. Данные часов не отменяют это ограничение."}else{"Пока нет достаточных данных для оценки. Интенсивную тренировку Kouros не рекомендует; дождись актуальных измерений и личной базы."}.into(),
+            reasons: g.intensity_limits.iter().cloned().chain(g.feel_reason.iter().cloned()).collect(), hint: None,
+            lo: if g.feel >= 2 { 0.0 } else { 0.6 }, hi: if g.feel >= 3 { 0.25 } else if g.feel >= 2 { 0.5 } else { 1.0 },
         };
     };
     let body = tier_of(sc);
     let mut t = body;
     let mut reasons = Vec::new();
     // Feelings first: they can take whole steps down.
-    if g.feel >= 2 && t > 0 {
+    if g.feel >= 2 {
         let down = if g.feel >= 3 { 2 } else { 1 };
-        t = t.saturating_sub(down);
+        t = t.saturating_sub(down).min(if g.feel >= 3 { 1 } else { 2 });
         if let Some(r) = &g.feel_reason {
             reasons.push(r.clone());
         }
@@ -652,7 +653,7 @@ pub fn plan_day(score: Option<f64>, zones: &[f64; 6], g: &Gates) -> DayPlan {
         4 => ("Обычный аэробный день".to_string(), format!("Обычный объём во второй зоне, пульс до {z2}. Силовая — можно.")),
         3 if !g.intensity_limits.is_empty() => ("Без интенсивной нагрузки".to_string(), format!("Только спокойная активность до {z2}, без интервалов и темпа. Высокий балл готовности не отменяет ограничения по данным и сну.")),
         3 => ("Обычный объём, без интенсива".to_string(), format!("День в пределах твоей нормы. Бег или ходьба в Z2 до {z2}, без интервалов и темпа.")),
-        2 => ("Только восстановление".to_string(), format!("Показатели заметно ниже нормы. Длинная спокойная прогулка (пульс до {z1}), растяжка, мобилити. Без бега и силовой.")),
+        2 => ("Только восстановление".to_string(), format!("Сегодня только восстановительная активность. Спокойная прогулка (пульс до {z1}), растяжка, мобилити. Без бега и силовой.")),
         1 => ("Очень лёгкий день".to_string(), "Короткая прогулка 20–40 минут, лёгкая растяжка и дыхание. Лечь пораньше.".to_string()),
         _ => ("День отдыха".to_string(), "Организму тяжело — тренировки лучше отменить. Отдых, вода, сон. Если пульс покоя или температура тоже выше нормы — возможно, начинается болезнь.".to_string()),
     };

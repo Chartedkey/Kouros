@@ -64,7 +64,7 @@ function Proposals({ list, onDecide }: { list: PlanChange[]; onDecide: () => voi
             <button type="button" className="btn btn-green" onClick={() => decide(cs[0].id, true)}>Принять</button>
             <button type="button" className="btn2" onClick={() => decide(cs[0].id, false)}>Оставить как было</button>
             <button type="button" className="linkbtn small" onClick={() => discuss(cs)}>Обсудить с Claude</button>
-            {copied === cs[0].id && <span className="small" style={{ color: '#3DDC97' }}>Скопировано — вставь в чат «Тренер Kouros», ответ сохрани во вкладке «Сегодня у тренера».</span>}
+            {copied === cs[0].id && <span className="small" style={{ color: '#3DDC97' }}>Скопировано — вставь в чат «Тренер Kouros», ответ сохрани в «Отчётах».</span>}
           </div>
         </div>
       ))}
@@ -89,20 +89,20 @@ function DayCell({ d, sel, today, onPick }: { d: PlanDay; sel: boolean; today: s
 }
 
 function MoveTraining({day,today,onChanged}:{day:PlanDay;today:string;onChanged:()=>void}) {
-  const [to,setTo]=useState(''),[swap,setSwap]=useState(true),[preview,setPreview]=useState<any>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
-  useEffect(()=>{setPreview(null);setError('');setTo('')},[day.date]);
+  const [to,setTo]=useState(''),[swap,setSwap]=useState(day.date>=today),[preview,setPreview]=useState<any>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+  useEffect(()=>{setPreview(null);setError('');setTo('');setSwap(day.date>=today)},[day.date]);
   const prepare=async(date=to)=>{setBusy(true);setError('');setPreview(null);try{setPreview(await call('plan_move_preview',{from:day.date,to:date,swap}));setTo(date)}catch(e){setError(errText(e))}finally{setBusy(false)}};
   const apply=async()=>{setBusy(true);setError('');try{await call('plan_move_accept',{id:preview.id});setPreview(null);onChanged()}catch(e){setError(errText(e))}finally{setBusy(false)}};
   const text=(row:any)=>(row?.items??[]).map((x:any)=>{const meta=row?.prescription?.body?.sessions?.find((s:any)=>s.kind===x.kind)??row?.meta?.body?.[x.kind];const format=meta?.strength_format==='split'?` · сплит: ${meta.split_part==='upper'?'верх':'низ'}`:meta?.strength_format==='fullbody'?' · фулбоди':'';return `${ACTIVITY_NAME[x.kind]??x.kind}${x.kind==='rest'?'':` ${x.min} мин`}${format}`}).join(' + ')||'Нет плана';
-  return <details className="inset" aria-label="Перенос тренировки"><summary>Перенести / поменять местами</summary><div className="stack" style={{marginTop:12}}>
+  return <details className="inset" aria-label="Перенос тренировки"><summary>{day.date<today?'Запланировать пропущенное занятие повторно':'Перенести / поменять местами'}</summary><div className="stack" style={{marginTop:12}}>
     <label>Дата <input className="input" type="date" min={today} max={new Date(Date.parse(today)+21*86400000).toISOString().slice(0,10)} value={to} onChange={e=>{setTo(e.target.value);setPreview(null)}}/></label>
-    <label>Действие <select className="select" value={swap?'swap':'move'} onChange={e=>{setSwap(e.target.value==='swap');setPreview(null)}}><option value="swap">Поменять тренировки местами</option><option value="move">Перенести на свободный день</option></select></label>
+    <label>Действие <select className="select" value={swap?'swap':'move'} onChange={e=>{setSwap(e.target.value==='swap');setPreview(null)}}>{day.date>=today&&<option value="swap">Поменять тренировки местами</option>}<option value="move">Перенести на свободный день</option></select></label>
     <button type="button" className="btn2" disabled={busy||!to} onClick={()=>prepare()}>Проверить перенос</button>
     {preview&&<><div className="inset stack">{[preview.from,preview.to].map((d:string)=><span key={d}><b>{d}:</b> {text(preview.before[d])} → {text(preview.after[d])}</span>)}</div>
     {preview.warnings.map((w:string,i:number)=><span key={i} className="note-err">{w}</span>)}
     {!!preview.alternatives.length&&<div className="row" style={{gap:8,flexWrap:'wrap'}}><span>Подходящие даты:</span>{preview.alternatives.map((d:string)=><button type="button" key={d} className="btn2" disabled={busy} onClick={()=>prepare(d)}>{d}</button>)}</div>}
-    <span className="muted small">Сохранятся упражнения, дозировки и часть сплита. Изменятся только два показанных дня; выполненные тренировки сохраняются.</span>
-    <button type="button" className="btn" disabled={busy||!preview.canApply} onClick={apply}>Подтвердить изменения двух дней</button></>}
+    <span className="muted small">Сохранятся упражнения, дозировки и часть сплита. {day.date<today?'Изменится только будущий день. Прошлый пропуск и выполненные тренировки сохраняются.':'Изменятся только два показанных дня; выполненные тренировки сохраняются.'}</span>
+    <button type="button" className="btn" disabled={busy||!preview.canApply} onClick={apply}>{day.date<today?'Подтвердить повтор на выбранную дату':'Подтвердить изменения двух дней'}</button></>}
     {error&&<span className="note-err" role="alert">{error}</span>}
   </div></details>
 }
@@ -115,7 +115,7 @@ function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: (
   return (
     <section className="card" aria-label={`План на ${d.dateRu}`}>
       <div className="between" style={{ flexWrap: 'wrap' }}>
-        <span className="label">{d.date === st.today ? 'Тренировка дня' : d.dateRu} · {d.deload ? 'разгрузочная неделя' : `неделя ${d.week} из 4`}</span>
+        <span className="label">{d.date === st.today ? 'Тренировка дня' : d.dateRu} · {d.source==='deepseek'?'программа DeepSeek':d.deload ? 'разгрузочная неделя' : `неделя ${d.week} из 4`}</span>
         {!past && !edit && (
           <span className="row" style={{ gap: 12 }}>
             <button type="button" className="linkbtn small" onClick={() => setEdit(true)}>Изменить день</button>
@@ -125,7 +125,7 @@ function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: (
       </div>
       <h3 style={{ margin: 0, fontFamily: 'var(--display)', fontWeight: 500, fontSize: 22 }}>{d.text}</h3>
       {d.doneActs.length > 0 && <span className="small" style={{ color: '#3DDC97' }}>Сделано: {d.doneActs.map((a) => `${a.sport} ${a.min} мин (нагрузка ${a.load})${a.unplanned ? ' — вне плана' : ''}`).join(', ')}</span>}
-      {d.status === 'missed' && <span className="small" style={{ color: '#FF6B6B' }}>Тренировки в этот день в Strava нет.</span>}
+      {d.status === 'missed' && <div className="inset stack"><b>Занятие пропущено</b><span className="small">Можно оставить пропуск и продолжить план: догонять объём не требуется. Для переноса выбери свободный будущий день ниже. Для замены — открой нужный день и нажми «Изменить день»; программа проверяет перенос до подтверждения.</span><MoveTraining day={d} today={st.today} onChanged={onChanged}/></div>}
       {d.note && <span className="muted small" style={{ lineHeight: 1.5 }}>{d.note}</span>}
       {edit ? (
         <ItemsEditor items={d.items} kinds={st.kinds} onCancel={() => setEdit(false)} onSave={(v) => api.planSetDay(d.date, v).then(() => { setEdit(false); onChanged(); }).catch((e) => setErr(errText(e)))} />

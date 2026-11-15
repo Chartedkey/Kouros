@@ -1,13 +1,15 @@
+import { CoachGoals, CoachNow, CoachPsychFacts } from './CoachOverview';
 import { DeepSeekPanel } from './DeepSeek';
 // «Тренер», part 1: onboarding, «Как мой день?», week analysis, «Спросить Claude» (copy / paste back),
 // history and the coach's notes. Reports are written by Kouros from computed numbers.
+import { useDataChanged } from '../lib/events';
 import { useCallback, useEffect, useState } from 'react';
 import { CoachPlan } from './CoachPlan';
 import { CoachBody, CoachGoal } from './CoachBody';
-import { api, errText, type CoachProfile, type CoachReport, type CoachSection, type CoachState, type EngineSummary } from '../lib/api';
+import { api, call, errText, type CoachProfile, type CoachReport, type CoachSection, type CoachState, type EngineSummary } from '../lib/api';
 
-type Sub = 'today' | 'plan' | 'body' | 'goal' | 'week' | 'profile' | 'history';
-const SUBS: [Sub, string][] = [['today', 'Сегодня у тренера'], ['plan', 'План'], ['body', 'Боль и восстановление'], ['goal', 'Цель'], ['week', 'Анализ недели'], ['profile', 'Профиль'], ['history', 'История']];
+type Sub = 'reports' | 'today' | 'plan' | 'body' | 'goal' | 'week' | 'profile' | 'history';
+const SUBS: [Sub, string][] = [['reports', 'Отчёты'], ['plan', 'План'], ['body', 'Боль и восстановление'], ['goal', 'Цели'], ['profile', 'Профиль']];
 
 const GOALS: [string, string][] = [['hm', 'Полумарафон быстрее'], ['mar', 'Первый марафон'], ['k10', 'Улучшить 5 и 10 км'], ['body', 'Снизить вес и улучшить состав тела'], ['health', 'Здоровье и общая форма'], ['str', 'Стать сильнее'], ['inj', 'Бегать без травм']];
 const MODES: [string, string, string][] = [['build', 'Набор объёма', 'Постепенно растим километраж и добавляем качество'], ['maintain', 'Поддержание формы', 'Держим текущий объём, без роста'], ['winter', 'Зимовка', 'Меньше бега, больше силовой и ОФП до весны'], ['return', 'Возвращение', 'После перерыва, болезни или травмы']];
@@ -40,7 +42,7 @@ function profileSummary(p: CoachProfile): string {
   if (p.days?.length) parts.push(`Тренироваться можешь: ${p.days.join(', ')}.`);
   if (p.where?.length) parts.push(`Где: ${p.where.join(', ').toLowerCase()}.`);
   const inj = (p.injuries ?? []).filter((x) => x !== 'Нет травм');
-  parts.push(inj.length ? `Буду бережнее с: ${inj.join(', ').toLowerCase()}.` : 'Травм сейчас нет.');
+  parts.push(inj.length ? `Буду бережнее с: ${inj.join(', ').toLowerCase()}.` : 'Травмы не отмечены.');
   if (p.tools?.length) parts.push(`Для восстановления есть: ${p.tools.join(', ').toLowerCase()} — буду предлагать их по ситуации.`);
   return parts.join(' ');
 }
@@ -51,12 +53,12 @@ function knownFacts(s: EngineSummary | null): { k: string; v: string; src: strin
   const w = s.weeks.slice(-8);
   if (w.length) {
     const km = w.reduce((a, x) => a + x.runKm, 0) / w.length;
-    out.push({ k: 'Бег в неделю', v: `${Math.round(km)} км`, src: 'Strava, 8 недель' });
-    out.push({ k: 'Тренировок в неделю', v: String(Math.round(w.reduce((a, x) => a + x.count, 0) / w.length)), src: 'Strava, 8 недель' });
+    out.push({ k: 'Бег в неделю', v: `${Math.round(km)} км`, src: 'импортированные занятия, до 8 недель' });
+    out.push({ k: 'Тренировок в неделю', v: String(Math.round(w.reduce((a, x) => a + x.count, 0) / w.length)), src: 'импортированные занятия, до 8 недель' });
   }
-  out.push({ k: 'Пульс макс / покоя', v: `${s.profile.hrMax} / ${Math.round(s.hrRestUsed)}`, src: 'профиль и Apple Health' });
-  if (s.sleep.length) out.push({ k: 'Сон в среднем', v: (() => { const m = Math.round(s.sleep.reduce((a, x) => a + x.totalS, 0) / s.sleep.length / 60); return `${Math.floor(m / 60)} ч ${String(m % 60).padStart(2, '0')} мин`; })(), src: 'Apple Health, 2 недели' });
-  if (s.body.weight.smooth != null) out.push({ k: 'Вес', v: `${s.body.weight.smooth.toFixed(1).replace('.', ',')} кг`, src: 'Apple Health' });
+  out.push({ k: 'Пульс макс / покоя', v: `${s.profile.hrMax} / ${Math.round(s.hrRestUsed)}`, src: 'профиль и выбранные измерения' });
+  if (s.sleep.length) out.push({ k: 'Сон в среднем', v: (() => { const m = Math.round(s.sleep.reduce((a, x) => a + x.totalS, 0) / s.sleep.length / 60); return `${Math.floor(m / 60)} ч ${String(m % 60).padStart(2, '0')} мин`; })(), src: 'выбранный источник сна, до 2 недель' });
+  if (s.body.weight.smooth != null) out.push({ k: 'Вес', v: `${s.body.weight.smooth.toFixed(1).replace('.', ',')} кг`, src: 'выбранный источник веса' });
   if (s.day.usualReadiness != null) out.push({ k: 'Обычная готовность', v: String(Math.round(s.day.usualReadiness)), src: 'Kouros, 30 дней' });
   return out;
 }
@@ -275,8 +277,10 @@ function ReportView(props: { r: CoachReport; all: CoachReport[]; short: boolean;
 export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; onSubUsed?: () => void } = {}) {
   const [st, setSt] = useState<CoachState | null>(null);
   const [eng, setEng] = useState<EngineSummary | null>(null);
-  const [sub, setSub] = useState<Sub>(SUBS.some(([k]) => k === initialSub) ? (initialSub as Sub) : 'today');
+  const [sub, setSub] = useState<Sub>(SUBS.some(([k]) => k === initialSub) ? (initialSub as Sub) : 'reports');
   useEffect(() => { if (initialSub) onSubUsed?.(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [reportSub,setReportSub]=useState<'today'|'week'|'history'>('today');
+  const [planner,setPlanner]=useState('kouros');
   const [onb, setOnb] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -287,10 +291,12 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
   const [rulesCopied, setRulesCopied] = useState(false);
 
   const load = useCallback(() => {
-    api.coachState().then((v) => { setSt(v); setNotes(v.notes); if (!v.profile) setOnb(true); }).catch((e) => setErr(errText(e)));
+    call<any>('ai_state').then(s=>setPlanner(s.planner.mode)).catch(()=>{});
+    api.coachState().then((v) => { setSt(v); setNotes(v.notes);  }).catch((e) => setErr(errText(e)));
   }, []);
   useEffect(load, [load]);
   useEffect(() => { api.engineSummary().then(setEng).catch(() => {}); }, []);
+  useDataChanged(()=>{load();api.engineSummary().then(setEng).catch(()=>{})});
 
   if (err && !st) return <div className="note-err">{err}</div>;
   if (!st) return <p className="muted">Загружаю…</p>;
@@ -299,7 +305,7 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
   const short = profile.style === 'short';
   const saveProfile = async (p: CoachProfile) => { await api.coachProfileSave(p).catch((e) => setErr(errText(e))); setOnb(false); load(); };
 
-  if (onb) return <><DeepSeekPanel onChanged={load}/><Onboarding init={profile} facts={facts} onDone={saveProfile} onSkip={() => { if (!st.profile) saveProfile({ done: false }); else setOnb(false); }} /></>;
+  if (onb) return <><Onboarding init={profile} facts={facts} onDone={saveProfile} onSkip={() => { if (!st.profile) saveProfile({ done: false }); else setOnb(false); }} /></>;
 
   const run = async (f: () => Promise<CoachReport>) => {
     setBusy(true); setErr(null);
@@ -315,13 +321,14 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
 
   return (
     <div className="stack" style={{ gap: 16 }}>
-      <DeepSeekPanel onChanged={load}/>
+      <CoachNow eng={eng} onPlan={()=>setSub('plan')}/>
       <nav className="subtabs" aria-label="Разделы тренера">
         {SUBS.map(([id, n]) => <button key={id} type="button" aria-pressed={sub === id} onClick={() => { setSub(id); setOpen(null); }}>{n}</button>)}
       </nav>
       {err && <div className="note-err">{err}</div>}
 
-      {sub === 'today' && (
+      {sub==='reports'&&<><nav className="subtabs" aria-label="Виды отчётов">{([['today','За день'],['week','За неделю'],['history','История']] as const).map(([k,n])=><button type="button" key={k} aria-pressed={reportSub===k} onClick={()=>{setReportSub(k);setOpen(null)}}>{n}</button>)}</nav><DeepSeekPanel section="reports" onChanged={load}/></>}
+      {sub === 'reports' && reportSub==='today' && (
         <>
           <section className="card coach" aria-label="Как мой день">
             <div className="stack" style={{ gap: 10, flex: '999 1 420px' }}>
@@ -330,8 +337,8 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
               <span className="muted small" style={{ lineHeight: 1.5 }}>Коротко разберу день на эту минуту: сон, готовность, тренировку, стресс, еду и воду, добавки. Что в норме — одной строкой, подробно — только о том, что выбивается.</span>
             </div>
             <div className="stack" style={{ gap: 8, justifyContent: 'center' }}>
-              <button type="button" className="btn btn-green" onClick={() => run(api.coachDay)} disabled={busy}>{busy ? 'Считаю…' : 'Как мой день?'}</button>
-              {lastDay && <span className="muted tiny">прошлый — {ruTs(lastDay.ts)}</span>}
+              <button type="button" className="btn btn-green" onClick={() => run(api.coachDay)} disabled={busy||planner!=='kouros'}>{busy ? 'Считаю…' : 'Как мой день?'}</button>
+              {planner==='deepseek'&&<span className="muted small">Выбран DeepSeek — создай отчёт кнопками выше. Ниже сохранён прошлый отчёт Kouros.</span>}{lastDay && <span className="muted tiny">прошлый — {ruTs(lastDay.ts)}</span>}
             </div>
           </section>
           {(openR && openR.kind === 'day' ? openR : lastDay) && <ReportView r={(openR && openR.kind === 'day' ? openR : lastDay)!} all={st.reports} short={short} onSaved={saved} onDelete={del} />}
@@ -339,11 +346,11 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
         </>
       )}
 
-      {sub === 'plan' && <CoachPlan />}
+      {sub === 'plan' && <><CoachPlan /><DeepSeekPanel section="plan" onChanged={load}/></>}
       {sub === 'body' && <CoachBody />}
-      {sub === 'goal' && <CoachGoal profile={profile} onSave={saveProfile} />}
+      {sub === 'goal' && <><CoachGoals/><details className="card"><summary>Беговая цель и прогноз · прежние настройки сохранены</summary><CoachGoal profile={profile} onSave={saveProfile} /></details></>}
 
-      {sub === 'week' && (
+      {sub === 'reports' && reportSub==='week' && (
         <>
           <section className="card coach" aria-label="Анализ недели">
             <div className="stack" style={{ gap: 10, flex: '999 1 420px' }}>
@@ -352,8 +359,8 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
               <span className="muted small" style={{ lineHeight: 1.5 }}>Сравню средние за период с твоей обычной неделей, проверю прошлые советы и скажу, что поменять. Период — от прошлого анализа до сегодня, но не больше 4 недель.</span>
             </div>
             <div className="stack" style={{ gap: 8, justifyContent: 'center' }}>
-              <button type="button" className="btn btn-green" onClick={() => run(api.coachWeek)} disabled={busy || !st.week.ready}>{busy ? 'Считаю…' : 'Сделать анализ'}</button>
-              {!st.week.ready && nextDate && <span className="muted tiny">Следующий анализ — с {nextDate}</span>}
+              <button type="button" className="btn btn-green" onClick={() => run(api.coachWeek)} disabled={busy || !st.week.ready || planner!=='kouros'}>{busy ? 'Считаю…' : 'Сделать анализ'}</button>
+              {planner==='deepseek'&&<span className="muted small">Выбран DeepSeek — отчёт создаётся кнопками выше.</span>}{!st.week.ready && nextDate && <span className="muted tiny">Следующий анализ — с {nextDate}</span>}
             </div>
           </section>
           {(openR && openR.kind === 'week' ? openR : lastWeek)
@@ -363,7 +370,7 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
       )}
 
       {sub === 'profile' && (
-        <div className="grid2">
+        <><DeepSeekPanel section="profile" onChanged={load}/><CoachPsychFacts/><div className="grid2">
           <div className="stack" style={{ gap: 16 }}>
             <section className="card" aria-label="Знакомство">
               <div className="between"><span className="label">Что тренер знает обо мне</span><button type="button" className="linkbtn small" onClick={() => setOnb(true)}>{profile.done ? 'Пройти знакомство заново' : 'Пройти знакомство'}</button></div>
@@ -413,10 +420,10 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
               {rulesShown && <textarea className="textarea tiny" rows={10} readOnly value={st.rules} onFocus={(e) => e.currentTarget.select()} />}
             </section>
           </div>
-        </div>
+        </div></>
       )}
 
-      {sub === 'history' && (
+      {sub === 'reports' && reportSub==='history' && (
         openR ? (
           <>
             <button type="button" className="backbtn" onClick={() => setOpen(null)}>← История</button>

@@ -550,7 +550,7 @@
               "index": {
                 "type": "integer",
                 "minimum": 1,
-                "maximum": 4
+                "maximum": 52
               },
               "from": {
                 "type": "string",
@@ -575,7 +575,7 @@
             ]
           },
           "minItems": 0,
-          "maxItems": 4
+          "maxItems": 52
         }
       },
       "required": [
@@ -603,8 +603,8 @@
                 "maxItems": 7
               },
               "week_outline": {
-                "minItems": 4,
-                "maxItems": 4
+                "minItems": 1,
+                "maxItems": 52
               }
             }
           }

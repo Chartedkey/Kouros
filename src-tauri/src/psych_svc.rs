@@ -81,7 +81,7 @@ pub fn save(conn: &Connection, kind: &str, answers: &Value, date: Option<&str>) 
 
 fn rows(conn: &Connection, kind: &str, from: &str) -> Result<Vec<Value>, String> {
     let mut st = conn
-        .prepare("SELECT date, ts, answers, score, extra FROM surveys WHERE kind = ?1 AND date >= ?2 ORDER BY ts")
+        .prepare("SELECT date, ts, answers, score, extra FROM surveys WHERE kind = ?1 AND date >= ?2 ORDER BY ts,rowid")
         .map_err(err)?;
     let out = st
         .query_map(params![kind, from], |r| {

@@ -455,6 +455,9 @@ fn check(
 pub fn preview(c: &mut Connection, from: &str, to: &str, swap: bool) -> Result<Value, String> {
     let summary = engine_svc::summary(c)?;
     let today = summary["today"].as_str().ok_or("Нет даты")?;
+    if from < today {
+        return missed_preview(c, from, to, swap, &summary);
+    }
     for d in [from, to] {
         if chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").is_err()
             || d < today
@@ -512,6 +515,97 @@ pub fn preview(c: &mut Connection, from: &str, to: &str, swap: bool) -> Result<V
     getrandom::getrandom(&mut bytes).map_err(err)?;
     let id: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
     let body = json!({"id":id,"today":today,"from":from,"to":to,"swap":swap,"before":{(from):rows.get(from),(to):rows.get(to)},"after":{(from):after.get(from),(to):after.get(to)},"warnings":warnings,"alternatives":alternatives,"canApply":warnings.is_empty(),"plan_revision":planning::plan_revision(c),"data_revision":planning::data_revision(c),"planner":planning::state(c),"profile_revision":ai::profile_revision(c)});
+    c.execute(
+        "INSERT INTO plan_edits(id,created,body)VALUES(?1,?2,?3)",
+        params![id, store::now(), body.to_string()],
+    )
+    .map_err(err)?;
+    Ok(body)
+}
+fn missed_source(c: &Connection, from: &str, today: &str) -> Result<Value, String> {
+    if engine::day_num(from).is_none() || from >= today || from < add_days(today, -21).as_str() {
+        return Err("Выбери пропуск за последние три недели".into());
+    }
+    let start = engine::day_num(from).unwrap() * 86400 - engine_svc::profile(c).tz_offset_s;
+    let count: i64 = c
+        .query_row(
+            "SELECT count(*) FROM va WHERE start_utc>=?1 AND start_utc<?2 AND sport<>'walk'",
+            params![start, start + 86400],
+            |r| r.get(0),
+        )
+        .map_err(err)?;
+    if count > 0 {
+        return Err("В этот день есть выполненная тренировка; повтор пропуска недоступен".into());
+    }
+    let done: i64 = c
+        .query_row(
+            "SELECT count(*) FROM plan_changes WHERE reason=?1 AND state='accepted'",
+            [format!("Повтор пропущенного занятия {from}")],
+            |r| r.get(0),
+        )
+        .map_err(err)?;
+    if done > 0 {
+        return Err("Это занятие уже запланировано повторно. Найди его в истории изменений".into());
+    }
+    read(c, from)?
+        .filter(active)
+        .ok_or("Нет пропущенного занятия".into())
+}
+fn repeat_split_warnings(after: &BTreeMap<String, Value>, to: &str) -> Vec<String> {
+    let mut warnings = vec![];
+    let Some(row) = after.get(to) else {
+        return warnings;
+    };
+    for part in strengths(row).iter().filter(|x| x.1 == "split") {
+        for neighbor in [
+            after
+                .range(..to.to_string())
+                .rev()
+                .find_map(|(_, r)| strengths(r).into_iter().find(|x| x.0 == part.0)),
+            after
+                .range((
+                    std::ops::Bound::Excluded(to.to_string()),
+                    std::ops::Bound::Unbounded,
+                ))
+                .find_map(|(_, r)| strengths(r).into_iter().find(|x| x.0 == part.0)),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            if neighbor.1 == "split" && neighbor.2 == part.2 {
+                warnings.push("Повтор нарушит чередование сплита. Выбери замену в плане.".into());
+            }
+        }
+    }
+    warnings
+}
+fn missed_preview(
+    c: &mut Connection,
+    from: &str,
+    to: &str,
+    swap: bool,
+    summary: &Value,
+) -> Result<Value, String> {
+    let today = summary["today"].as_str().ok_or("Нет даты")?;
+    if swap || engine::day_num(to).is_none() || to < today || to > add_days(today, 21).as_str() {
+        return Err("Повтор пропуска: выбери свободный будущий день, без обмена".into());
+    }
+    let source = missed_source(c, from, today)?;
+    ensure_meta(c, to)?;
+    let rows = all(c, today)?;
+    if rows.get(to).map(active).unwrap_or(false) {
+        return Err("День занят. Не добавляй пропуск поверх другой тренировки".into());
+    }
+    let mut after = rows.clone();
+    after.insert(to.into(), source.clone());
+    let mut warnings = check(c, &rows, &after, to, to, summary);
+    // The repeated session is new, not a rearrangement of an existing split identity.
+    warnings.retain(|x| !x.starts_with("Нарушится последовательность сплита"));
+    warnings.extend(repeat_split_warnings(&after, to));
+    let mut bytes = [0u8; 16];
+    getrandom::getrandom(&mut bytes).map_err(err)?;
+    let id: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+    let body = json!({"id":id,"repeat":true,"today":today,"from":from,"to":to,"swap":false,"before":{(from):source,(to):rows.get(to)},"after":{(from):source,(to):after.get(to)},"warnings":warnings,"alternatives":[],"canApply":warnings.is_empty(),"plan_revision":planning::plan_revision(c),"data_revision":planning::data_revision(c),"planner":planning::state(c),"profile_revision":ai::profile_revision(c)});
     c.execute(
         "INSERT INTO plan_edits(id,created,body)VALUES(?1,?2,?3)",
         params![id, store::now(), body.to_string()],
@@ -588,8 +682,33 @@ pub fn accept(c: &mut Connection, id: &str) -> Result<(), String> {
     let from = p["from"].as_str().ok_or("Нет исходного дня")?;
     let to = p["to"].as_str().ok_or("Нет нового дня")?;
     let rows = all(c, today)?;
-    let after = patch(&rows, from, to, p["swap"] == true);
-    let warnings = check(c, &rows, &after, from, to, &summary);
+    let repeat = p["repeat"] == true;
+    let after = if repeat {
+        let source = missed_source(c, from, today)?;
+        if rows.get(to).map(active).unwrap_or(false) {
+            return Err("День уже занят".into());
+        }
+        let mut result = rows.clone();
+        result.insert(to.into(), source);
+        result
+    } else {
+        patch(&rows, from, to, p["swap"] == true)
+    };
+    let mut warnings = check(
+        c,
+        &rows,
+        &after,
+        if repeat { to } else { from },
+        to,
+        &summary,
+    );
+    if repeat {
+        warnings.retain(|x| !x.starts_with("Нарушится последовательность сплита"));
+        warnings.extend(repeat_split_warnings(&after, to));
+    }
+    if p["canApply"] != true {
+        return Err("Предложение не прошло проверки. Проверь заново".into());
+    }
     if !warnings.is_empty() {
         return Err(warnings.join(" "));
     }
@@ -605,12 +724,21 @@ pub fn accept(c: &mut Connection, id: &str) -> Result<(), String> {
         [],
     )
     .map_err(err)?;
-    for date in [from, to] {
+    for date in if repeat { vec![to] } else { vec![from, to] } {
         let row = after.get(date).ok_or("Нет занятия")?;
         write(&tx, date, row)?;
-        tx.execute("INSERT INTO plan_changes(id,ts,date,before,after,reason,origin,state)VALUES(kouros_id(),?1,?2,?3,?4,?5,'manual','accepted')",params![store::now(),date,rows.get(date).map(|x|x["items"].to_string()).unwrap_or_else(||"[]".into()),row["items"].to_string(),format!("{}: {from} ↔ {to}",if p["swap"]==true{"Обмен тренировками"}else{"Перенос тренировки"})]).map_err(err)?;
+        tx.execute("INSERT INTO plan_changes(id,ts,date,before,after,reason,origin,state)VALUES(kouros_id(),?1,?2,?3,?4,?5,'manual','accepted')",params![store::now(),date,rows.get(date).map(|x|x["items"].to_string()).unwrap_or_else(||"[]".into()),row["items"].to_string(),if repeat {format!("Повтор пропущенного занятия {from}")}else{format!("{}: {from} ↔ {to}",if p["swap"]==true{"Обмен тренировками"}else{"Перенос тренировки"})}]).map_err(err)?;
     }
     tx.execute("UPDATE plan_edits SET applied=1 WHERE id=?1", [id])
         .map_err(err)?;
     tx.commit().map_err(err)
+}
+
+pub fn prescribed_effort(c: &Connection, date: &str) -> f64 {
+    read(c, date)
+        .ok()
+        .flatten()
+        .as_ref()
+        .map(max_effort)
+        .unwrap_or(0.0)
 }

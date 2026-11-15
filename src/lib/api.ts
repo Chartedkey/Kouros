@@ -1218,7 +1218,7 @@ export type EngineSummary = {
   day: {
     planner?: {mode:string;revision:number};
     acceptedPlan?: {source:string;items:PlanItem[];needsReview:boolean};
-    constraints?: {tier:number;qualityDataReady:boolean;reasons:string[]};
+    constraints?: {tier:number;qualityDataReady:boolean;reasons:string[];hasSurvey?:boolean;subjectiveLevel?:number};
     advice: { title: string; text: string; tier?: string; bodyTier?: string; reasons?: string[]; hint?: string | null; evening?: boolean };
     targetLoad: number; usualLoad: number; todayLoad: number;
     target?: { lo: number; hi: number; headroom: number | null; capped: boolean; cap: number; left: number };

@@ -255,3 +255,25 @@ fn hard_home_prescription_is_checked_against_adjacent_heavy_run() {
         .iter()
         .any(|x| x.as_str().unwrap().contains("тяжёлые занятия")));
 }
+
+#[test]
+fn repeating_missed_session_preserves_past_and_rejects_duplicate_repeat() {
+    let mut c = tests::db();
+    planning::switch(&c, "deepseek").unwrap();
+    let from = future(&c, -2);
+    let to = future(&c, 3);
+    c.execute(
+        "INSERT INTO plan_days(date,items,source,ts,confirmed)VALUES(?1,?2,'chosen',0,1)",
+        params![from, json!([{"kind":"walk","min":30}]).to_string()],
+    )
+    .unwrap();
+    let past = row(&c, &from);
+    let p = schedule::preview(&mut c, &from, &to, false).unwrap();
+    assert_eq!(p["repeat"], true);
+    assert_eq!(p["canApply"], true);
+    schedule::accept(&mut c, p["id"].as_str().unwrap()).unwrap();
+    assert_eq!(row(&c, &from), past);
+    assert_eq!(row(&c, &to), past);
+    let next = future(&c, 6);
+    assert!(schedule::preview(&mut c, &from, &next, false).is_err());
+}
