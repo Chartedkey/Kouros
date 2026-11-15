@@ -15,15 +15,16 @@ fn err<E: std::fmt::Display>(e: E) -> String {
 }
 
 /// Kind: key, title, sport group, hard day, readiness tier it needs (index in `daily::TIERS`).
-pub const KINDS: [(&str, &str, &str, bool, usize); 13] = [
+pub const KINDS: [(&str, &str, &str, bool, usize); 14] = [
     ("rest", "Отдых", "", false, 0),
     ("walk", "Долгая прогулка", "walk", false, 1),
     ("mobility", "Растяжка и мобилити", "mobility", false, 1),
     ("easy", "Лёгкий бег", "run", false, 3),
-    ("ofp", "Укрепляющие упражнения", "strength", false, 3),
+    ("ofp", "ОФП для бега", "strength", false, 3),
     ("bike", "Велосипед, спокойно", "ride", false, 3),
     ("long", "Длительный бег", "run", true, 4),
     ("gym", "Силовая в зале", "strength", false, 4),
+    ("home", "Силовая дома", "strength", false, 3),
     ("tempo", "Темповый бег", "run", true, 5),
     ("intervals", "Интервалы", "run", true, 6),
     ("upper", "Верх тела и кор", "strength", false, 3),
@@ -114,13 +115,14 @@ pub fn build_template(cp: &Value) -> Vec<Vec<Item>> {
     let r = if has_week { cnt("run", 0.0) } else { 3 };
     let g = if has_week { cnt("gym", 0.0) } else { 1 };
     let o = if has_week { cnt("ofp", 0.0) } else { 1 };
-    let b = if has_week { cnt("bike", 0.0) } else { 0 };
+    let b=0;
+    let h=if has_week{cnt("home",0.0)}else{0};
     let days: Vec<usize> = cp["days"]
         .as_array()
         .map(|a| a.iter().filter_map(|x| x.as_str()).filter_map(|x| WD_FULL.iter().position(|w| *w == x)).collect())
         .filter(|v: &Vec<usize>| !v.is_empty())
         .unwrap_or_else(|| (0..7).collect());
-    let t = cp["time"].as_str().and_then(|s| s.split_whitespace().next()?.parse::<f64>().ok()).unwrap_or(60.0);
+    let t:f64=45.0;
     let mode = cp["mode"].as_str().unwrap_or("maintain");
     let goals: Vec<&str> = cp["goals"].as_array().map(|a| a.iter().filter_map(|x| x.as_str()).collect()).unwrap_or_default();
     let r = r.min(days.len());
@@ -195,6 +197,7 @@ pub fn build_template(cp: &Value) -> Vec<Vec<Item>> {
         }
         week[d].push(it("ofp", t.min(30.0)));
     }
+    for _ in 0..h {if let Some(d)=days.iter().copied().find(|d|!week[*d].iter().any(|x|matches!(x.kind.as_str(),"gym"|"home"|"ofp"))){week[d].push(it("home",40.0));}}
     for _ in 0..b {
         let Some(d) = days.iter().copied().find(|d| week[*d].is_empty()) else { break };
         week[d].push(it("bike", t));
@@ -207,9 +210,10 @@ fn template(conn: &Connection) -> (Vec<Vec<Item>>, bool, String) {
     let today = engine_svc::today(&engine_svc::profile(conn));
     let start = v["start"].as_str().map(String::from).unwrap_or_else(|| monday(&today));
     if let Some(a) = v["days"].as_array().filter(|a| a.len() == 7) {
+        if v["auto"]==true && db::get_setting(conn,"ai_training_profile").is_some(){return (crate::schedule::template(conn),true,start);}
         return (a.iter().map(items_of).collect(), v["auto"].as_bool().unwrap_or(false), start);
     }
-    (build_template(&coach_svc::profile(conn)), true, start)
+    (if db::get_setting(conn,"ai_training_profile").is_some(){crate::schedule::template(conn)}else{build_template(&coach_svc::profile(conn))}, true, start)
 }
 
 fn save_template(conn: &Connection, days: &[Vec<Item>], auto: bool, start: &str) -> Result<(), String> {
@@ -301,6 +305,7 @@ fn put(conn: &Connection, d: &str, items: &[Item], source: &str, note: &str) -> 
         params![d, items_json(items).to_string(), source, note, store::now()],
     )
     .map_err(err)?;
+    crate::schedule::ensure_meta(conn,d)?;
     Ok(())
 }
 
@@ -860,7 +865,7 @@ fn pain_check(conn: &Connection, today: &str, t: f64) -> Result<(), String> {
             if seen > 0 {
                 continue;
             }
-            let hit = items.iter().any(|i| (*runs && is_run(&i.kind) && !(ret && i.kind == "walkrun")) || (*upper && matches!(i.kind.as_str(), "gym" | "upper")));
+            let hit = items.iter().any(|i| (*runs && is_run(&i.kind) && !(ret && i.kind == "walkrun")) || (*upper && matches!(i.kind.as_str(), "gym" | "upper" | "home")));
             if !hit {
                 continue;
             }
@@ -875,7 +880,7 @@ fn pain_check(conn: &Connection, today: &str, t: f64) -> Result<(), String> {
                     if !after.contains(&n) {
                         after.push(n);
                     }
-                } else if *upper && matches!(i.kind.as_str(), "gym" | "upper") {
+                } else if *upper && matches!(i.kind.as_str(), "gym" | "upper" | "home") {
                     let n = if area.as_str() == "back" { Item { kind: "mobility".into(), min: 20.0 } } else { Item { kind: "ofp".into(), min: 30.0 } };
                     if !after.contains(&n) {
                         after.push(n);
@@ -1093,7 +1098,7 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
     let ctl = s["load"]["ctl"].as_f64().unwrap_or(0.0);
     let cap_week = if ctl > 5.0 { Some(ctl * 7.0 * p.week_cap) } else { None };
     let cp = coach_svc::profile(conn);
-    let t = cp["time"].as_str().and_then(|x| x.split_whitespace().next()?.parse::<f64>().ok()).unwrap_or(60.0);
+    let t:f64=45.0;
     let injuries: Vec<String> = cp["injuries"].as_array().map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect()).unwrap_or_default();
     let has_tpl = get_json(conn, "plan_template")["days"].is_array();
     if !has_tpl && crate::planning::local(conn) {
@@ -1127,7 +1132,9 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
         let wk = ((day_num(&monday(&d)).unwrap_or(0) - day_num(&start).unwrap_or(0)) / 7).max(0) % 4 + 1;
         let st = if r.is_some() || d.as_str() <= today.as_str() { status(&items, &done, &d, &today) } else { "planned" };
         let note = r.as_ref().map(|x| x.2.clone()).filter(|x| !x.is_empty());
-        let det: Vec<Value> = items.iter().filter(|i| i.kind != "rest").map(|i| detail(i, &p, &injuries)).collect();
+        if d>=today {crate::schedule::ensure_meta(conn,&d)?;}
+        let strength_meta=crate::schedule::metadata(conn,&d);
+        let det: Vec<Value> = items.iter().filter(|i| i.kind != "rest").map(|i| {let mut value=detail(i,&p,&injuries);let meta=&strength_meta[&i.kind];if meta.is_object(){value["strength"]=meta.clone();value["title"]=json!(format!("{} · {}",kind(&i.kind).1,crate::schedule::label(meta)));value["main"]=json!(format!("{}: {}. 2–3 подхода, 6–15 повторений, усилие около RPE 6; подбери упражнения под доступный инвентарь.",crate::schedule::label(meta),if meta["split_part"]=="upper"{"жим, тяга, плечи и кор"}else if meta["split_part"]=="lower"{"приседание, тазовое сгибание, икры и кор"}else{"жим, тяга, приседание, тазовое сгибание и кор"}));}value}).collect();
         let da: Vec<Value> = done.iter().map(|a| json!({"id": a.id, "sport": a.sport, "min": (a.duration_s / 60.0).round(), "load": a.load.round(), "unplanned": !planned_match(&items, a) && sport_group(&a.sport) != "walk"})).collect();
         days.push(json!({
             "date": d, "dateRu": date_ru(&d), "wd": WD[wday(&d)], "items": items_json(&items), "text": if r.is_some() { items_text(&items) } else { "План ещё не составлен".into() },
@@ -1225,7 +1232,7 @@ fn ctx(conn: &mut Connection) -> Result<Ctx, String> {
     let ctl = s["load"]["ctl"].as_f64().unwrap_or(0.0);
     let cap_week = if ctl > 5.0 { Some(ctl * 7.0 * p.week_cap) } else { None };
     let cp = coach_svc::profile(conn);
-    let t = cp["time"].as_str().and_then(|x| x.split_whitespace().next()?.parse::<f64>().ok()).unwrap_or(60.0);
+    let t:f64=45.0;
     let mut loads: BTreeMap<String, f64> = BTreeMap::new();
     for a in &acts {
         *loads.entry(day_of(a.start_utc, p.tz_offset_s)).or_default() += a.load;

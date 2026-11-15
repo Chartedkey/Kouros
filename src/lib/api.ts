@@ -629,9 +629,9 @@ const demoCoach = {
 
 export async function call<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   if (!inTauri) {
-    if(cmd.startsWith('ai_')) { const {aiDemo}=await import('./aiDemo'); const v=await aiDemo(cmd,args); if(cmd==='ai_state') v.hasKey=!!demo.secrets.deepseek_api_key; return v as T; }
+    if(cmd.startsWith('ai_')||cmd==='plan_move_preview'||cmd==='plan_move_accept') { const {aiDemo}=await import('./aiDemo'); const v=await aiDemo(cmd,args); if(cmd==='ai_state') v.hasKey=!!demo.secrets.deepseek_api_key; return v as T; }
     const v:any=await demoCall(cmd,args);
-    if(cmd==='plan_state') { const {demoPlanner,demoPrescriptions}=await import('./aiDemo'); v.planner=demoPlanner();const days=demoPrescriptions();v.days=v.days.map((d:any)=>days[d.date]?{...d,items:days[d.date].sessions.map((s:any)=>({kind:s.kind,min:s.duration_minutes})),source:'deepseek',prescription:days[d.date],hasPlan:true,detail:[],text:days[d.date].sessions.map((s:any)=>`${s.kind} ${s.duration_minutes} мин`).join(' + ')}:d); }
+    if(cmd==='plan_state') { const {demoPlanner,demoPrescriptions,demoMovedDays}=await import('./aiDemo'); v.planner=demoPlanner();const days=demoPrescriptions();v.days=v.days.map((d:any)=>demoMovedDays[d.date]?{...d,items:demoMovedDays[d.date].items,prescription:null,source:'chosen',text:demoMovedDays[d.date].items.map((x:any)=>`${x.kind} ${x.min} мин`).join(' + ')}:days[d.date]?{...d,items:days[d.date].sessions.map((s:any)=>({kind:s.kind,min:s.duration_minutes})),source:'deepseek',prescription:days[d.date],hasPlan:true,detail:[],text:days[d.date].sessions.map((s:any)=>`${s.kind} ${s.duration_minutes} мин`).join(' + ')}:d); }
     return v as T;
   }
   return invoke<T>(cmd, args);

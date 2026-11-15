@@ -76,10 +76,16 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Kouros v__VERSION__'
           releaseBody: ${{ steps.notes.outputs.body }}
-          releaseDraft: false
+          releaseDraft: true
+          releaseCommitish: ${{ github.sha }}
           prerelease: false
           includeUpdaterJson: true
           args: --bundles nsis
+
+      - name: Проверка подписи и публикация готового релиза
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tools/release/publish.cjs
 
       - name: Установщик как артефакт сборки
         uses: actions/upload-artifact@v4

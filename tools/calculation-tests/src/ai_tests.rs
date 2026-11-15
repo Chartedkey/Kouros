@@ -403,3 +403,36 @@ fn ai_medication_edits_and_enable_switch_invalidate_requests() {
         .unwrap();
     assert!(ai::prepare(&c, s["snapshot_id"].as_str().unwrap(), false).is_err());
 }
+#[test]
+fn ai_home_fullbody_is_valid_without_fixed_availability() {
+    let c = db();
+    let mut s = fixture(&c, "deepseek", "training_plan");
+    let j = "synthetic-home";
+    let mut v = report(&s, j);
+    let mut p = proposal(&s);
+    let (eid, ex) = s["candidates"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .find(|(_, x)| x["equipment"] == "bodyweight")
+        .unwrap();
+    p["days"][0]["sessions"][0] = json!({"session_id":"home-session","kind":"home","location":"home","duration_minutes":90,"warmup_minutes":5,"cooldown_minutes":5,"intensity_note":"Спокойно","strength_format":"fullbody","split_part":null,"complex_refs":[],"exercises":[{"exercise_id":eid,"role":"main","sets":2,"dose":{"unit":ex["unit"],"min":8,"max":10,"per_side":ex["per_side"]},"rest_seconds":60,"target_rpe":5,"equipment_ids":[],"external_load_kg":null,"alternative_ids":[]}]});
+    v["proposal"] = p;
+    s["profile"]["max_minutes"] = json!([5, 5, 5, 5, 5, 5, 5]);
+    ai::validate_response(&s, &v, j).unwrap();
+    s["profile"]["strength_formats"]["home"] = json!("split");
+    assert!(ai::validate_response(&s, &v, j).is_err());
+}
+#[test]
+fn ai_preserves_user_transferred_locked_day_outside_usual_weekdays() {
+    let c = db();
+    let mut s = fixture(&c, "deepseek", "training_plan");
+    let p = proposal(&s);
+    let d = p["from"].as_str().unwrap();
+    s["profile"]["days"] = json!([]);
+    for day in p["days"].as_array().unwrap() {
+        s["locked_days"][day["date"].as_str().unwrap()] = json!([{"kind":"walk","min":20.0}]);
+    }
+    assert!(s["locked_days"].get(d).is_some());
+    ai::validate_proposal(&s, &p).unwrap();
+}

@@ -103,6 +103,7 @@ pub fn install(c: &Connection) -> Result<(), String> {
         "lab_results",
         "plan_days",
         "ai_prescriptions",
+        "plan_day_meta",
     ] {
         for op in ["INSERT", "UPDATE", "DELETE"] {
             c.execute_batch(&format!("CREATE TRIGGER IF NOT EXISTS ai_revision_{table}_{op} AFTER {op} ON {table} BEGIN UPDATE ai_meta SET value=value+1 WHERE key='data_revision'; END;")).map_err(|e|e.to_string())?;

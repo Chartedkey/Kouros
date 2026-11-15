@@ -24,7 +24,7 @@ pub fn forbidden(c: &Connection, date: &str) -> Vec<String> {
                     k,
                     "easy" | "walkrun" | "long" | "tempo" | "intervals" | "test"
                 ))
-                || (upper && matches!(k, "gym" | "upper"))
+                || (upper && matches!(k, "gym" | "upper" | "home"))
                 || (restricted && matches!(k, "long" | "tempo" | "intervals" | "test"))
         })
         .map(|s| s.to_string())
@@ -254,6 +254,7 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
         );
     }
     let mut current = json!({});
+    let mut strength_schedule = json!({});
     let mut locked = json!({});
     let mut q=c.prepare("SELECT date,items,source,COALESCE(confirmed,0) FROM plan_days WHERE date>=?1 AND date<=?2 ORDER BY date").map_err(|e|e.to_string())?;
     for row in q
@@ -282,6 +283,19 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
         let (d, items, source, confirmed) = row.map_err(|e| e.to_string())?;
         let items: Value = serde_json::from_str(&items).map_err(|e| e.to_string())?;
         current[&d] = items.clone();
+        let mut slots = crate::schedule::metadata(c, &d);
+        let prescription = ai::prescription(c, &d);
+        for session in prescription["sessions"].as_array().into_iter().flatten() {
+            if let Some(kind) = session["kind"].as_str() {
+                if matches!(kind, "home" | "gym") && session["strength_format"].is_string() {
+                    slots[kind] = json!({"strength_format":session["strength_format"],"split_part":session["split_part"]});
+                }
+            }
+        }
+        if slots.as_object().map(|s| !s.is_empty()).unwrap_or(false) {
+            strength_schedule[&d] = slots;
+        }
+
         if confirmed == 1 || matches!(source.as_str(), "manual" | "chosen") {
             locked[&d] = items;
         }
@@ -339,7 +353,7 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
     }
     let p = engine_svc::profile(c);
     let local_hour = (store::now() + p.tz_offset_s).rem_euclid(86400) / 3600;
-    let mut body = json!({"provenance":{"sleep":"Selected sleep source; stages approximate. Check sleep_date for freshness.","food":"Imported food totals; incomplete diary is not a proven deficit.","local":"Selected sources and local Kouros calculation. HRV/RHR are [date,value]; check dates."},"job_type":kind,"today":today,"local_hour":local_hour,"as_of":store::now()/900*900,"period":{"from":from,"to":to},"facts":facts,"quality_data_ready":s["day"]["constraints"]["qualityDataReady"],"allowed_today_tier":s["day"]["constraints"]["tier"],"current_days":current,"locked_days":locked,"date_limits":date_limits,"rates":plans["rates"],"weekly_load_cap":plans["week"]["cap"],"trained_today":s["day"]["todayActivities"].as_array().map(|xs|xs.iter().any(|x|x["sport"]!="walk")).unwrap_or(false),"candidates":candidates,"available_patterns":patterns,"known_loads":known,"completed_load":completed,"complexes":{},"limitations":["Не клиническая оценка. Стадии сна и восстановление приблизительны.","Дневник питания может быть неполным. Нет записи — не нулевое потребление.","Личные комплексы сохранены: новые программы выбирают отдельные упражнения."]});
+    let mut body = json!({"provenance":{"sleep":"Selected sleep source; stages approximate. Check sleep_date for freshness.","food":"Imported food totals; incomplete diary is not a proven deficit.","local":"Selected sources and local Kouros calculation. HRV/RHR are [date,value]; check dates."},"job_type":kind,"today":today,"local_hour":local_hour,"as_of":store::now()/900*900,"period":{"from":from,"to":to},"facts":facts,"quality_data_ready":s["day"]["constraints"]["qualityDataReady"],"allowed_today_tier":s["day"]["constraints"]["tier"],"current_days":current,"strength_schedule":strength_schedule,"locked_days":locked,"date_limits":date_limits,"rates":plans["rates"],"weekly_load_cap":plans["week"]["cap"],"trained_today":s["day"]["todayActivities"].as_array().map(|xs|xs.iter().any(|x|x["sport"]!="walk")).unwrap_or(false),"candidates":candidates,"available_patterns":patterns,"known_loads":known,"completed_load":completed,"complexes":{},"limitations":["Не клиническая оценка. Стадии сна и восстановление приблизительны.","Дневник питания может быть неполным. Нет записи — не нулевое потребление.","Личные комплексы сохранены: новые программы выбирают отдельные упражнения."]});
     // Size validation happens before a job or paid request. Drop optional older history first.
     loop {
         let snapshot = ai::decorate_snapshot(c, body.clone());

@@ -1,10 +1,13 @@
 // Browser-only sample backend. Never calls a provider or charges an account.
-let state:any={planner:{mode:'kouros',revision:0},config:{budget_usd:5,consent:false,daily_model:'deepseek-flash',weekly_model:'deepseek-v4-pro',plan_model:'deepseek-v4-pro'},profile:{goal:'Поддержание формы',experience:'regular',allowed_kinds:['rest','walk','easy','ofp','mobility'],days:[0,1,2,3,4,5,6],max_minutes:[60,60,60,60,60,60,60],preferred_time:'18:00',equipment:[{id:'bodyweight',type:'bodyweight',label:'Свой вес',weights_kg:[]}],excluded_exercises:[],use_complexes:false},spent:0,month:'2026-10',jobs:[]};
+let state:any={planner:{mode:'kouros',revision:0},config:{budget_usd:5,consent:false,daily_model:'deepseek-flash',weekly_model:'deepseek-v4-pro',plan_model:'deepseek-v4-pro'},profile:{goal:'Поддержание формы',experience:'regular',allowed_kinds:['rest','walk','easy','ofp','mobility'],days:[0,1,2,3,4,5,6],categories:['ofp','run','home','walk'],strength_formats:{home:'auto',gym:'auto'},equipment:[{id:'bodyweight',type:'bodyweight',label:'Свой вес',weights_kg:[]}],excluded_exercises:[],use_complexes:false},spent:0,month:'2026-10',jobs:[]};
 const snapshots=new Map<string,any>();
+const edits=new Map<string,any>();export const demoMovedDays:Record<string,any>={};
 export const demoPlanner=()=>state.planner;
 export const demoPrescriptions=()=>Object.fromEntries(state.jobs.filter((j:any)=>j.applied&&j.response?.proposal).reverse().flatMap((j:any)=>j.response.proposal.days.map((d:any)=>[d.date,d])));
 export async function aiDemo(cmd:string,a:any={}) {
  if(cmd==='ai_balance'){state.balance={checked:Date.now()/1000,is_available:true,balance_infos:[{currency:'USD',total_balance:'4.57',topped_up_balance:'4.00',granted_balance:'0.57'}]};return structuredClone(state.balance);}
+ if(cmd==='plan_move_preview'){const id=String(Date.now());const p={id,from:a.from,to:a.to,before:{[a.from]:{items:[{kind:'ofp',min:25}]},[a.to]:{items:[{kind:'easy',min:40}]}},after:{[a.from]:{items:[{kind:'easy',min:40}]},[a.to]:{items:[{kind:'ofp',min:25}]}},canApply:true,warnings:[],alternatives:[]};edits.set(id,p);return p;}
+ if(cmd==='plan_move_accept'){const p=edits.get(a.id);Object.assign(demoMovedDays,p.after);return null;}
  if(cmd==='ai_state')return structuredClone(state);
  if(cmd==='ai_save'){if(a.section==='planner'){if(state.planner.mode!==a.value){state.planner={mode:a.value,revision:state.planner.revision+1};state.jobs.forEach((j:any)=>{if(j.status==='ready')j.status='superseded'})}}else state[a.section]=structuredClone(a.value);return null;}
  if(cmd==='ai_connect')return null;

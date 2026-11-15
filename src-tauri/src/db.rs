@@ -443,6 +443,11 @@ const MIGRATIONS: &[&str] = &[
     CREATE TABLE ai_prescriptions(date TEXT PRIMARY KEY REFERENCES plan_days(date) ON DELETE CASCADE,
         job_id TEXT NOT NULL,items_hash TEXT NOT NULL,body TEXT NOT NULL);
     "#,
+    // v26: strength-program metadata and explicit schedule edits.
+    r#"
+    CREATE TABLE plan_day_meta(date TEXT PRIMARY KEY REFERENCES plan_days(date) ON DELETE CASCADE,items_hash TEXT NOT NULL,body TEXT NOT NULL);
+    CREATE TABLE plan_edits(id TEXT PRIMARY KEY,created INTEGER NOT NULL,body TEXT NOT NULL,applied INTEGER NOT NULL DEFAULT 0);
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {

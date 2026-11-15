@@ -2,7 +2,7 @@ import { Prescription } from './DeepSeek';
 // «План» in the coach tab (0.15): proposals to accept, the coming days with ‹ ›, the workout of
 // the day with warm-up and drills, manual edits, the weekly template and the history of changes.
 import { useCallback, useEffect, useState } from 'react';
-import { api, errText, type PlanChange, type PlanDay, type PlanItem, type PlanState } from '../lib/api';
+import { api, call, errText, type PlanChange, type PlanDay, type PlanItem, type PlanState } from '../lib/api';
 import { useDataChanged } from '../lib/events';
 
 const STATUS: Record<string, [string, string]> = {
@@ -80,7 +80,7 @@ function DayCell({ d, sel, today, onPick }: { d: PlanDay; sel: boolean; today: s
     <button type="button" className={`wday${d.date === today ? ' today' : ''}`} onClick={onPick}
       style={{ cursor: 'pointer', textAlign: 'left', border: sel ? '1px solid #f1f3f5' : undefined, background: d.deload ? '#151b22' : undefined, alignItems: 'flex-start' }}>
       <span className="tiny" style={{ fontWeight: 700 }}>{d.wd} {Number(d.date.slice(8))}{d.date === today ? ' · сегодня' : ''}</span>
-      <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: d.hard ? '#FF8A65' : d.items.some((i) => i.kind !== 'rest') ? '#3DDC97' : '#3A404A' }} /><span className="tiny" style={{ lineHeight: 1.3, color: 'var(--text-2)' }}>{d.items.filter((i) => i.kind !== 'rest').map((i) => i.kind === 'easy' ? 'бег' : i.kind === 'long' ? 'длительный' : i.kind === 'tempo' ? 'темп' : i.kind === 'intervals' ? 'интервалы' : i.kind === 'gym' ? 'зал' : i.kind === 'ofp' ? 'ОФП' : i.kind === 'bike' ? 'вело' : i.kind === 'walk' ? 'прогулка' : i.kind === 'upper' ? 'верх тела' : i.kind === 'walkrun' ? 'бег+ходьба' : i.kind === 'test' ? 'тест 5 км' : 'мобилити').join(' + ') || (d.hasPlan===false?'нет плана':'отдых')}</span></span>
+      <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: d.hard ? '#FF8A65' : d.items.some((i) => i.kind !== 'rest') ? '#3DDC97' : '#3A404A' }} /><span className="tiny" style={{ lineHeight: 1.3, color: 'var(--text-2)' }}>{d.items.filter((i) => i.kind !== 'rest').map((i) => i.kind === 'easy' ? 'бег' : i.kind === 'long' ? 'длительный' : i.kind === 'tempo' ? 'темп' : i.kind === 'intervals' ? 'интервалы' : i.kind === 'home' ? 'силовая дома' : i.kind === 'gym' ? 'зал' : i.kind === 'ofp' ? 'ОФП' : i.kind === 'bike' ? 'вело' : i.kind === 'walk' ? 'прогулка' : i.kind === 'upper' ? 'верх тела' : i.kind === 'walkrun' ? 'бег+ходьба' : i.kind === 'test' ? 'тест 5 км' : 'мобилити').join(' + ') || (d.hasPlan===false?'нет плана':'отдых')}</span></span>
       {min > 0 && <span className="muted tiny">{min} мин</span>}
       {d.hasPlan!==false && word && <span className="tiny" style={{ color }}>{word}</span>}
       {d.source && d.source !== 'template' && <span className="tiny" style={{ color: '#9DB8FF' }}>{d.source==='deepseek'?'DeepSeek':'изменено'}</span>}
@@ -88,6 +88,25 @@ function DayCell({ d, sel, today, onPick }: { d: PlanDay; sel: boolean; today: s
   );
 }
 
+function MoveTraining({day,today,onChanged}:{day:PlanDay;today:string;onChanged:()=>void}) {
+  const [to,setTo]=useState(''),[swap,setSwap]=useState(true),[preview,setPreview]=useState<any>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+  useEffect(()=>{setPreview(null);setError('');setTo('')},[day.date]);
+  const prepare=async(date=to)=>{setBusy(true);setError('');setPreview(null);try{setPreview(await call('plan_move_preview',{from:day.date,to:date,swap}));setTo(date)}catch(e){setError(errText(e))}finally{setBusy(false)}};
+  const apply=async()=>{setBusy(true);setError('');try{await call('plan_move_accept',{id:preview.id});setPreview(null);onChanged()}catch(e){setError(errText(e))}finally{setBusy(false)}};
+  const text=(row:any)=>(row?.items??[]).map((x:any)=>{const meta=row?.prescription?.body?.sessions?.find((s:any)=>s.kind===x.kind)??row?.meta?.body?.[x.kind];const format=meta?.strength_format==='split'?` · сплит: ${meta.split_part==='upper'?'верх':'низ'}`:meta?.strength_format==='fullbody'?' · фулбоди':'';return `${ACTIVITY_NAME[x.kind]??x.kind}${x.kind==='rest'?'':` ${x.min} мин`}${format}`}).join(' + ')||'Нет плана';
+  return <details className="inset" aria-label="Перенос тренировки"><summary>Перенести / поменять местами</summary><div className="stack" style={{marginTop:12}}>
+    <label>Дата <input className="input" type="date" min={today} max={new Date(Date.parse(today)+21*86400000).toISOString().slice(0,10)} value={to} onChange={e=>{setTo(e.target.value);setPreview(null)}}/></label>
+    <label>Действие <select className="select" value={swap?'swap':'move'} onChange={e=>{setSwap(e.target.value==='swap');setPreview(null)}}><option value="swap">Поменять тренировки местами</option><option value="move">Перенести на свободный день</option></select></label>
+    <button type="button" className="btn2" disabled={busy||!to} onClick={()=>prepare()}>Проверить перенос</button>
+    {preview&&<><div className="inset stack">{[preview.from,preview.to].map((d:string)=><span key={d}><b>{d}:</b> {text(preview.before[d])} → {text(preview.after[d])}</span>)}</div>
+    {preview.warnings.map((w:string,i:number)=><span key={i} className="note-err">{w}</span>)}
+    {!!preview.alternatives.length&&<div className="row" style={{gap:8,flexWrap:'wrap'}}><span>Подходящие даты:</span>{preview.alternatives.map((d:string)=><button type="button" key={d} className="btn2" disabled={busy} onClick={()=>prepare(d)}>{d}</button>)}</div>}
+    <span className="muted small">Сохранятся упражнения, дозировки и часть сплита. Изменятся только два показанных дня; выполненные тренировки сохраняются.</span>
+    <button type="button" className="btn" disabled={busy||!preview.canApply} onClick={apply}>Подтвердить изменения двух дней</button></>}
+    {error&&<span className="note-err" role="alert">{error}</span>}
+  </div></details>
+}
+const ACTIVITY_NAME:Record<string,string>={rest:'Отдых',walk:'Ходьба',easy:'Лёгкий бег',long:'Длительный бег',tempo:'Темповый бег',intervals:'Интервалы',test:'Тест',walkrun:'Бег / ходьба',home:'Силовая дома',gym:'Силовая в зале',ofp:'ОФП для бега',upper:'Верх тела',mobility:'Мобилити',bike:'Велосипед'};
 function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: () => void }) {
   const [edit, setEdit] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -125,6 +144,7 @@ function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: (
       {!edit && d.hasPlan!==false && !d.prescription && d.detail.length === 0 && <span className="muted small">День отдыха: прогулка 30–40 минут и немного мобилити — по желанию.</span>}
       {!edit && d.hard && d.date >= st.today && <span className="muted tiny">Интенсивная тренировка состоится, только если в этот день позволят готовность и проверки безопасности — иначе план потребуется пересмотреть.</span>}
       <span className="muted tiny">Прогулки каждый день идут сверх плана и всегда считаются в нагрузку.</span>
+      {!past && d.status!=='done' && d.hasPlan!==false && d.items.some(x=>x.kind!=='rest') && <MoveTraining day={d} today={st.today} onChanged={onChanged}/>}
       {err && <div className="note-err">{err}</div>}
     </section>
   );

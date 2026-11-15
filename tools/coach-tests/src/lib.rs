@@ -70,3 +70,7 @@ pub mod db {
 }
 #[cfg(test)]
 mod tests;
+
+#[path = "../../../src-tauri/src/schedule.rs"] pub mod schedule;
+
+#[cfg(test)] mod schedule_tests;

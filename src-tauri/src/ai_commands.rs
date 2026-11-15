@@ -24,7 +24,7 @@ pub fn ai_save(
 ) -> Result<(), String> {
     with_db(&st, |c| match section.as_str() {
         "config" => ai::save_config(c, &value),
-        "profile" => ai::save_training(c, &value),
+        "profile" => {ai::save_training(c,&value)?;crate::schedule::profile_changed(c)},
         "planner" => planning::switch(c, value.as_str().ok_or("Выбери автора")?).map(|_| ()),
         _ => Err("Неизвестная настройка".into()),
     })?;

@@ -11,10 +11,8 @@ const SUBS: [Sub, string][] = [['today', 'Сегодня у тренера'], ['
 
 const GOALS: [string, string][] = [['hm', 'Полумарафон быстрее'], ['mar', 'Первый марафон'], ['k10', 'Улучшить 5 и 10 км'], ['body', 'Снизить вес и улучшить состав тела'], ['health', 'Здоровье и общая форма'], ['str', 'Стать сильнее'], ['inj', 'Бегать без травм']];
 const MODES: [string, string, string][] = [['build', 'Набор объёма', 'Постепенно растим километраж и добавляем качество'], ['maintain', 'Поддержание формы', 'Держим текущий объём, без роста'], ['winter', 'Зимовка', 'Меньше бега, больше силовой и ОФП до весны'], ['return', 'Возвращение', 'После перерыва, болезни или травмы']];
-const LIKES: [string, string, string][] = [['run', 'Бег', '#3DDC97'], ['walk', 'Ходьба', '#9DB8FF'], ['gym', 'Силовые в зале', '#F5B642'], ['ofp', 'Укрепляющие упражнения', '#A78BFA'], ['bike', 'Велосипед', '#5AC8FA']];
+const LIKES: [string, string, string][] = [['run', 'Бег', '#3DDC97'], ['walk', 'Ходьба', '#9DB8FF'], ['gym', 'Силовые в зале', '#F5B642'], ['ofp', 'ОФП для бега', '#A78BFA'], ['home', 'Силовые дома', '#5AC8FA']];
 const WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-const DUR = ['30 мин', '45 мин', '60 мин', '90 мин и больше'];
-const WHEN = ['Утро', 'День', 'Вечер', 'По-разному'];
 const PLACE = ['Улица', 'Беговая дорожка', 'Зал рядом', 'Дома'];
 const INJ = ['Колени', 'Ахилл', 'Голень', 'Стопа', 'Спина', 'Бедро', 'Нет травм'];
 const TOOLS: [string, string][] = [['Сауна', 'прогрев, расслабление'], ['Горячая ванна', 'сон и расслабление'], ['Перкуссионный массажёр', 'точечно по мышцам'], ['Роллер', 'миофасциальный релиз'], ['Лимфодренажный массажёр для ног', 'отёки и тяжесть в ногах'], ['Мази', 'локальная боль'], ['Растяжка', 'мобильность'], ['Компрессионная одежда', 'после бега и в дорогу'], ['Холодный душ или ванна', 'бодрость, отёки']];
@@ -39,7 +37,7 @@ function profileSummary(p: CoachProfile): string {
   if (goals.length) parts.push(`Главное для тебя — ${goals.join(', ')}.`);
   if (mode) parts.push(`Сейчас режим «${mode[1].toLowerCase()}».`);
   if (week.length) parts.push(`В обычную неделю: ${week.join(', ')} (дней).`);
-  if (p.days?.length) parts.push(`Тренироваться можешь: ${p.days.join(', ')}${p.time ? `, по ${p.time}` : ''}${p.when ? `, удобнее — ${p.when.toLowerCase()}` : ''}.`);
+  if (p.days?.length) parts.push(`Тренироваться можешь: ${p.days.join(', ')}.`);
   if (p.where?.length) parts.push(`Где: ${p.where.join(', ').toLowerCase()}.`);
   const inj = (p.injuries ?? []).filter((x) => x !== 'Нет травм');
   parts.push(inj.length ? `Буду бережнее с: ${inj.join(', ').toLowerCase()}.` : 'Травм сейчас нет.');
@@ -73,14 +71,14 @@ function Onboarding({ init, facts, onDone, onSkip }: { init: CoachProfile; facts
   const [p, setP] = useState<CoachProfile>(init);
   const [step, setStep] = useState(0);
   const set = (x: Partial<CoachProfile>) => setP((o) => ({ ...o, ...x }));
-  const titles = ['Что для тебя главное?', 'Что ты любишь делать?', 'Сколько времени есть?', 'Травмы и восстановление', 'Что я понял'];
+  const titles = ['Что для тебя главное?', 'Что ты любишь делать?', 'Дни и место тренировок', 'Травмы и восстановление', 'Что я понял'];
   const wk = p.week ?? {};
   return (
     <section className="card" aria-label="Знакомство с тренером" style={{ gap: 20 }}>
       <div className="stack" style={{ gap: 6 }}>
         <span className="label">Знакомство · шаг {step + 1} из 5</span>
         <h2 className="coach-title">{titles[step]}</h2>
-        {step === 0 && <span className="muted small">Пять коротких шагов: цели, что любишь, сколько времени есть, чем восстанавливаешься. Остальное я уже вижу в Strava и Apple Health.</span>}
+        {step === 0 && <span className="muted small">Пять коротких шагов: цели, что любишь, в какие дни тренируешься, чем восстанавливаешься. Остальное я уже вижу в Strava и Apple Health.</span>}
       </div>
       {step === 0 && (
         <div className="stack" style={{ gap: 16 }}>
@@ -114,8 +112,6 @@ function Onboarding({ init, facts, onDone, onSkip }: { init: CoachProfile; facts
       {step === 2 && (
         <div className="stack" style={{ gap: 16 }}>
           <div className="stack" style={{ gap: 8 }}><b className="small">В какие дни можешь тренироваться</b><Chips items={WD} sel={p.days ?? []} onPick={(v) => set({ days: WD.filter((d) => tog(p.days, v).includes(d)) })} /></div>
-          <div className="stack" style={{ gap: 8 }}><b className="small">Сколько времени на тренировку</b><Chips items={DUR} sel={p.time ? [p.time] : []} onPick={(v) => set({ time: v })} /></div>
-          <div className="stack" style={{ gap: 8 }}><b className="small">Когда удобнее</b><Chips items={WHEN} sel={p.when ? [p.when] : []} onPick={(v) => set({ when: v })} /></div>
           <div className="stack" style={{ gap: 8 }}><b className="small">Где можешь тренироваться</b><Chips items={PLACE} sel={p.where ?? []} onPick={(v) => set({ where: tog(p.where, v) })} /></div>
         </div>
       )}
@@ -339,12 +335,7 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
             </div>
           </section>
           {(openR && openR.kind === 'day' ? openR : lastDay) && <ReportView r={(openR && openR.kind === 'day' ? openR : lastDay)!} all={st.reports} short={short} onSaved={saved} onDelete={del} />}
-          <section className="card" aria-label="Свой вопрос">
-            <span className="label">Свой вопрос тренеру Claude</span>
-            <span className="muted small" style={{ lineHeight: 1.5 }}>Kouros соберёт твой профиль, заметки и цифры дня в один текст и скопирует — останется вставить его в чат Claude.</span>
-            <AskClaude reportId={null} onSaved={saved} label="Скопировать для Claude" />
-            {freeAnswers.slice(0, 2).map((a) => <ClaudeAnswer key={a.id} r={a} onDelete={() => del(a.id)} />)}
-          </section>
+
         </>
       )}
 

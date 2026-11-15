@@ -1,7 +1,7 @@
 use crate::*;
 use rusqlite::{functions::FunctionFlags, Connection};
 use serde_json::json;
-fn db() -> Connection {
+pub(crate) fn db() -> Connection {
     let c = Connection::open_in_memory().unwrap();
     db::migrate_fixture(&c);
     c.execute_batch("PRAGMA foreign_keys=ON;").unwrap();

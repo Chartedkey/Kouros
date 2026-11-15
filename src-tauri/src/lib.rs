@@ -1,4 +1,5 @@
-//! Kouros desktop backend: data folder, encrypted database, secrets, Windows Hello.
+mod schedule;
+// Kouros desktop backend: data folder, encrypted database, secrets, Windows Hello.
 
 mod db;
 pub mod engine;
@@ -1276,6 +1277,10 @@ fn health_setting_set(key: String, value: serde_json::Value, st: State<'_, AppSt
     with_db(&st, |c| health_svc::set(c, &key, &value))
 }
 
+#[tauri::command]
+fn plan_move_preview(from:String,to:String,swap:bool,st:State<'_,AppState>)->Result<serde_json::Value,String>{with_db_mut(&st,|c|schedule::preview(c,&from,&to,swap))}
+#[tauri::command]
+fn plan_move_accept(id:String,app:AppHandle,st:State<'_,AppState>)->Result<(),String>{with_db_mut(&st,|c|schedule::accept(c,&id))?;let _=tauri::Emitter::emit(&app,"data-changed","schedule");Ok(())}
 #[cfg_attr(any(target_os = "android", target_os = "ios"), tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init()).plugin(tauri_plugin_dialog::init());
@@ -1429,6 +1434,8 @@ pub fn run() {
             plan_decide,
             plan_check_choice,
             plan_choose,
+            plan_move_preview,
+            plan_move_accept,
             plan_confirm,
             plan_set_day,
             plan_reset_day,

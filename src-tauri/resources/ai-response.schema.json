@@ -271,7 +271,8 @@
                         "intervals",
                         "upper",
                         "walkrun",
-                        "test"
+                        "test",
+                        "home"
                       ]
                     },
                     "location": {
@@ -458,6 +459,24 @@
                       },
                       "minItems": 0,
                       "maxItems": 8
+                    },
+                    "strength_format": {
+                      "type": "string",
+                      "enum": [
+                        "fullbody",
+                        "split"
+                      ]
+                    },
+                    "split_part": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "upper",
+                        "lower",
+                        null
+                      ]
                     }
                   },
                   "required": [
