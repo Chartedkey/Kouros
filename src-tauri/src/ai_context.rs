@@ -170,6 +170,89 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
         "daily load",
         "Kouros",
     );
+    // Real performed activities, with identifying text and routes removed.
+    let p = engine_svc::profile(c);
+    let rest = engine_svc::resting_hr(c, &p);
+    let activities = engine_svc::refresh_metrics(c, &p, rest)?;
+    let cutoff = add_days(today, -29);
+    let mut summaries = std::collections::BTreeMap::<String, (usize, f64, f64)>::new();
+    let mut activity_rows = vec![];
+    for a in activities.iter().rev() {
+        let date = engine::day_of(a.start_utc, p.tz_offset_s);
+        if date < cutoff
+            || date.as_str() > today
+            || a.start_utc >= store::now()
+            || !a.duration_s.is_finite()
+            || a.duration_s <= 0.0
+            || a.start_utc.saturating_add(a.duration_s as i64) > store::now()
+        {
+            continue;
+        }
+        let total = summaries.entry(a.sport.clone()).or_default();
+        total.0 += 1;
+        total.1 += a.duration_s / 60.0;
+        total.2 += a.load;
+        if activity_rows.len() < if kind == "daily_report" { 6 } else { 120 } {
+            activity_rows.push(json!([
+                date,
+                a.sport,
+                (a.duration_s / 60.0).round(),
+                a.load.round(),
+                a.method
+            ]));
+        }
+    }
+    fact(
+        &mut facts,
+        "activity_history",
+        json!(activity_rows),
+        "[date,sport,minutes,load,load_method]",
+        "Kouros",
+    );
+    fact(
+        &mut facts,
+        "activity_summary_30d",
+        json!(summaries
+            .iter()
+            .map(|(kind, (n, min, load))| json!([kind, n, min.round(), load.round()]))
+            .collect::<Vec<_>>()),
+        "[sport,count,minutes,load] over30days",
+        "Kouros",
+    );
+    fact(
+        &mut facts,
+        "recovery_remaining",
+        s["recovery"]["leftH"].clone(),
+        "estimated hours; not physiological clearance",
+        "Kouros",
+    );
+    for key in ["hrv", "rhr"] {
+        fact(
+            &mut facts,
+            &format!("{key}_reference"),
+            h[key]["band"].clone(),
+            "personal reference range",
+            "Kouros",
+        );
+    }
+    if kind != "daily_report" {
+        for key in ["hrv", "rhr"] {
+            fact(
+                &mut facts,
+                &format!("{key}_history"),
+                recent(&h[key]["last30"], 30),
+                "[date,value]; ms forHRV,bpm forRHR",
+                "Kouros",
+            );
+        }
+        fact(
+            &mut facts,
+            "readiness_history",
+            recent(&s["readiness"]["history"], 30),
+            "[date,score]",
+            "Kouros",
+        );
+    }
     let mut current = json!({});
     let mut locked = json!({});
     let mut q=c.prepare("SELECT date,items,source,COALESCE(confirmed,0) FROM plan_days WHERE date>=?1 AND date<=?2 ORDER BY date").map_err(|e|e.to_string())?;
@@ -270,7 +353,15 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
             return ai::save_snapshot(c, body);
         }
         let mut reduced = false;
-        for key in ["sleep_history", "nutrition", "load_history"] {
+        for key in [
+            "sleep_history",
+            "nutrition",
+            "load_history",
+            "activity_history",
+            "hrv_history",
+            "rhr_history",
+            "readiness_history",
+        ] {
             if let Some(a) = body["facts"][key]["value"].as_array_mut() {
                 if a.len() > 1 {
                     a.pop();
@@ -283,8 +374,12 @@ pub fn preview(c: &mut Connection, kind: &str, start: Option<&str>) -> Result<Va
                 if o.len() > 5 {
                     let key = o.keys().last().cloned().unwrap();
                     o.remove(&key);
-                    body["candidates"] = candidates.clone();
                     reduced = true;
+                    body["available_patterns"] = json!(o
+                        .values()
+                        .filter_map(|x| x["pattern"].as_str())
+                        .collect::<BTreeSet<_>>());
+                    body["candidates"] = candidates.clone();
                 }
             }
         }

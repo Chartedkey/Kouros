@@ -175,3 +175,32 @@ fn ai_account_and_consent_settings_never_leave_in_peer_pages() {
         cursor = p.cursor;
     }
 }
+#[test]
+fn snapshot_includes_real_training_without_identifying_text() {
+    let mut c = db();
+    let now = store::now();
+    c.execute("INSERT INTO activities(id,sport,name,description,start_utc,elapsed_s,moving_s,distance_m,source,file_path)VALUES('PRIVATE_ID','run','PRIVATE_ACTIVITY_NAME','PRIVATE_DESCRIPTION',?1,1800,1800,4000,'file','PRIVATE_PATH')",[now-86400]).unwrap();
+    planning::switch(&c, "deepseek").unwrap();
+    for kind in ["daily_report", "weekly_report", "training_plan"] {
+        let s = ai_context::preview(&mut c, kind, None).unwrap();
+        let text = s.to_string();
+        for secret in [
+            "PRIVATE_ID",
+            "PRIVATE_ACTIVITY_NAME",
+            "PRIVATE_DESCRIPTION",
+            "PRIVATE_PATH",
+        ] {
+            assert!(!text.contains(secret));
+        }
+        let rows = s["facts"]["activity_history"]["value"].as_array().unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0][1], "run");
+        assert_eq!(rows[0][2], 30.0);
+        assert_eq!(s["facts"]["activity_summary_30d"]["value"][0][1], 1);
+        if kind != "daily_report" {
+            assert!(s["facts"].get("hrv_history").is_some());
+            assert!(s["facts"].get("rhr_history").is_some());
+        }
+        assert!(ai::payload(&s, "01234567890123456789012345678901", "deepseek-flash").is_ok());
+    }
+}
