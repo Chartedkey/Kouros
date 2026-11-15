@@ -550,7 +550,8 @@ fn rejected_paid_output_can_be_rechecked_offline_without_charging_or_applying() 
     );
     assert!(ai::accept(&c, &j).is_err());
     planning::switch(&c, "kouros").unwrap();
-    assert!(ai::recheck(&c, &j).is_err());
+    assert_eq!(ai::recheck(&c, &j).unwrap()["status"], "rejected");
+    assert!(ai::accept(&c, &j).is_err());
 }
 
 #[test]
@@ -613,4 +614,143 @@ fn malformed_root_is_rejected_without_panicking_and_raw_text_survives() {
         assert_eq!(ai::finish(&c, &j, &p).unwrap()["status"], "rejected");
         assert_eq!(ai::raw_response(&c, &j).unwrap()["text"], text);
     }
+}
+
+// Regression shapes are anonymised. Never commit a user's health records or original response.
+fn structured_snapshot(c: &Connection) -> Value {
+    let mut s = fixture(c, "deepseek", "training_plan");
+    let from = s["period"]["from"].as_str().unwrap().to_string();
+    s["period"]["to"] = json!(engine::add_days(&from, 167));
+    s["facts"]["hrv"] = json!({"value":[engine::add_days(&from,-1),65.5],"unit":"ms"});
+    s["facts"]["nutrition"] =
+        json!({"value":[{"date":engine::add_days(&from,-1),"protein":80}],"unit":"day aggregates"});
+    s["facts"]["psychology"] = json!({"value":{"tqr":{"current":false}},"unit":"questionnaires"});
+    s["weekly_load_cap"] = json!(500.0);
+    ai::save_snapshot(c, s).unwrap()
+}
+fn outline_24(from: &str) -> Value {
+    json!((0..24).map(|i|json!({"index":i+1,"from":engine::add_days(from,i*7),"focus":"Умеренная поддержка формы","progression_condition":"Пересмотреть по актуальному самочувствию"})).collect::<Vec<_>>())
+}
+
+#[test]
+fn structured_facts_are_cited_without_model_copy_and_resolved_from_snapshot() {
+    let c = db();
+    let s = structured_snapshot(&c);
+    let mut r = report(&s, "j");
+    r["sections"][0]["fact_refs"] = json!(["hrv", "nutrition", "current_days"]);
+    r["sections"][0]["observations"] =
+        json!([{"fact_ref":"hrv"},{"fact_ref":"nutrition"},{"fact_ref":"current_days"}]);
+    // This assertion only tests evidence; no proposal needed for a report fixture.
+    r["job_type"] = json!("daily_report");
+    let mut day = s.clone();
+    day["job_type"] = json!("daily_report");
+    ai::validate_response(&day, &r, "j").unwrap();
+    let evidence = ai::fact_evidence(&s);
+    assert_eq!(evidence["hrv"]["value"][1], 65.5);
+    assert!(evidence["nutrition"]["value"].is_array());
+    assert_eq!(evidence["current_days"]["value"], s["current_days"]);
+    let payload = ai::payload(&s, "j", "deepseek-v4-pro").unwrap();
+    let content: Value =
+        serde_json::from_str(payload["messages"][1]["content"].as_str().unwrap()).unwrap();
+    let observation = &content["response_schema"]["properties"]["sections"]["items"]["properties"]
+        ["observations"]["items"];
+    assert_eq!(observation["required"], json!(["fact_ref"]));
+    assert!(observation["properties"].get("value").is_none());
+    assert_eq!(
+        content["response_schema"]["$defs"]["proposal"]["properties"]["scope"]["const"],
+        "training_program"
+    );
+}
+
+#[test]
+fn realistic_legacy_mismatches_quarantine_analysis_and_keep_only_valid_explicit_day() {
+    let c = db();
+    let s = structured_snapshot(&c);
+    let from = s["period"]["from"].as_str().unwrap();
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    r["sections"] = json!([
+        {"key":"sleep","severity":"info","text":"Сон из исходной сводки","fact_refs":["sleep"],"observations":[{"fact_ref":"sleep","value":25200,"unit":"seconds"}],"actions":[]},
+        {"key":"nutrition","severity":"attention","text":"Unverified deficit claim","fact_refs":["nutrition"],"observations":[{"fact_ref":"nutrition","value":"80 g of protein yesterday","unit":"aggregates"}],"actions":["Unverified action"]},
+        {"key":"recovery","severity":"info","text":"Unverified recovery claim","fact_refs":["hrv","psychology"],"observations":[{"fact_ref":"hrv","value":65.5,"unit":"ms"},{"fact_ref":"psychology","value":"missing","unit":"date"}],"actions":["Unverified action"]},
+        {"key":"training","severity":"info","text":"Ссылка на сохранённый план","fact_refs":["current_days","strength_schedule"],"observations":[{"fact_ref":"current_days"}],"actions":[]},
+        {"key":"weekly_load","severity":"info","text":"Риск перетренированности низкий","fact_refs":["weekly_load_cap"],"observations":[{"fact_ref":"weekly_load_cap","value":500,"unit":"load"}],"actions":[]}
+    ]);
+    let mut p = proposal(&s);
+    p["to"] = json!(engine::add_days(from, 27));
+    p["days"] = json!([p["days"][0].clone()]);
+    p["week_outline"] = outline_24(from);
+    r["proposal"] = p;
+    assert_eq!(
+        ai::finish(&c, &j, &provider(&r)).unwrap()["status"],
+        "ready"
+    );
+    let state = ai::state(&c, s["today"].as_str().unwrap()).unwrap();
+    let job = &state["jobs"][0];
+    let saved = &job["response"];
+    assert_eq!(saved["sections"][0]["text"], "Сон из исходной сводки");
+    assert!(!saved.to_string().contains("Unverified"));
+    assert!(saved["sections"][1]["actions"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(saved["proposal"]["to"], s["period"]["to"]);
+    assert_eq!(saved["proposal"]["days"].as_array().unwrap().len(), 1);
+    assert!(job["validationNote"]
+        .as_str()
+        .unwrap()
+        .contains("1 из первых 7"));
+    assert!(job["validationNote"]
+        .as_str()
+        .unwrap()
+        .contains("Скрыты неподтверждённые"));
+    assert_eq!(ai::raw_response(&c, &j).unwrap()["text"], r.to_string());
+    ai::accept(&c, &j).unwrap();
+    let n: i64 = c
+        .query_row("SELECT count(*) FROM ai_prescriptions", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(n, 1);
+}
+
+#[test]
+fn horizon_mismatch_without_matching_full_outline_is_not_repaired() {
+    let c = db();
+    let s = structured_snapshot(&c);
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    let mut p = proposal(&s);
+    p["to"] = json!(engine::add_days(s["period"]["from"].as_str().unwrap(), 27));
+    r["proposal"] = p;
+    assert_eq!(
+        ai::finish(&c, &j, &provider(&r)).unwrap()["status"],
+        "rejected"
+    );
+    assert!(ai::accept(&c, &j).is_err());
+}
+
+#[test]
+fn saved_analysis_is_readable_after_mode_change_but_proposal_cannot_be_applied() {
+    let c = db();
+    let s = fixture(&c, "deepseek", "training_plan");
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    r["proposal"] = proposal(&s);
+    ai::finish(&c, &j, &provider(&r)).unwrap();
+    c.execute(
+        "UPDATE ai_jobs SET status='rejected',response=NULL WHERE id=?1",
+        [&j],
+    )
+    .unwrap();
+    planning::switch(&c, "kouros").unwrap();
+    assert_eq!(ai::recheck(&c, &j).unwrap()["status"], "superseded");
+    let state = ai::state(&c, s["today"].as_str().unwrap()).unwrap();
+    assert!(state["jobs"][0]["response"].is_object());
+    assert!(ai::accept(&c, &j).is_err());
+    let n: i64 = c
+        .query_row("SELECT count(*) FROM ai_prescriptions", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(n, 0);
 }

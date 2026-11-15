@@ -123,9 +123,7 @@
                 }
               },
               "required": [
-                "fact_ref",
-                "value",
-                "unit"
+                "fact_ref"
               ]
             },
             "minItems": 0,
@@ -210,7 +208,8 @@
           "enum": [
             "day_adjustment",
             "week_adjustment",
-            "four_week_block"
+            "four_week_block",
+            "training_program"
           ]
         },
         "from": {
@@ -592,7 +591,10 @@
           "if": {
             "properties": {
               "scope": {
-                "const": "four_week_block"
+                "enum": [
+                  "four_week_block",
+                  "training_program"
+                ]
               }
             }
           },
@@ -699,7 +701,10 @@
               {
                 "properties": {
                   "scope": {
-                    "const": "four_week_block"
+                    "enum": [
+                      "four_week_block",
+                      "training_program"
+                    ]
                   }
                 }
               }
