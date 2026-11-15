@@ -9,7 +9,8 @@ use rusqlite::{params, Connection};
 use serde_json::{json, Value};
 
 /// Bump when a formula changes so cached workout metrics are recomputed.
-const ENGINE_V: &str = "e1";
+// Rebuild old per-workout results once, on the next summary, using coverage-aware HR.
+const ENGINE_V: &str = "e2";
 
 fn err<E: std::fmt::Display>(e: E) -> String {
     e.to_string()
@@ -590,7 +591,9 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
     let ml = crate::muscle_svc::loads(conn, &acts, &p);
     let mdaily = crate::muscle_svc::daily(&ml, tz);
     let (m_acwr, m_week, m_chronic) = crate::muscle_svc::acwr(&mdaily, &today);
-    let recovery = crate::muscle_svc::recovery(&acts, &ml, &ls, &mdaily, tz, ready.score);
+    let intensity_limits = daily::intensity_limits(&today, &h);
+    let recovery_ready = if intensity_limits.is_empty() { ready.score } else { None };
+    let recovery = crate::muscle_svc::recovery(&acts, &ml, &ls, &mdaily, tz, recovery_ready);
     crate::muscle_svc::store_recovery(conn, &recovery);
     let mut g7 = [0.0f64; 12];
     for m in ml.iter().filter(|m| day_of(m.start, tz) >= add_days(&today, -6)) {
@@ -802,6 +805,7 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
         feel_reason,
         has_survey: surveys.iter().any(|x| x.0 == "tqr" || x.0 == "hooper"),
         drank,
+        intensity_limits,
     };
     let plan_m = daily::plan_day(ready.score, &p.zones, &gates);
     let tgt_m = daily::load_target(plan_m.lo, plan_m.hi, usual_daily, p.week_cap, chronic_week, used6);
@@ -936,7 +940,7 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
     let (spo2, _) = crate::health_svc::spo2_series(conn);
     let temp = series(conn, "wrist_temp", "avg");
     let vitals = vitals_json(&today, &hrv, &rhr, &resp, &spo2, &temp, true, &cuts);
-    let day = json!({
+    let mut day = json!({
         "advice": {"title": plan.title, "text": plan.text, "tier": daily::TIERS[plan.tier], "bodyTier": daily::TIERS[plan.body_tier],
                    "reasons": plan.reasons, "hint": plan.hint, "evening": eve_on},
         "targetLoad": target_load,
@@ -951,6 +955,22 @@ pub fn summary(conn: &mut Connection) -> Result<Value, String> {
         "alcoholYesterday": alcohol.get(&add_days(&today, -1)).copied(),
         "vitals": vitals,
     });
+
+    day["constraints"] = json!({"tier":plan.tier,"qualityDataReady":gates.intensity_limits.is_empty(),"reasons":day["advice"]["reasons"]});
+    day["planner"] = crate::planning::state(conn);
+    let accepted: Option<(String,String)> = conn.query_row("SELECT items,source FROM plan_days WHERE date=?1",[&today],|r|Ok((r.get(0)?,r.get(1)?))).ok();
+    if let Some((items,source)) = accepted {
+        let items: Value = serde_json::from_str(&items).unwrap_or(json!([]));
+        let unsafe_plan = items.as_array().map(|xs|xs.iter().any(|x|crate::ai::tier(x["kind"].as_str().unwrap_or("rest"))>plan.tier || crate::ai_context::forbidden(conn,&today).contains(&x["kind"].as_str().unwrap_or("").to_string()))).unwrap_or(true);
+        day["acceptedPlan"] = json!({"items":items,"source":source,"needsReview":unsafe_plan});
+        day["advice"]["title"] = json!(if unsafe_plan {"План требует пересмотра"} else {"Тренировка по принятому плану"});
+        day["advice"]["text"] = json!(if unsafe_plan {"Текущие ограничения строже принятого плана. Пересмотри занятие перед тренировкой.".to_string()} else {format!("Автор: {}. Подробности — в плане тренера.",if source=="deepseek" {"DeepSeek"} else {"Kouros / твой выбор"})});
+        day["options"] = json!([]);
+    } else if !crate::planning::local(conn) {
+        day["advice"]["title"] = json!("План ещё не составлен");
+        day["advice"]["text"] = json!("Выбран DeepSeek. Составь и прими план во вкладке «Тренер».");
+        day["options"] = json!([]);
+    }
 
     let methods = acts.iter().fold((0, 0, 0), |(h, a, e), x| match x.method.as_str() {
         "hr" => (h + 1, a, e),

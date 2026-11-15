@@ -1,3 +1,4 @@
+import { DeepSeekPanel } from './DeepSeek';
 // «Тренер», part 1: onboarding, «Как мой день?», week analysis, «Спросить Claude» (copy / paste back),
 // history and the coach's notes. Reports are written by Kouros from computed numbers.
 import { useCallback, useEffect, useState } from 'react';
@@ -302,7 +303,7 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
   const short = profile.style === 'short';
   const saveProfile = async (p: CoachProfile) => { await api.coachProfileSave(p).catch((e) => setErr(errText(e))); setOnb(false); load(); };
 
-  if (onb) return <Onboarding init={profile} facts={facts} onDone={saveProfile} onSkip={() => { if (!st.profile) saveProfile({ done: false }); else setOnb(false); }} />;
+  if (onb) return <><DeepSeekPanel onChanged={load}/><Onboarding init={profile} facts={facts} onDone={saveProfile} onSkip={() => { if (!st.profile) saveProfile({ done: false }); else setOnb(false); }} /></>;
 
   const run = async (f: () => Promise<CoachReport>) => {
     setBusy(true); setErr(null);
@@ -318,6 +319,7 @@ export function Coach({ initialSub, onSubUsed }: { initialSub?: string | null; o
 
   return (
     <div className="stack" style={{ gap: 16 }}>
+      <DeepSeekPanel onChanged={load}/>
       <nav className="subtabs" aria-label="Разделы тренера">
         {SUBS.map(([id, n]) => <button key={id} type="button" aria-pressed={sub === id} onClick={() => { setSub(id); setOpen(null); }}>{n}</button>)}
       </nav>

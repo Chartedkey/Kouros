@@ -530,12 +530,12 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
 
       <section className="card coach" aria-label="Рекомендация на день">
         <div className="stack" style={{ gap: 12, flex: '999 1 520px', minWidth: 0 }}>
-          <span className="row" style={{ gap: 10 }}><span className="dot" style={{ width: 10, height: 10, background: lc }} /><span className="label">Тренировка дня · по расчётам Kouros</span></span>
+          <span className="row" style={{ gap: 10 }}><span className="dot" style={{ width: 10, height: 10, background: lc }} /><span className="label">Тренировка дня · {day.acceptedPlan?.source==='deepseek'?'план DeepSeek':day.planner?.mode==='deepseek'?'выбран DeepSeek':'Kouros'}</span></span>
           <h2 className="coach-title">{day.advice.title}</h2>
           <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55, color: 'var(--text-2)' }}>{day.advice.text}</p>
           {(day.advice.reasons?.length ?? 0) > 0 && (
             <span className="small" style={{ color: '#F5B642', lineHeight: 1.5 }}>
-              Совет мягче, чем позволяет тело: {day.advice.reasons!.join('; ')}.
+              Почему совет ограничен: {day.advice.reasons!.join('; ')}.
             </span>
           )}
           {day.advice.hint && <span className="small" style={{ color: '#9DB8FF', lineHeight: 1.5 }}>{day.advice.hint}</span>}
@@ -609,7 +609,7 @@ export function Today({ onSettings, onTraining, onHealth, onPsych, onHealthDay, 
             <span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 700, color: phaseColor }}>{phaseText}</span>
             <span className="small"><span className="muted">риск травмы </span><b style={{ color: riskColor }}>{riskText}</b>
               {mAcwr != null && riskText !== 'низкий' && <span className="muted"> · {riskFrom === 'muscle' ? 'по мышцам и связкам' : 'по сердцу'}</span>}</span>
-            {rec && <span className="small"><span className="muted">восстановление </span><b style={{ color: rec.leftH > 0 ? '#F5B642' : '#3DDC97' }}>{rec.leftH > 0 ? `ещё ≈${rec.leftH} ч` : 'готов'}</b></span>}
+            {rec && <span className="small" title={rec.reasons?.join('; ')}><span className="muted">расчётный остаток нагрузки </span><b style={{ color: rec.leftH == null ? 'var(--muted)' : rec.leftH > 0 ? '#F5B642' : '#3DDC97' }}>{rec.leftH == null ? 'нет оценки' : rec.leftH > 0 ? `ещё ≈${rec.leftH} ч` : 'нет активного остатка'}</b></span>}
           </div>
           <div className="phase">
             {['#4FA3FF', '#9AA3AE', '#3DDC97', '#FF6B6B'].map((c, i) => <div key={c} style={{ background: c, opacity: i === phaseIdx ? 1 : 0.25 }} />)}

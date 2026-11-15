@@ -1,3 +1,4 @@
+import { Prescription } from './DeepSeek';
 // «План» in the coach tab (0.15): proposals to accept, the coming days with ‹ ›, the workout of
 // the day with warm-up and drills, manual edits, the weekly template and the history of changes.
 import { useCallback, useEffect, useState } from 'react';
@@ -7,7 +8,7 @@ import { useDataChanged } from '../lib/events';
 const STATUS: Record<string, [string, string]> = {
   done: ['сделано', '#3DDC97'], partial: ['частично', '#F5B642'], missed: ['пропущено', '#FF6B6B'], planned: ['', '#9AA3AE'], rest: ['отдых', '#4A6A8A'],
 };
-const ORIGIN: Record<string, string> = { kouros: 'Kouros', claude: 'Claude', manual: 'вручную' };
+const ORIGIN: Record<string, string> = { kouros: 'Kouros', deepseek:'DeepSeek', claude: 'Claude', manual: 'вручную' };
 const WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const reasonText = (r: string) => r.replace(/\s*\[[a-z]+:[^\]]*\]/g, '');
 
@@ -79,10 +80,10 @@ function DayCell({ d, sel, today, onPick }: { d: PlanDay; sel: boolean; today: s
     <button type="button" className={`wday${d.date === today ? ' today' : ''}`} onClick={onPick}
       style={{ cursor: 'pointer', textAlign: 'left', border: sel ? '1px solid #f1f3f5' : undefined, background: d.deload ? '#151b22' : undefined, alignItems: 'flex-start' }}>
       <span className="tiny" style={{ fontWeight: 700 }}>{d.wd} {Number(d.date.slice(8))}{d.date === today ? ' · сегодня' : ''}</span>
-      <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: d.hard ? '#FF8A65' : d.items.some((i) => i.kind !== 'rest') ? '#3DDC97' : '#3A404A' }} /><span className="tiny" style={{ lineHeight: 1.3, color: 'var(--text-2)' }}>{d.items.filter((i) => i.kind !== 'rest').map((i) => i.kind === 'easy' ? 'бег' : i.kind === 'long' ? 'длительный' : i.kind === 'tempo' ? 'темп' : i.kind === 'intervals' ? 'интервалы' : i.kind === 'gym' ? 'зал' : i.kind === 'ofp' ? 'ОФП' : i.kind === 'bike' ? 'вело' : i.kind === 'walk' ? 'прогулка' : i.kind === 'upper' ? 'верх тела' : i.kind === 'walkrun' ? 'бег+ходьба' : i.kind === 'test' ? 'тест 5 км' : 'мобилити').join(' + ') || 'отдых'}</span></span>
+      <span className="row" style={{ gap: 6 }}><span className="dot" style={{ background: d.hard ? '#FF8A65' : d.items.some((i) => i.kind !== 'rest') ? '#3DDC97' : '#3A404A' }} /><span className="tiny" style={{ lineHeight: 1.3, color: 'var(--text-2)' }}>{d.items.filter((i) => i.kind !== 'rest').map((i) => i.kind === 'easy' ? 'бег' : i.kind === 'long' ? 'длительный' : i.kind === 'tempo' ? 'темп' : i.kind === 'intervals' ? 'интервалы' : i.kind === 'gym' ? 'зал' : i.kind === 'ofp' ? 'ОФП' : i.kind === 'bike' ? 'вело' : i.kind === 'walk' ? 'прогулка' : i.kind === 'upper' ? 'верх тела' : i.kind === 'walkrun' ? 'бег+ходьба' : i.kind === 'test' ? 'тест 5 км' : 'мобилити').join(' + ') || (d.hasPlan===false?'нет плана':'отдых')}</span></span>
       {min > 0 && <span className="muted tiny">{min} мин</span>}
-      {word && <span className="tiny" style={{ color }}>{word}</span>}
-      {d.source && d.source !== 'template' && <span className="tiny" style={{ color: '#9DB8FF' }}>изменено</span>}
+      {d.hasPlan!==false && word && <span className="tiny" style={{ color }}>{word}</span>}
+      {d.source && d.source !== 'template' && <span className="tiny" style={{ color: '#9DB8FF' }}>{d.source==='deepseek'?'DeepSeek':'изменено'}</span>}
     </button>
   );
 }
@@ -99,7 +100,7 @@ function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: (
         {!past && !edit && (
           <span className="row" style={{ gap: 12 }}>
             <button type="button" className="linkbtn small" onClick={() => setEdit(true)}>Изменить день</button>
-            {d.source && d.source !== 'template' && <button type="button" className="linkbtn small" onClick={() => api.planResetDay(d.date).then(onChanged).catch((e) => setErr(errText(e)))}>Вернуть по шаблону</button>}
+            {st.planner?.mode!=='deepseek' && d.source && d.source !== 'template' && <button type="button" className="linkbtn small" onClick={() => api.planResetDay(d.date).then(onChanged).catch((e) => setErr(errText(e)))}>Вернуть по шаблону</button>}
           </span>
         )}
       </div>
@@ -110,7 +111,7 @@ function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: (
       {edit ? (
         <ItemsEditor items={d.items} kinds={st.kinds} onCancel={() => setEdit(false)} onSave={(v) => api.planSetDay(d.date, v).then(() => { setEdit(false); onChanged(); }).catch((e) => setErr(errText(e)))} />
       ) : (
-        d.detail.map((x) => (
+        d.prescription ? <Prescription day={d.prescription}/> : d.source==='deepseek' ? <span className="muted small">Состав плана изменён вручную.</span> : d.detail.map((x) => (
           <div key={x.kind} className="inset" style={{ gap: 6 }}>
             <b className="small">{x.title} · {x.min} мин</b>
             {x.warmup && <span className="small" style={{ lineHeight: 1.5 }}><span className="muted">Разминка: </span>{x.warmup}</span>}
@@ -121,8 +122,8 @@ function DayView({ d, st, onChanged }: { d: PlanDay; st: PlanState; onChanged: (
           </div>
         ))
       )}
-      {!edit && d.detail.length === 0 && <span className="muted small">День отдыха: прогулка 30–40 минут и немного мобилити — по желанию.</span>}
-      {!edit && d.hard && d.date >= st.today && <span className="muted tiny">Интенсивная тренировка состоится, только если в этот день позволят готовность и проверки безопасности — иначе Kouros предложит замену.</span>}
+      {!edit && d.hasPlan!==false && !d.prescription && d.detail.length === 0 && <span className="muted small">День отдыха: прогулка 30–40 минут и немного мобилити — по желанию.</span>}
+      {!edit && d.hard && d.date >= st.today && <span className="muted tiny">Интенсивная тренировка состоится, только если в этот день позволят готовность и проверки безопасности — иначе план потребуется пересмотреть.</span>}
       <span className="muted tiny">Прогулки каждый день идут сверх плана и всегда считаются в нагрузку.</span>
       {err && <div className="note-err">{err}</div>}
     </section>
@@ -171,7 +172,7 @@ function History({ list }: { list: PlanChange[] }) {
       {done.slice(0, 30).map((c) => (
         <div key={c.id} className="list-row small" style={{ alignItems: 'flex-start' }}>
           <span style={{ flex: 1, lineHeight: 1.5 }}><b>{c.dateRu}:</b> {c.beforeText} → {c.afterText}<br /><span className="muted tiny">{ORIGIN[c.origin]}: {reasonText(c.reason)}</span></span>
-          <span className={`chip ${c.state === 'accepted' ? 'chip-ok' : 'chip-off'}`}>{c.state === 'accepted' ? 'принято' : 'оставлено как было'}</span>
+          <span className={`chip ${c.state === 'accepted' ? 'chip-ok' : 'chip-off'}`}>{c.state === 'accepted' ? 'принято' : c.state==='superseded'?'устарело':'оставлено как было'}</span>
           <span className="muted tiny num">{new Date(c.ts * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</span>
         </div>
       ))}
@@ -214,7 +215,7 @@ export function CoachPlan() {
       </section>
       {cur && <DayView d={cur} st={st} onChanged={load} />}
       <div className="grid2">
-        <Template st={st} onChanged={load} />
+        {st.planner?.mode!=='deepseek'&&<Template st={st} onChanged={load} />}
         <History list={st.changes} />
       </div>
     </div>

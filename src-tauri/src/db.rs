@@ -402,6 +402,47 @@ const MIGRATIONS: &[&str] = &[
     "#,
     // v23: independent, encrypted device-sync state (business migrations stay immutable).
     r#"CREATE TABLE IF NOT EXISTS peer_state(k TEXT PRIMARY KEY,v TEXT NOT NULL);"#,
+    // v24: derived workout caches follow input revisions, including late streams and peer imports.
+    // Identical deliveries and edits to notes/gear leave the caches alone.
+    r#"
+    CREATE TRIGGER workout_streams_insert_cache AFTER INSERT ON activity_streams BEGIN
+        DELETE FROM activity_metrics WHERE activity_id = NEW.activity_id;
+        DELETE FROM muscle_cache WHERE activity_id = NEW.activity_id;
+    END;
+    CREATE TRIGGER workout_streams_update_cache AFTER UPDATE OF data ON activity_streams
+    WHEN OLD.data IS NOT NEW.data BEGIN
+        DELETE FROM activity_metrics WHERE activity_id = NEW.activity_id;
+        DELETE FROM muscle_cache WHERE activity_id = NEW.activity_id;
+    END;
+    CREATE TRIGGER workout_streams_delete_cache AFTER DELETE ON activity_streams BEGIN
+        DELETE FROM activity_metrics WHERE activity_id = OLD.activity_id;
+        DELETE FROM muscle_cache WHERE activity_id = OLD.activity_id;
+    END;
+    CREATE TRIGGER workout_inputs_update_cache
+    AFTER UPDATE OF sport, start_utc, elapsed_s, moving_s, distance_m, elev_gain_m, avg_hr, rpe, has_streams ON activities
+    WHEN OLD.sport IS NOT NEW.sport OR OLD.start_utc IS NOT NEW.start_utc
+        OR OLD.elapsed_s IS NOT NEW.elapsed_s OR OLD.moving_s IS NOT NEW.moving_s
+        OR OLD.distance_m IS NOT NEW.distance_m OR OLD.elev_gain_m IS NOT NEW.elev_gain_m
+        OR OLD.avg_hr IS NOT NEW.avg_hr OR OLD.rpe IS NOT NEW.rpe OR OLD.has_streams IS NOT NEW.has_streams
+    BEGIN
+        DELETE FROM activity_metrics WHERE activity_id = NEW.id;
+        DELETE FROM muscle_cache WHERE activity_id = NEW.id;
+    END;
+    "#,
+    // v25: private provider jobs and future prescriptions; completed workouts remain separate.
+    r#"
+    CREATE TABLE ai_meta(key TEXT PRIMARY KEY,value INTEGER NOT NULL);
+    INSERT INTO ai_meta VALUES('data_revision',0);
+    CREATE TABLE ai_snapshots(id TEXT PRIMARY KEY,created INTEGER NOT NULL,body TEXT NOT NULL);
+    CREATE TABLE ai_jobs(
+        id TEXT PRIMARY KEY,snapshot_id TEXT NOT NULL,created INTEGER NOT NULL,month TEXT NOT NULL,
+        kind TEXT NOT NULL,model TEXT NOT NULL,status TEXT NOT NULL,reserved REAL NOT NULL,
+        actual REAL,usage TEXT,response TEXT,error TEXT,applied INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX ai_jobs_month ON ai_jobs(month);
+    CREATE TABLE ai_prescriptions(date TEXT PRIMARY KEY REFERENCES plan_days(date) ON DELETE CASCADE,
+        job_id TEXT NOT NULL,items_hash TEXT NOT NULL,body TEXT NOT NULL);
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {
@@ -426,6 +467,7 @@ pub fn open(root: &Path) -> Result<Connection, String> {
     conn.execute_batch("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;")
         .map_err(err)?;
     migrate(&conn)?;
+    crate::planning::install(&conn)?;
     crate::peer_data::init(&conn)?;
     // Every reader goes through the view of the chosen data sources (0.14).
     crate::sources::install_view(&conn)?;

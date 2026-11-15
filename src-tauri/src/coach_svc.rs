@@ -222,6 +222,7 @@ impl Sec {
 
 /// «Как мой день?» — written now from the current numbers.
 pub fn day(conn: &mut Connection) -> Result<Value, String> {
+    if !crate::planning::local(conn) { return Err("Выбран DeepSeek: используй кнопки отчётов в настройках автора выше".into()); }
     let s = engine_svc::summary(conn)?;
     let h = health_svc::summary(conn)?;
     let n = nutrition_svc::summary(conn)?;
@@ -295,7 +296,7 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
         })
         .collect();
     pts.sort_by(|a, b| b.0.abs().partial_cmp(&a.0.abs()).unwrap_or(std::cmp::Ordering::Equal));
-    let left = num(&s["recovery"]["leftH"]).unwrap_or(0.0);
+    let left = num(&s["recovery"]["leftH"]);
     if !night {
         if let Some(sc) = score {
             facts.push(format!("Готовность {}: {}", if ev_on { "вечером" } else { "утром" }, f0(sc)));
@@ -314,9 +315,13 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
             }
             secs.push(sct);
         }
-        facts.push(format!("Восстановление после тренировок: осталось {} ч", f0(left)));
-        if left >= 6.0 {
-            secs.push(sec("recovery", "Восстановление", "warn", format!("После последних тренировок восстановление ещё ≈{} ч.", f0(left)))
+        facts.push(match left {
+            None => "Остаточная нагрузка: нет оценки — недостаточно или некорректны данные".into(),
+            Some(h) if h > 0.0 => format!("Модельная остаточная нагрузка: ≈{} ч, не физиологический допуск", f0(h)),
+            _ => "Нет активного расчётного остатка нагрузки; это не подтверждение полного восстановления".into(),
+        });
+        if let Some(left) = left.filter(|h| *h >= 6.0) {
+            secs.push(sec("recovery", "Остаточная нагрузка", "warn", format!("После последних тренировок расчётный остаток ещё ≈{} ч.", f0(left)))
                 .todo("Сегодня без тяжёлой работы на те же мышцы; лёгкое движение ускорит восстановление."));
         }
     }
@@ -329,7 +334,7 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
     facts.push(format!("Совет дня: {} — {}", adv["title"].as_str().unwrap_or(""), adv["text"].as_str().unwrap_or("")));
     facts.push(format!("Нагрузка сегодня {} при цели {}–{}", f0(done), f0(lo), f0(hi)));
     if let Some(r) = adv["reasons"].as_array().filter(|r| !r.is_empty()) {
-        facts.push(format!("Совет снижен: {}", r.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join("; ")));
+        facts.push(format!("Ограничения совета: {}", r.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join("; ")));
     }
     if !night {
         let mut t = format!("{}. {}", adv["title"].as_str().unwrap_or(""), adv["text"].as_str().unwrap_or(""));
@@ -340,7 +345,7 @@ pub fn day(conn: &mut Connection) -> Result<Value, String> {
         }
         let mut sct = sec("plan", "Тренировка", "info", t);
         if let Some(r) = adv["reasons"].as_array().filter(|r| !r.is_empty()) {
-            sct = sct.why(format!("Совет мягче, чем позволяет тело: {}.", r.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join("; ")));
+            sct = sct.why(format!("Почему совет ограничен: {}.", r.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join("; ")));
         }
         if let Some(hint) = adv["hint"].as_str() {
             sct = sct.todo(hint.to_string());
@@ -608,6 +613,7 @@ fn avg_of(rows: &[(String, f64)], from: &str, to: &str) -> Option<f64> {
 }
 
 pub fn week(conn: &mut Connection) -> Result<Value, String> {
+    if !crate::planning::local(conn) { return Err("Выбран DeepSeek: используй кнопки отчётов в настройках автора выше".into()); }
     let p = engine_svc::profile(conn);
     let today = engine_svc::today(&p);
     let (from, to, next) = week_window(conn, &today);
@@ -992,7 +998,8 @@ pub fn save_answer(conn: &Connection, parent: Option<i64>, text: &str) -> Result
     }
     let today = engine_svc::today(&engine_svc::profile(conn));
     // «[ПЛАН] …» lines become plan proposals (Принять / Оставить как было).
-    let plan = crate::plan_svc::from_claude(conn, t);
+    // Imported chat text remains an analysis; the selected planner owns executable proposals.
+    let plan = 0;
     let id = store_report(conn, "claude", &today, &today, "Ответ Claude", &json!({"text": t, "plan": plan}), &Value::Null, parent)?;
     report(conn, id)
 }

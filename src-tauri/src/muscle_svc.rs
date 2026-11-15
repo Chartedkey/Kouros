@@ -348,7 +348,9 @@ pub fn acwr(daily: &BTreeMap<String, f64>, today: &str) -> (Option<f64>, f64, f6
     let week: f64 = daily.range(add_days(today, -6)..add_days(today, 1)).map(|(_, v)| v).sum();
     let chronic: f64 = daily.range(add_days(today, -34)..add_days(today, -6)).map(|(_, v)| v).sum::<f64>() / 4.0;
     let first = daily.keys().next().cloned().unwrap_or_else(|| today.to_string());
-    let enough = first <= add_days(today, -21) && chronic > 0.0;
+    // The complete window is 7 acute + 28 preceding days. A shorter import must not
+    // silently turn the unknown beginning of the chronic window into days of rest.
+    let enough = first <= add_days(today, -34) && chronic > 0.0;
     (if enough { Some(week / chronic) } else { None }, week, chronic)
 }
 
@@ -367,29 +369,101 @@ pub fn recovery_hours(a: &Cached, m: Option<&MLoad>, ctl: f64, m_usual: f64) -> 
     (h.round(), heart.round(), muscle.round())
 }
 
-/// Recovery of recent workouts and what is left now. `ready` = today's morning score: a good
-/// morning shortens what is left, a poor one stretches it (±30%).
+/// Modelled residual load, not a physiological clearance. Only pass `ready` when the
+/// underlying measurements are sufficiently complete; None leaves durations unadjusted.
 pub fn recovery(acts: &[Cached], ml: &[MLoad], ls: &[LoadDay], mdaily: &BTreeMap<String, f64>, tz: i64, ready: Option<f64>) -> Value {
-    let now = store::now();
-    let by_id: HashMap<&str, &MLoad> = ml.iter().map(|m| (m.id.as_str(), m)).collect();
-    let mut list: Vec<(f64, f64, Value)> = Vec::new();
-    for a in acts.iter().filter(|a| a.start_utc >= now - 6 * 86400) {
-        let d = day_of(a.start_utc, tz);
-        let ctl = ls.iter().filter(|l| l.date < d).last().map(|l| l.ctl).unwrap_or(1.0);
-        let m = by_id.get(a.id.as_str()).copied();
-        let (h, hh, mh) = recovery_hours(a, m, ctl, usual_day(mdaily, &d));
-        let end = m.map(|m| m.end).unwrap_or(a.start_utc + a.duration_s as i64);
-        let left = (h - (now - end) as f64 / 3600.0).max(0.0);
-        list.push((left, h, json!({"id": a.id, "sport": a.sport, "end": end, "hours": h, "heartH": hh, "muscleH": mh, "leftH": left.round(),
-                                   "muscle": m.map(|m| m.total.round()), "up": m.map(|m| m.up), "down": m.map(|m| m.down), "bad": m.map(|m| m.bad)})));
+    recovery_at(acts, ml, ls, mdaily, tz, ready, store::now())
+}
+
+/// Explicit clock makes deadline invariants reproducible. Unchanged facts and readiness
+/// produce unchanged deadlines, including when several sessions contribute to one group.
+pub fn recovery_at(acts: &[Cached], ml: &[MLoad], ls: &[LoadDay], mdaily: &BTreeMap<String, f64>, tz: i64, ready: Option<f64>, now: i64) -> Value {
+    struct Entry<'a> {
+        a: &'a Cached,
+        m: Option<&'a MLoad>,
+        end: i64,
+        hours: Option<(f64, f64, f64)>,
     }
-    list.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
-    // The longest one, plus 30% of others that ended within a day of it (back-to-back sessions).
-    let main_end = list.first().and_then(|x| x.2["end"].as_i64()).unwrap_or(0);
-    let raw = list.first().map(|x| x.0).unwrap_or(0.0)
-        + 0.3 * list.iter().skip(1).filter(|x| (x.2["end"].as_i64().unwrap_or(0) - main_end).abs() <= 86400).map(|x| x.0).sum::<f64>();
-    let f = ready.map(|s| (1.0 - (s - 50.0) / 100.0).clamp(0.7, 1.3)).unwrap_or(1.0);
-    json!({"leftH": (raw * f).round(), "factor": (f * 100.0).round() / 100.0, "workouts": list.into_iter().map(|x| x.2).collect::<Vec<_>>()})
+    let valid_ready = ready.filter(|s| s.is_finite() && (0.0..=100.0).contains(s));
+    let f = valid_ready.map(|s| (1.0 - (s - 50.0) / 100.0).clamp(0.7, 1.3)).unwrap_or(1.0);
+    let by_id: HashMap<&str, &MLoad> = ml.iter().map(|m| (m.id.as_str(), m)).collect();
+    let ctl_by_day: BTreeMap<String, f64> = ls.iter().map(|l| (l.date.clone(), l.ctl)).collect();
+    let covered = |d: &str| {
+        ctl_by_day.keys().next().map(|first| *first <= add_days(d, -42)).unwrap_or(false)
+            && ctl_by_day.contains_key(&add_days(d, -1))
+            && mdaily.keys().next().map(|first| *first <= add_days(d, -28)).unwrap_or(false)
+    };
+    let mut reasons = std::collections::BTreeSet::new();
+    let mut entries = Vec::new();
+    let mut ignored = 0;
+    for a in acts {
+        let m = by_id.get(a.id.as_str()).copied();
+        let end = m.map(|m| m.end).unwrap_or_else(|| a.start_utc.saturating_add(a.duration_s as i64));
+        if !a.duration_s.is_finite() || a.duration_s <= 0.0 || !a.load.is_finite() || a.load < 0.0
+            || m.map(|m| !m.total.is_finite() || m.total < 0.0).unwrap_or(false)
+            || end <= a.start_utc || end > now || a.start_utc > now {
+            ignored += 1;
+            if a.start_utc >= now - 6 * 86400 || end > now {
+                reasons.insert("Есть будущие, незавершённые или некорректные записи тренировок".to_string());
+            }
+            continue;
+        }
+        let d = day_of(a.start_utc, tz);
+        let ctl = ctl_by_day.range(..d.clone()).next_back().map(|(_, ctl)| *ctl).unwrap_or(1.0);
+        let hours = if !covered(&d) || m.is_none() {
+            None
+        } else if a.load == 0.0 && m.map(|m| m.total == 0.0).unwrap_or(false) {
+            Some((0.0, 0.0, 0.0))
+        } else {
+            Some(recovery_hours(a, m, ctl, usual_day(mdaily, &d)))
+        };
+        entries.push(Entry { a, m, end, hours });
+    }
+    // Anchor groups to actual completion times, not to the moving "largest remainder".
+    // Keep the existing 24h grouping and 30% contribution policy; calibrating those is separate.
+    entries.sort_by(|a, b| b.end.cmp(&a.end).then_with(|| a.a.id.cmp(&b.a.id)));
+    let grouped: Vec<_> = entries.iter().filter(|e| e.hours.map(|h| h.0 > 0.0).unwrap_or(true)).collect();
+    let mut finish = now;
+    let mut active_groups = 0;
+    let mut at = 0;
+    while at < grouped.len() {
+        let anchor = grouped[at].end;
+        let mut end = at + 1;
+        while end < grouped.len() && anchor - grouped[end].end <= 86400 { end += 1; }
+        let group = &grouped[at..end];
+        if group.iter().any(|e| e.hours.is_none()) {
+            // Unknown old baselines must not poison today's result forever. 96h is the
+            // existing per-session ceiling; use the worst permitted factor for this bound.
+            let upper_h = 96.0 * 1.3 * (1.0 + 0.3 * (group.len() - 1) as f64);
+            if anchor as f64 + upper_h * 3600.0 > now as f64 {
+                reasons.insert("Недостаточно истории для оценки: нужны 42 дня кардионагрузки и 28 дней мышечной нагрузки до занятия".to_string());
+            }
+        } else {
+            let mut remaining: Vec<f64> = group.iter().map(|e| {
+                (e.hours.unwrap().0 * f - (anchor - e.end) as f64 / 3600.0).max(0.0)
+            }).collect();
+            remaining.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
+            let duration = remaining[0] + 0.3 * remaining.iter().skip(1).sum::<f64>();
+            let deadline = anchor.saturating_add((duration * 3600.0).ceil() as i64);
+            if deadline > now { active_groups += 1; finish = finish.max(deadline); }
+        }
+        at = end;
+    }
+    if !covered(&day_of(now, tz)) {
+        reasons.insert("Недостаточно истории для оценки текущей остаточной нагрузки".to_string());
+    }
+    let unknown = !reasons.is_empty();
+    let left = (!unknown).then(|| ((finish - now) as f64 / 3600.0).ceil());
+    let status = if unknown { "unknown" } else if finish > now { "estimated" } else { "clear" };
+    let workouts: Vec<Value> = entries.iter().filter(|e| e.end >= now - 6 * 86400).map(|e| {
+        let left = e.hours.map(|(h, _, _)| ((e.end as f64 + h * f * 3600.0 - now as f64).max(0.0) / 3600.0).ceil());
+        json!({"id": e.a.id, "sport": e.a.sport, "end": e.end, "loadMethod": e.a.method, "status": if e.hours.is_some() { "estimated" } else { "unknown" },
+               "hours": e.hours.map(|h| h.0), "heartH": e.hours.map(|h| h.1), "muscleH": e.hours.map(|h| h.2), "leftH": left,
+               "muscle": e.m.map(|m| m.total.round()), "up": e.m.map(|m| m.up), "down": e.m.map(|m| m.down), "bad": e.m.map(|m| m.bad)})
+    }).collect();
+    json!({"status": status, "leftH": left, "estimatedUntil": if !unknown && finish > now { Some(finish) } else { None },
+           "factor": (f * 100.0).round() / 100.0, "readinessApplied": valid_ready.is_some(), "activeGroups": active_groups,
+           "ignoredWorkouts": ignored, "reasons": reasons.into_iter().collect::<Vec<_>>(), "workouts": workouts})
 }
 
 /// One workout's muscle load and recovery for its page (from the cache written by the summary).
@@ -403,7 +477,8 @@ pub fn for_activity(conn: &Connection, id: &str) -> Value {
     let mut top: Vec<(usize, f64)> = g.iter().copied().enumerate().filter(|x| x.1 > 0.0).collect();
     top.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
     json!({
-        "total": total.round(), "free": v["f"], "up": v["u"], "down": v["d"], "rec": v["rec"], "bad": v["bad"],
+        "total": total.round(), "free": v["f"], "up": v["u"], "down": v["d"],
+        "rec": if v["rec"]["model"] == "recovery2" { v["rec"].clone() } else { Value::Null }, "bad": v["bad"],
         "groups": top.iter().map(|(i, x)| json!({"key": GROUPS[*i].0, "name": GROUPS[*i].1, "value": x.round(), "pct": if mapped > 0.0 { (x / mapped * 100.0).round() } else { 0.0 }})).collect::<Vec<_>>(),
     })
 }
@@ -413,7 +488,7 @@ pub fn store_recovery(conn: &Connection, rec: &Value) {
     if let Some(list) = rec["workouts"].as_array() {
         for w in list {
             if let Some(id) = w["id"].as_str() {
-                let r = json!({"hours": w["hours"], "heartH": w["heartH"], "muscleH": w["muscleH"]}).to_string();
+                let r = json!({"model": "recovery2", "status": w["status"], "hours": w["hours"], "heartH": w["heartH"], "muscleH": w["muscleH"]}).to_string();
                 let _ = conn.execute(
                     "UPDATE muscle_cache SET data = json_set(data, '$.rec', json(?2)) WHERE activity_id = ?1",
                     params![id, r],

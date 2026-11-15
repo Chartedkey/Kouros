@@ -513,3 +513,14 @@ html.compact .subtabs button { flex: none; height: 40px; padding: 0 14px; }
 @media(max-width:600px) { .ex-editor { width:96vw; } .ex-picker-title {font-size:17px;} }
 
 .ex-modal-illustrated { width:min(840px,100%); }
+
+/* Coach API settings reuse the existing palette and controls. */
+.ai-panel input:not([type="checkbox"]), .ai-panel select { max-width:100%; min-height:36px; border-radius:10px; border:1px solid var(--line-2); background:var(--bg); color:var(--text); padding:6px 10px; font:inherit; font-size:14px; box-sizing:border-box; }
+.ai-panel input[type="checkbox"] { accent-color:#3DDC97; margin-right:6px; }
+.ai-panel input[type="password"], .ai-panel input[maxlength] { width:min(100%,420px); }
+.ai-panel label { line-height:1.8; }
+.ai-panel summary { cursor:pointer; }
+.ai-panel details > summary { padding:6px 0; }
+.ai-panel pre { font-size:12px; }
+
+.ai-panel { overflow-wrap:anywhere; min-width:0; }

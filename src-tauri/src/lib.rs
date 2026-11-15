@@ -42,6 +42,10 @@ mod body_svc;
 mod workouts_svc;
 mod strava;
 mod sync;
+mod planning;
+mod ai;
+mod ai_context;
+mod ai_commands;
 
 use rusqlite::Connection;
 use serde::Serialize;
@@ -325,6 +329,7 @@ fn secret_set(name: String, value: String, st: State<'_, AppState>) -> Result<()
     }
     secrets::set(&name, v)?;
     with_db(&st, |c| {
+        if name=="deepseek_api_key" {db::set_setting(c,"ai_balance","null")?;}
         db::log(c, "secret", &format!("Сохранён ключ {name}"));
         Ok(())
     })
@@ -338,6 +343,7 @@ fn secret_delete(name: String, st: State<'_, AppState>) -> Result<(), String> {
     }
     secrets::delete(&name)?;
     with_db(&st, |c| {
+        if name=="deepseek_api_key" {db::set_setting(c,"ai_balance","null")?;}
         db::log(c, "secret", &format!("Удалён ключ {name}"));
         Ok(())
     })
@@ -1393,6 +1399,15 @@ pub fn run() {
             labs_delete,
             labs_open,
             meds_enabled_set,
+            ai_commands::ai_state,
+            ai_commands::ai_save,
+            ai_commands::ai_preview,
+            ai_commands::ai_prepare,
+            ai_commands::ai_execute,
+            ai_commands::ai_cancel,
+            ai_commands::ai_accept,
+            ai_commands::ai_connect,
+            ai_commands::ai_balance,
             coach_state,
             coach_profile_save,
             coach_notes_save,

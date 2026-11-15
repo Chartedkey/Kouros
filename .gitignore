@@ -14,3 +14,7 @@ __pycache__/
 /tools/windows-bundler/target/
 
 /tools/exercise-tests/target/
+
+/tools/calculation-tests/target/
+
+/tools/coach-tests/target/

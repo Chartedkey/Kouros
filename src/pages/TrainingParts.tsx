@@ -43,19 +43,17 @@ export function ShoeQuestion({ q, onDone }: { q: NonNullable<TrainingOverview['s
 
 // ---------- recovery ----------
 
-/** Hours until 7-day fatigue falls back to the 42-day fitness level, adjusted by today's readiness. */
-/** Hours left to recover — the same number as on «Сегодня» (heart and muscles, per workout). */
+/** Modelled residual load, shared with Today. Missing history is not a zero/clearance. */
 export function recoveryHours(s: EngineSummary): number | null {
   return s.recovery ? s.recovery.leftH : null;
 }
 
 export function RecoveryTile({ s }: { s: EngineSummary }) {
   const h = recoveryHours(s);
-  const until = h ? new Date(Date.now() + h * 3600000).toLocaleString('ru-RU', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : null;
   return (
     <div className="tile">
-      <span className="num tile-v2" style={{ color: h ? '#F5B642' : '#3DDC97' }}>{h == null ? '—' : h === 0 ? 'готов' : `≈ ${h} ч`}</span>
-      <span className="muted tiny">{h ? `восстановление · до ${until}` : 'восстановление'}</span>
+      <span className="num tile-v2" style={{ color: h == null ? 'var(--muted)' : h > 0 ? '#F5B642' : '#3DDC97' }}>{h == null ? 'нет оценки' : h === 0 ? 'нет остатка' : `≈ ${h} ч`}</span>
+      <span className="muted tiny" title={s.recovery?.reasons?.join('; ')}>остаточная нагрузка · модельная оценка</span>
     </div>
   );
 }

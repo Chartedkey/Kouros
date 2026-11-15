@@ -8,11 +8,12 @@ const SERVICE: &str = "Kouros";
 const DB_KEY: &str = "db_key";
 
 /// Secrets the user may manage from Settings.
-pub const USER_SECRETS: [&str; 4] = [
+pub const USER_SECRETS: [&str; 5] = [
     "strava_client_id",
     "strava_client_secret",
     "freddy_api_key",
     "anthropic_api_key",
+    "deepseek_api_key",
 ];
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]

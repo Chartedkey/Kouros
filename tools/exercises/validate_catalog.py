@@ -19,5 +19,5 @@ assert len({v['family'] for v in primary})==78
 assert set(extra['runnerOfp']) <= {v['id'] for v in c['variants']}
 assert set(extra['bandList']) <= {v['id'] for v in c['variants']}
 versions=[json.loads((r/p).read_text(encoding='utf-8'))['version'] for p in ['package.json','src-tauri/tauri.conf.json']]
-assert versions==['1.7.0','1.7.0']
-print('PASS: 190 illustrations,78 primary families,310 variants,924 preserved IDs+14 new,old OFP/band references,desktop1.7.0')
+assert len(set(versions))==1, f'Desktop versions differ: {versions}'
+print(f'PASS: 190 illustrations,78 primary families,310 variants,924 preserved IDs+14 new,old OFP/band references,desktop{versions[0]}')

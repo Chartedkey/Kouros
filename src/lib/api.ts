@@ -31,7 +31,8 @@ export type SecretName =
   | 'strava_client_id'
   | 'strava_client_secret'
   | 'freddy_api_key'
-  | 'anthropic_api_key';
+  | 'anthropic_api_key'
+  | 'deepseek_api_key';
 
 export const inTauri =
   typeof window !== 'undefined' && '__TAURI_INTERNALS__' in (window as object);
@@ -627,7 +628,12 @@ const demoCoach = {
 };
 
 export async function call<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (!inTauri) return (await demoCall(cmd, args)) as T;
+  if (!inTauri) {
+    if(cmd.startsWith('ai_')) { const {aiDemo}=await import('./aiDemo'); const v=await aiDemo(cmd,args); if(cmd==='ai_state') v.hasKey=!!demo.secrets.deepseek_api_key; return v as T; }
+    const v:any=await demoCall(cmd,args);
+    if(cmd==='plan_state') { const {demoPlanner,demoPrescriptions}=await import('./aiDemo'); v.planner=demoPlanner();const days=demoPrescriptions();v.days=v.days.map((d:any)=>days[d.date]?{...d,items:days[d.date].sessions.map((s:any)=>({kind:s.kind,min:s.duration_minutes})),source:'deepseek',prescription:days[d.date],hasPlan:true,detail:[],text:days[d.date].sessions.map((s:any)=>`${s.kind} ${s.duration_minutes} мин`).join(' + ')}:d); }
+    return v as T;
+  }
   return invoke<T>(cmd, args);
 }
 
@@ -706,15 +712,17 @@ export type CheckinData = { shoe?: string; rpe?: number | null; feel?: number | 
 export type PlanItem = { kind: string; min: number };
 export type PlanDetail = { kind: string; title: string; min: number; warmup: string; main: string; cooldown: string; drills: string | null; notes: string[] };
 export type PlanDay = {
+  hasPlan?: boolean; prescription?: any;
   date: string; dateRu: string; wd: string; items: PlanItem[]; text: string; source: string | null; note: string | null;
   hard: boolean; load: number; status: 'done' | 'partial' | 'missed' | 'planned' | 'rest'; confirmed?: boolean;
   doneActs: { id: string; sport: string; min: number; load: number; unplanned?: boolean }[]; block: number; week: number; deload: boolean; detail: PlanDetail[];
 };
 export type PlanChange = {
   id: number; ts: number; date: string; dateRu: string; before: PlanItem[]; after: PlanItem[]; beforeText: string; afterText: string;
-  reason: string; origin: 'kouros' | 'claude' | 'manual'; state: 'proposed' | 'accepted' | 'kept'; group: number | null;
+  reason: string; origin: 'kouros' | 'claude' | 'manual' | 'deepseek'; state: 'proposed' | 'accepted' | 'kept' | 'superseded'; group: number | null;
 };
 export type PlanState = {
+  planner?: {mode: string; revision: number};
   today: string; days: PlanDay[]; template: PlanItem[][]; templateAuto: boolean;
   phase: { name: string; block: number; week: number; deload: boolean };
   week: { plan: number; cap: number | null; usual: number | null };
@@ -844,7 +852,7 @@ export type ActivityDetail = {
   splits: KmSplit[]; sets: SetRow[]; bodyKg?: number | null;
   sourceName?: string; detailText?: string; hidden?: number; dupState?: string | null; alternatives?: WorkoutAlt[];
   ofp?: OfpBlock[];
-  muscle?: { total: number; free?: number | null; up: number | null; down: number | null; rec: { hours: number; heartH: number; muscleH: number } | null; bad?: boolean | null; groups: { key: string; name: string; value: number; pct: number }[] } | null;
+  muscle?: { total: number; free?: number | null; up: number | null; down: number | null; rec: { status?: string; hours: number | null; heartH: number | null; muscleH: number | null } | null; bad?: boolean | null; groups: { key: string; name: string; value: number; pct: number }[] } | null;
 };
 export type Shoe = {
   id: string; name: string; kind: 'train' | 'race' | 'trail' | 'walk'; startDate: string; initialKm: number; limitKm: number;
@@ -1186,7 +1194,7 @@ export type EngineSummary = {
   /** 1.4: HRV (and breathing / SpO₂) typed in by hand — null when every group has a device. */
   manualEntry?: ManualState | null;
   muscleMissing?: { id: string; sport: string; start: number; name: string | null; free: number; total: number }[];
-  recovery?: { leftH: number; factor: number; workouts: { id: string; sport: string; end: number; hours: number; heartH: number; muscleH: number; leftH: number; muscle: number | null; up: number | null; down: number | null }[] };
+  recovery?: { status?: 'unknown' | 'estimated' | 'clear'; leftH: number | null; estimatedUntil?: number | null; factor: number; readinessApplied?: boolean; reasons?: string[]; ignoredWorkouts?: number; workouts: { id: string; sport: string; end: number; hours: number | null; heartH: number | null; muscleH: number | null; leftH: number | null; muscle: number | null; up: number | null; down: number | null }[] };
   load: {
     today: number; atl: number; ctl: number; tsb: number; acwr: number | null; week: number;
     state: 'unknown' | 'low' | 'optimal' | 'high' | 'very_high'; stateText: string;
@@ -1208,6 +1216,9 @@ export type EngineSummary = {
   signals: { level: 'warn' | 'info' | 'good'; code: string; text: string }[];
   meta: { activities: number; byHr: number; byAvgHr: number; estimated: number; ms: number };
   day: {
+    planner?: {mode:string;revision:number};
+    acceptedPlan?: {source:string;items:PlanItem[];needsReview:boolean};
+    constraints?: {tier:number;qualityDataReady:boolean;reasons:string[]};
     advice: { title: string; text: string; tier?: string; bodyTier?: string; reasons?: string[]; hint?: string | null; evening?: boolean };
     targetLoad: number; usualLoad: number; todayLoad: number;
     target?: { lo: number; hi: number; headroom: number | null; capped: boolean; cap: number; left: number };

@@ -288,13 +288,13 @@ export function Workout({ id, onBack, backLabel = 'Тренировки' }: { id
         <section className="card" aria-label="Мышечная нагрузка и восстановление">
           <div className="between">
             <span className="label">Мышцы и восстановление</span>
-            {d.muscle.rec && <span className="chip" style={{ background: '#1B1F25', color: '#F5B642' }}>восстановление ≈ {d.muscle.rec.hours} ч</span>}
+            {d.muscle.rec && <span className="chip" style={{ background: '#1B1F25', color: '#F5B642' }}>{d.muscle.rec.hours == null ? 'недостаточно истории для оценки' : `базовая модельная оценка ≈ ${d.muscle.rec.hours} ч`}</span>}
           </div>
           <div className="row" style={{ gap: '8px 24px', alignItems: 'baseline', flexWrap: 'wrap' }}>
             <span className="small"><span className="muted">мышечная нагрузка </span><b className="num">{d.muscle.total}</b></span>
             {(d.muscle.up ?? 0) > 0 && <span className="small"><span className="muted">вверх </span><b className="num">{d.muscle.up} м</b></span>}
             {(d.muscle.down ?? 0) > 0 && <span className="small"><span className="muted">вниз </span><b className="num">{d.muscle.down} м</b></span>}
-            {d.muscle.rec && <span className="small muted">сердце {d.muscle.rec.heartH} ч · мышцы {d.muscle.rec.muscleH} ч</span>}
+            {d.muscle.rec?.heartH != null && d.muscle.rec.muscleH != null && <span className="small muted">после кардионагрузки ≈ {d.muscle.rec.heartH} ч · после мышечной нагрузки ≈ {d.muscle.rec.muscleH} ч</span>}
           </div>
           {(d.muscle.free ?? 0) > 0 && (
             <span className="small muted" style={{ lineHeight: 1.5 }}>

@@ -526,6 +526,45 @@ pub fn tier_factors(tier: usize, score: Option<f64>) -> (f64, f64) {
     }
 }
 
+/// Conservative eligibility policy for automated intensity advice, separate from the score.
+/// Four readings can produce a provisional score; quality work requires a larger, paired base.
+/// These are operating limits, not a clinically validated readiness/injury prediction.
+pub const INTENSITY_BASELINE_DAYS: usize = 14;
+pub const INTENSITY_SLEEP_MIN_S: f64 = 6.0 * 3600.0;
+
+pub fn intensity_limits(date: &str, h: &HealthSeries) -> Vec<String> {
+    let valid = |v: &f64| v.is_finite() && *v > 0.0;
+    let mut reasons = Vec::new();
+    if !h.hrv.get(date).map(&valid).unwrap_or(false) {
+        reasons.push("нет актуального HRV за сегодняшний день".into());
+    }
+    if !h.rhr.get(date).map(&valid).unwrap_or(false) {
+        reasons.push("нет актуального пульса покоя за сегодняшний день".into());
+    }
+    // Both metrics must refer to the same past days and to the current sources.
+    // Today's reading does not count toward the baseline. Old/future readings cannot fill gaps.
+    let mut from = add_days(date, -30);
+    for group in ["hrv", "rhr"] {
+        if let Some(cut) = h.cuts.get(group).filter(|c| c.as_str() <= date) {
+            if *cut > from {
+                from = cut.clone();
+            }
+        }
+    }
+    let paired = h.hrv.range(from..date.to_string())
+        .filter(|(d, v)| valid(v) && h.rhr.get(*d).map(&valid).unwrap_or(false))
+        .count();
+    if paired < INTENSITY_BASELINE_DAYS {
+        reasons.push(format!("личная база HRV и пульса покоя ещё набирается: {paired} из {INTENSITY_BASELINE_DAYS} сопоставимых дней"));
+    }
+    match h.sleep_s.get(date).filter(|s| valid(s)) {
+        None => reasons.push("нет данных о сне за сегодняшнюю ночь".into()),
+        Some(s) if *s < INTENSITY_SLEEP_MIN_S => reasons.push("сон за сегодняшнюю ночь короче 6 часов".into()),
+        _ => {}
+    }
+    reasons
+}
+
 pub struct Gates {
     pub week_heavy: bool,
     pub quality_yesterday: bool,
@@ -535,6 +574,8 @@ pub struct Gates {
     pub feel_reason: Option<String>,
     pub has_survey: bool,
     pub drank: bool,
+    /// Independent of the weighted score. Nonempty means at most a calm, non-quality day.
+    pub intensity_limits: Vec<String>,
 }
 
 pub struct DayPlan {
@@ -555,8 +596,8 @@ pub fn plan_day(score: Option<f64>, zones: &[f64; 6], g: &Gates) -> DayPlan {
         return DayPlan {
             tier: 3, body_tier: 3,
             title: "Мало данных для совета".into(),
-            text: "Нужны HRV и пульс покоя за несколько ночей — носи часы во сне, и через пару дней Kouros начнёт советовать.".into(),
-            reasons: vec![], hint: None, lo: 0.6, hi: 1.0,
+            text: "Пока нет достаточных данных для оценки. Интенсивную тренировку Kouros не рекомендует; дождись актуальных измерений и личной базы.".into(),
+            reasons: g.intensity_limits.clone(), hint: None, lo: 0.6, hi: 1.0,
         };
     };
     let body = tier_of(sc);
@@ -592,6 +633,12 @@ pub fn plan_day(score: Option<f64>, zones: &[f64; 6], g: &Gates) -> DayPlan {
             reasons.extend(why);
         }
     }
+    // A high HRV/overall score cannot compensate for missing evidence or very short sleep.
+    // This cap also applies in the evening and never raises a lower tier from other checks.
+    if !g.intensity_limits.is_empty() {
+        t = t.min(3);
+        reasons.extend(g.intensity_limits.iter().cloned());
+    }
     let (mut lo, mut hi) = tier_factors(t, Some(sc));
     if t < body {
         // Stepped down: use the lower tier's range as is, not the body score's position in it.
@@ -600,9 +647,10 @@ pub fn plan_day(score: Option<f64>, zones: &[f64; 6], g: &Gates) -> DayPlan {
         hi = f.1;
     }
     let (title, text) = match t {
-        6 => ("Можно интервалы".to_string(), format!("Тело хорошо восстановилось. Интервалы или темп по плану: разминка 15 минут, заминка 10. Если на разминке пульс выше обычного — оставь лёгкий бег до {z2}.")),
-        5 => ("Можно темповую".to_string(), format!("Готовность выше нормы — подходит темповая работа. Интервалы лучше оставить на день, когда готовность от 70. Разминка и заминка в Z2 (до {z2}).")),
+        6 => ("Можно интервалы".to_string(), format!("Расчётный балл высокий. Интервалы или темп — если стоят в плане: разминка 15 минут, заминка 10. Если на разминке пульс выше обычного — оставь лёгкий бег до {z2}.")),
+        5 => ("Можно темповую".to_string(), format!("Расчётный балл допускает темповую работу по плану. Для интервалов нужны и более высокий балл, и достаточные данные о состоянии. Разминка и заминка в Z2 (до {z2}).")),
         4 => ("Обычный аэробный день".to_string(), format!("Обычный объём во второй зоне, пульс до {z2}. Силовая — можно.")),
+        3 if !g.intensity_limits.is_empty() => ("Без интенсивной нагрузки".to_string(), format!("Только спокойная активность до {z2}, без интервалов и темпа. Высокий балл готовности не отменяет ограничения по данным и сну.")),
         3 => ("Обычный объём, без интенсива".to_string(), format!("День в пределах твоей нормы. Бег или ходьба в Z2 до {z2}, без интервалов и темпа.")),
         2 => ("Только восстановление".to_string(), format!("Показатели заметно ниже нормы. Длинная спокойная прогулка (пульс до {z1}), растяжка, мобилити. Без бега и силовой.")),
         1 => ("Очень лёгкий день".to_string(), "Короткая прогулка 20–40 минут, лёгкая растяжка и дыхание. Лечь пораньше.".to_string()),

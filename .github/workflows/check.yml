@@ -33,6 +33,15 @@ jobs:
       - name: Тесты сохранности упражнений и комплексов
         run: cargo test --manifest-path tools/exercise-tests/Cargo.toml -- --test-threads=1
 
+      - name: Тесты расчёта нагрузки и обновления данных
+        run: cargo test --manifest-path tools/calculation-tests/Cargo.toml -- --test-threads=1
+
+      - name: Проверка единого автора планов и сводок DeepSeek
+        run: cargo test --manifest-path tools/coach-tests/Cargo.toml -- --test-threads=1
+
+      - name: Проверка отсутствующих данных в индикаторе восстановления
+        run: node tools/calculation-tests/check_recovery_ui.mjs
+
       - name: Интерфейс для просмотра (демо) в ветку preview
         shell: bash
         run: |

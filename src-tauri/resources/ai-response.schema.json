@@ -1,0 +1,725 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kouros:ai:response:v1",
+  "title": "Kouros AI response — proposed contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "kouros.ai.v1"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "job_type": {
+      "enum": [
+        "daily_report",
+        "weekly_report",
+        "training_plan"
+      ]
+    },
+    "profile_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "plan_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date"
+        },
+        "to": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ]
+    },
+    "headline": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "enum": [
+              "sleep",
+              "nutrition",
+              "recovery",
+              "training",
+              "weekly_load",
+              "plan_adherence",
+              "next_steps"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "attention",
+              "unknown"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "fact_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "minItems": 0,
+            "maxItems": 30
+          },
+          "observations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fact_ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "string",
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "fact_ref",
+                "value",
+                "unit"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 20
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "minItems": 0,
+            "maxItems": 6
+          }
+        },
+        "required": [
+          "key",
+          "severity",
+          "text",
+          "fact_refs",
+          "observations",
+          "actions"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 12
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4000
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "proposal": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/proposal"
+        }
+      ]
+    },
+    "planning_mode": {
+      "enum": [
+        "kouros",
+        "deepseek"
+      ]
+    },
+    "planning_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "snapshot_id",
+    "job_type",
+    "profile_revision",
+    "plan_revision",
+    "period",
+    "headline",
+    "sections",
+    "limitations",
+    "proposal",
+    "planning_mode",
+    "planning_revision"
+  ],
+  "$defs": {
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "enum": [
+            "day_adjustment",
+            "week_adjustment",
+            "four_week_block"
+          ]
+        },
+        "from": {
+          "type": "string",
+          "format": "date"
+        },
+        "to": {
+          "type": "string",
+          "format": "date"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "expected_plan_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "sessions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "session_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    },
+                    "kind": {
+                      "enum": [
+                        "rest",
+                        "walk",
+                        "mobility",
+                        "easy",
+                        "ofp",
+                        "bike",
+                        "long",
+                        "gym",
+                        "tempo",
+                        "intervals",
+                        "upper",
+                        "walkrun",
+                        "test"
+                      ]
+                    },
+                    "location": {
+                      "enum": [
+                        "home",
+                        "gym",
+                        "outdoors",
+                        "none"
+                      ]
+                    },
+                    "duration_minutes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1440
+                    },
+                    "warmup_minutes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 60
+                    },
+                    "cooldown_minutes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 60
+                    },
+                    "intensity_note": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    },
+                    "exercises": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "exercise_id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 160
+                          },
+                          "role": {
+                            "enum": [
+                              "warmup",
+                              "main",
+                              "cooldown"
+                            ]
+                          },
+                          "sets": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 20
+                          },
+                          "dose": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "unit": {
+                                "enum": [
+                                  "reps",
+                                  "seconds",
+                                  "contacts",
+                                  "meters"
+                                ]
+                              },
+                              "min": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              },
+                              "max": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              },
+                              "per_side": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "unit",
+                              "min",
+                              "max",
+                              "per_side"
+                            ],
+                            "allOf": [
+                              {
+                                "if": {
+                                  "properties": {
+                                    "unit": {
+                                      "enum": [
+                                        "reps",
+                                        "seconds",
+                                        "contacts"
+                                      ]
+                                    }
+                                  }
+                                },
+                                "then": {
+                                  "properties": {
+                                    "min": {
+                                      "type": "integer"
+                                    },
+                                    "max": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "rest_seconds": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 600
+                          },
+                          "target_rpe": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 10
+                          },
+                          "equipment_ids": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "minItems": 0,
+                            "maxItems": 12
+                          },
+                          "external_load_kg": {
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "alternative_ids": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 160
+                            },
+                            "minItems": 0,
+                            "maxItems": 4
+                          }
+                        },
+                        "required": [
+                          "exercise_id",
+                          "role",
+                          "sets",
+                          "dose",
+                          "rest_seconds",
+                          "target_rpe",
+                          "equipment_ids",
+                          "external_load_kg",
+                          "alternative_ids"
+                        ]
+                      },
+                      "minItems": 0,
+                      "maxItems": 30
+                    },
+                    "complex_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 160
+                          },
+                          "revision": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 160
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision"
+                        ]
+                      },
+                      "minItems": 0,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "session_id",
+                    "kind",
+                    "location",
+                    "duration_minutes",
+                    "warmup_minutes",
+                    "cooldown_minutes",
+                    "intensity_note",
+                    "exercises",
+                    "complex_refs"
+                  ],
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "kind": {
+                            "const": "rest"
+                          }
+                        }
+                      },
+                      "then": {
+                        "properties": {
+                          "duration_minutes": {
+                            "const": 0
+                          },
+                          "exercises": {
+                            "maxItems": 0
+                          },
+                          "complex_refs": {
+                            "maxItems": 0
+                          },
+                          "warmup_minutes": {
+                            "const": 0
+                          },
+                          "cooldown_minutes": {
+                            "const": 0
+                          }
+                        }
+                      },
+                      "else": {
+                        "properties": {
+                          "duration_minutes": {
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 4
+              }
+            },
+            "required": [
+              "date",
+              "reason",
+              "sessions"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 7
+        },
+        "week_outline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "focus": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "progression_condition": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "index",
+              "from",
+              "focus",
+              "progression_condition"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "scope",
+        "from",
+        "to",
+        "reason",
+        "expected_plan_revision",
+        "days",
+        "week_outline"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "four_week_block"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "days": {
+                "minItems": 7,
+                "maxItems": 7
+              },
+              "week_outline": {
+                "minItems": 4,
+                "maxItems": 4
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "job_type": {
+            "const": "daily_report"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "proposal": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/proposal"
+                  },
+                  {
+                    "properties": {
+                      "scope": {
+                        "const": "day_adjustment"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "job_type": {
+            "const": "weekly_report"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "proposal": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/proposal"
+                  },
+                  {
+                    "properties": {
+                      "scope": {
+                        "const": "week_adjustment"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "job_type": {
+            "const": "training_plan"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "proposal": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/proposal"
+              },
+              {
+                "properties": {
+                  "scope": {
+                    "const": "four_week_block"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "planning_mode": {
+            "const": "kouros"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "proposal": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "job_type": {
+            "const": "training_plan"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "planning_mode": {
+            "const": "deepseek"
+          }
+        }
+      }
+    }
+  ]
+}

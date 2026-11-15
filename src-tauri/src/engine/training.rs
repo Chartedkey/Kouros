@@ -90,31 +90,44 @@ pub fn zone_index(p: &Profile, hr: f64) -> usize {
 
 pub fn activity_metrics(p: &Profile, rest: f64, a: &ActInput) -> ActMetrics {
     let mut m = ActMetrics { id: a.id.clone(), ..Default::default() };
-    let usable = a.hr.len() >= 10;
-    if usable {
-        let mut trimp = 0.0;
+    let duration = if a.duration_s.is_finite() { a.duration_s.max(0.0) } else { 0.0 };
+    let mut trimp = 0.0;
+    let mut covered = 0.0;
+    let mut zones = [0.0; 6];
+    let ordered = a.hr.iter().all(|(t, _)| *t >= 0)
+        && a.hr.windows(2).all(|w| w[1].0 > w[0].0);
+    if ordered {
         for w in a.hr.windows(2) {
             let dt = (w[1].0 - w[0].0) as f64;
-            if !(0.0..=30.0).contains(&dt) {
-                continue; // pauses don't count
+            // A long gap may be a pause OR missing sensor data. Do not bridge it.
+            if dt > 30.0 || ![w[0].1, w[1].1].iter().all(|h| h.is_finite() && (25.0..=230.0).contains(h)) {
+                continue;
             }
             let hr = w[0].1;
             trimp += trimp_per_min(hrr(hr, rest, p.hr_max), p.male) * dt / 60.0;
-            m.zone_s[zone_index(p, hr)] += dt;
+            zones[zone_index(p, hr)] += dt;
+            covered += dt;
         }
+    }
+    // Coverage is against moving duration (elapsed duration if moving time is unknown).
+    // Allow at most 5% missing endpoints/samples; never stretch a fragment to the session.
+    // If the curve includes more time than the duration, pauses cannot be identified safely.
+    let usable = a.hr.len() >= 10 && duration > 0.0 && covered >= duration * 0.95 && covered <= duration;
+    if usable {
         m.load = trimp;
+        m.zone_s = zones;
         m.method = "hr";
-    } else if let Some(avg) = a.avg_hr.filter(|h| *h > 40.0) {
-        m.load = trimp_per_min(hrr(avg, rest, p.hr_max), p.male) * a.duration_s / 60.0;
-        m.zone_s[zone_index(p, avg)] = a.duration_s;
+    } else if let Some(avg) = a.avg_hr.filter(|h| h.is_finite() && *h > 40.0 && *h <= 230.0) {
+        m.load = trimp_per_min(hrr(avg, rest, p.hr_max), p.male) * duration / 60.0;
+        m.zone_s[zone_index(p, avg)] = duration;
         m.method = "avg_hr";
     } else {
-        m.load = estimate_per_min(&a.sport) * a.duration_s / 60.0;
+        m.load = estimate_per_min(&a.sport) * duration / 60.0;
         m.method = "estimate";
     }
     // Strength and physio barely raise the pulse, so a felt-effort rating describes them better.
     if let Some(r) = a.rpe.filter(|r| *r >= 1.0 && is_rpe_sport(&a.sport)) {
-        m.load = a.duration_s / 60.0 * r * RPE_SCALE;
+        m.load = duration / 60.0 * r * RPE_SCALE;
         m.method = "rpe";
     }
     if a.sport == "run" && a.dist.len() > 10 {

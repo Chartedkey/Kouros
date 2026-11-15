@@ -378,6 +378,7 @@ fn week_from_template(tpl: &[Vec<Item>], start: &str, m: &str, mode: &str, rt: &
 /// Makes sure the days from `from` for `n` days exist; template rows are refreshed, the ones you
 /// changed or accepted stay.
 fn materialize(conn: &Connection, from: &str, n: i64, rt: &BTreeMap<&str, f64>, cap_week: Option<f64>, force: bool) -> Result<(), String> {
+    if !crate::planning::local(conn) { return Ok(()); }
     let (tpl, _, start) = template(conn);
     let md = mode(conn);
     let ret = crate::body_svc::return_item(conn);
@@ -575,7 +576,8 @@ fn add_change(conn: &Connection, d: &str, before: &[Item], after: &[Item], reaso
 }
 
 fn auto_apply(conn: &Connection) -> bool {
-    coach_svc::profile(conn)["planChanges"].as_str() == Some("auto")
+    crate::planning::local(conn) && db::get_setting(conn,"ai_switch_requires_confirm").as_deref()!=Some("1")
+        && coach_svc::profile(conn)["planChanges"].as_str() == Some("auto")
 }
 
 /// Today's check: if the plan asks for more than the body and the gates allow, propose a swap
@@ -642,6 +644,7 @@ fn check_today(conn: &Connection, s: &Value, today: &str, t: f64) -> Result<(), 
 
 /// Accept / keep a proposal (and the ones grouped with it).
 pub fn decide(conn: &Connection, id: i64, accept: bool) -> Result<(), String> {
+    if accept && !crate::planning::local(conn) { return Err("Автор плана изменился; старое предложение нельзя применить".into()); }
     let grp: Option<i64> = conn.query_row("SELECT grp FROM plan_changes WHERE id = ?1", params![id], |r| r.get(0)).map_err(err)?;
     let ids: Vec<i64> = {
         let mut st = conn.prepare("SELECT id FROM plan_changes WHERE (id = ?1 OR (grp IS NOT NULL AND grp = ?2)) AND state = 'proposed'").map_err(err)?;
@@ -677,6 +680,7 @@ pub fn reset_day(conn: &Connection, d: &str) -> Result<(), String> {
 }
 
 pub fn save_template_days(conn: &Connection, days: &Value, rebuild: bool) -> Result<(), String> {
+    if !crate::planning::local(conn) { return Err("Шаблон Kouros доступен при выборе автора Kouros".into()); }
     let today = engine_svc::today(&engine_svc::profile(conn));
     let (_, _, start) = template(conn);
     if rebuild {
@@ -696,6 +700,7 @@ pub fn save_template_days(conn: &Connection, days: &Value, rebuild: bool) -> Res
 
 /// After the onboarding is saved: a template still built automatically follows the new answers.
 pub fn on_profile_saved(conn: &Connection) -> Result<(), String> {
+    if !crate::planning::local(conn) { return Ok(()); }
     let (_, auto, start) = template(conn);
     if auto {
         let t = build_template(&coach_svc::profile(conn));
@@ -824,6 +829,7 @@ pub fn day_hard(conn: &Connection, d: &str) -> bool {
 
 /// Template days from today on are rebuilt next time (after a return-to-run step changes).
 pub fn refresh_future(conn: &Connection) -> Result<(), String> {
+    if !crate::planning::local(conn) { return Ok(()); }
     let today = engine_svc::today(&engine_svc::profile(conn));
     conn.execute("DELETE FROM plan_days WHERE date >= ?1 AND source = 'template'", params![today]).map_err(err)?;
     Ok(())
@@ -1090,7 +1096,7 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
     let t = cp["time"].as_str().and_then(|x| x.split_whitespace().next()?.parse::<f64>().ok()).unwrap_or(60.0);
     let injuries: Vec<String> = cp["injuries"].as_array().map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect()).unwrap_or_default();
     let has_tpl = get_json(conn, "plan_template")["days"].is_array();
-    if !has_tpl {
+    if !has_tpl && crate::planning::local(conn) {
         let (tpl, auto, start) = template(conn);
         save_template(conn, &tpl, auto, &start)?;
     }
@@ -1100,7 +1106,7 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
     // (or 15:00 without a recorded night) — not at midnight, when the day has no readiness yet.
     let morning_in = conn.query_row("SELECT 1 FROM readiness_log WHERE date = ?1", params![today], |_| Ok(())).is_ok()
         || (crate::store::now() + tz).rem_euclid(86400) >= 15 * 3600;
-    if morning_in {
+    if morning_in && crate::planning::local(conn) {
         check_today(conn, &s, &today, t)?;
         pain_check(conn, &today, t)?;
         med_check(conn, &today)?;
@@ -1124,7 +1130,8 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
         let det: Vec<Value> = items.iter().filter(|i| i.kind != "rest").map(|i| detail(i, &p, &injuries)).collect();
         let da: Vec<Value> = done.iter().map(|a| json!({"id": a.id, "sport": a.sport, "min": (a.duration_s / 60.0).round(), "load": a.load.round(), "unplanned": !planned_match(&items, a) && sport_group(&a.sport) != "walk"})).collect();
         days.push(json!({
-            "date": d, "dateRu": date_ru(&d), "wd": WD[wday(&d)], "items": items_json(&items), "text": items_text(&items),
+            "date": d, "dateRu": date_ru(&d), "wd": WD[wday(&d)], "items": items_json(&items), "text": if r.is_some() { items_text(&items) } else { "План ещё не составлен".into() },
+            "hasPlan": r.is_some(), "prescription": crate::ai::prescription(conn,&d),
             "source": r.as_ref().map(|x| x.1.clone()), "note": note,
             "confirmed": conn.query_row("SELECT COALESCE(confirmed, 0) FROM plan_days WHERE date = ?1", params![d], |q| q.get::<_, i64>(0)).unwrap_or(0) == 1,
             "hard": hard(&items), "load": day_load(&items, &rt).round(), "status": st,
@@ -1148,7 +1155,7 @@ pub fn state(conn: &mut Connection) -> Result<Value, String> {
     let tpl_v: Vec<Value> = tpl.iter().map(|d| items_json(d)).collect();
     let kinds: Vec<Value> = KINDS.iter().map(|k| json!({"key": k.0, "title": k.1, "hard": k.3})).collect();
     Ok(json!({
-        "today": today, "days": days,
+        "today": today, "days": days, "planner": crate::planning::state(conn),
         "template": tpl_v, "templateAuto": auto,
         "phase": {"name": phase_name(&md), "block": block, "week": wk, "deload": deload},
         "week": {"plan": week_plan.round(), "cap": cap_week.map(|x| x.round()), "usual": usual},
@@ -1362,6 +1369,7 @@ pub fn choose(conn: &mut Connection, d: &str, items: &Value) -> Result<Value, St
         return Ok(json!({"changes": []}));
     }
     add_change(conn, d, &before, &chosen, "выбрано тобой", "manual", "accepted", None)?;
+    if !crate::planning::local(conn) {return Ok(json!({"changes":[]}));}
     let tag = format!("[choice:{d}]");
     // Earlier rebalancing for this day is replaced.
     let mut changes: Vec<Value> = Vec::new();

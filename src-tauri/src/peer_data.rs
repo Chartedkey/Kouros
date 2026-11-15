@@ -101,7 +101,7 @@ fn key_expr(cols: &[Col], prefix: &str) -> String {
 }
 fn local_filter(prefix: &str) -> String {
     format!(
-        "{prefix}key NOT IN ({}) AND {prefix}key NOT LIKE 'peer_%'",
+        "{prefix}key NOT IN ({}) AND {prefix}key NOT LIKE 'peer_%' AND substr({prefix}key,1,3)<>'ai_'",
         LOCAL
             .iter()
             .map(|s| format!("'{s}'"))
@@ -110,7 +110,7 @@ fn local_filter(prefix: &str) -> String {
     )
 }
 pub fn shared_setting(k: &str) -> bool {
-    !LOCAL.contains(&k) && !k.starts_with("peer_")
+    !LOCAL.contains(&k) && !k.starts_with("peer_") && !k.starts_with("ai_")
 }
 
 pub fn init(c: &Connection) -> Result<(), String> {
@@ -333,6 +333,7 @@ pub fn page(c: &Connection, after: i64, upper: Option<i64>) -> Result<Page, Stri
     let mut bytes = 0;
     for (t, k, rev, actor, deleted, seq) in rows {
         let key: Vec<Value> = serde_json::from_str(&k).map_err(err)?;
+        if t=="settings" && !key.first().and_then(Value::as_str).is_some_and(shared_setting) {cursor=seq;continue;}
         let row = if deleted {
             None
         } else {

@@ -1,3 +1,4 @@
+import { Prescription } from '../pages/DeepSeek';
 // «Тренировка на сегодня» (0.23): confirm the planned workout or pick another one (several kinds,
 // with minutes). A risky choice gets one warning with the reason and a lighter option; the last
 // word is the athlete's. After a choice the rest of the week is rebalanced by Kouros.
@@ -57,12 +58,14 @@ export function DayPlanCard({ plan, reload, onCoach }: { plan: PlanState; reload
       </div>
       <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
         <span style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700 }}>{day.text}</span>
-        {st && <span className="chip" style={{ color: st[1] }}>{st[0]}</span>}
+        {day.hasPlan!==false && st && <span className="chip" style={{ color: st[1] }}>{st[0]}</span>}
+        {day.source==='deepseek'&&<span className="muted tiny">DeepSeek</span>}
         {day.source === 'chosen' && <span className="muted tiny">твой выбор</span>}
         {day.source === 'accepted' && <span className="muted tiny">изменено Kouros</span>}
       </div>
-      {day.detail[0] && mode === 'view' && <span className="muted small" style={{ lineHeight: 1.5 }}>{day.detail[0].main}</span>}
+      {day.hasPlan!==false && day.source!=='deepseek' && day.detail[0] && mode === 'view' && <span className="muted small" style={{ lineHeight: 1.5 }}>{day.detail[0].main}</span>}
 
+      {day.prescription && mode==='view' && <Prescription day={day.prescription}/>}
       {props.map((p) => (
         <div key={p.id} className="inset" style={{ gap: 6 }}>
           <span className="small"><b>Kouros предлагает:</b> {p.beforeText} → <b>{p.afterText}</b></span>
@@ -76,7 +79,7 @@ export function DayPlanCard({ plan, reload, onCoach }: { plan: PlanState; reload
 
       {mode === 'view' && day.status !== 'done' && (
         <div className="row" style={{ gap: 8 }}>
-          {day.confirmed
+          {day.hasPlan===false ? <span className="muted small">Составь и прими план во вкладке «Тренер».</span> : day.confirmed
             ? <span className="small" style={{ color: '#3DDC97' }}>✓ Подтверждено</span>
             : <button type="button" className="btn btn-green" onClick={confirm}>Подтверждаю</button>}
           <button type="button" className="btn2" onClick={startPick}>Выбрать другое</button>
@@ -100,7 +103,7 @@ export function DayPlanCard({ plan, reload, onCoach }: { plan: PlanState; reload
             <button type="button" className="btn" disabled={busy || !Object.keys(picked).length} onClick={doCheck}>{busy ? 'Проверяю…' : 'Сохранить'}</button>
             <button type="button" className="btn2" onClick={() => setMode('view')}>Отмена</button>
           </div>
-          <span className="muted tiny" style={{ lineHeight: 1.5 }}>Kouros проверит выбор по готовности, нагрузке недели, вчерашнему дню и боли. Если рискованно — предупредит, но решение за тобой. После выбора он сам пересчитает остальные дни недели.</span>
+          <span className="muted tiny" style={{ lineHeight: 1.5 }}>Kouros проверит выбор по готовности, нагрузке недели, вчерашнему дню и боли. Если рискованно — предупредит, но решение за тобой. {plan.planner?.mode==='deepseek'?'При выборе DeepSeek остальные дни сохраняются.':'После выбора он сам пересчитает остальные дни недели.'}</span>
         </div>
       )}
 

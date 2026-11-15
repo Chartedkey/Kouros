@@ -131,13 +131,13 @@ function RecPlaque({ s }: { s: EngineSummary }) {
                 <span className="stack" style={{ gap: 2, minWidth: 0 }}><b className="small">{o.title}</b><span className="muted tiny">{o.text}</span></span>
               </div>
             ))}
-            {opts.length === 0 && <span className="muted small">Пока мало своих тренировок, чтобы перевести цель в минуты.</span>}
+            {opts.length === 0 && <span className="muted small">{d.acceptedPlan?d.advice.title:d.planner?.mode==='deepseek'?'План DeepSeek ещё не принят. Открой вкладку «Тренер».':'Пока мало своих тренировок, чтобы перевести цель в минуты.'}</span>}
           </div>
           <span className="small" style={{ lineHeight: 1.55, color: 'var(--text-2)' }}>
             <b>Почему: </b>{d.advice.text}
             {t.capped ? ` Верх ограничен запасом недели: за 7 дней нагрузка не должна превысить обычную неделю × ${String(t.cap).replace('.', ',')}.` : ''}
           </span>
-          <span className="muted tiny">Варианты — на остаток до середины цели, по твоей средней нагрузке в минуту за 90 дней. Можно сочетать: например, силовая + прогулка.</span>
+          {!d.acceptedPlan && d.planner?.mode!=='deepseek' && <span className="muted tiny">Варианты — на остаток до середины цели, по твоей средней нагрузке в минуту за 90 дней. Можно сочетать: например, силовая + прогулка.</span>}
         </>
       )}
     </section>
