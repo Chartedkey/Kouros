@@ -380,3 +380,26 @@ fn ai_accept_rechecks_current_allowed_tier() {
         0
     );
 }
+#[test]
+fn ai_medication_edits_and_enable_switch_invalidate_requests() {
+    let c = db();
+    let s = fixture(&c, "deepseek", "daily_report");
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    c.execute(
+        "INSERT INTO meds(id,kind,name)VALUES(77,'medicine','Synthetic medicine')",
+        [],
+    )
+    .unwrap();
+    assert_eq!(
+        ai::finish(&c, &j, &provider(&report(&s, &j))).unwrap()["status"],
+        "superseded"
+    );
+    let s = fixture(&c, "deepseek", "daily_report");
+    db::set_setting(&c, "meds_enabled", "0").unwrap();
+    assert!(ai::prepare(&c, s["snapshot_id"].as_str().unwrap(), false).is_err());
+    let s = fixture(&c, "deepseek", "daily_report");
+    c.execute("UPDATE meds SET archived=1 WHERE id=77", [])
+        .unwrap();
+    assert!(ai::prepare(&c, s["snapshot_id"].as_str().unwrap(), false).is_err());
+}

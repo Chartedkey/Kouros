@@ -204,3 +204,26 @@ fn snapshot_includes_real_training_without_identifying_text() {
         assert!(ai::payload(&s, "01234567890123456789012345678901", "deepseek-flash").is_ok());
     }
 }
+#[test]
+fn new_medication_changes_local_restrictions_and_invalidates_preview() {
+    let mut c = db();
+    planning::switch(&c, "deepseek").unwrap();
+    let s = ai_context::preview(&mut c, "training_plan", None).unwrap();
+    let today = s["today"].as_str().unwrap();
+    let end = engine::add_days(today, 3);
+    assert!(!ai_context::forbidden(&c, today).contains(&"long".into()));
+    c.execute("INSERT INTO meds(id,kind,name,schedule,course_from,course_to,extra)VALUES(kouros_id(),'medicine','PRIVATE_MEDICINE','course',?1,?2,'{\"group\":\"fluoroquinolone\"}')",rusqlite::params![today,end]).unwrap();
+    assert!(ai_context::forbidden(&c, today).contains(&"long".into()));
+    let mut cfg = ai::config(&c);
+    cfg["consent"] = json!(true);
+    ai::save_config(&c, &cfg).unwrap();
+    assert!(ai::prepare(&c, s["snapshot_id"].as_str().unwrap(), false)
+        .unwrap_err()
+        .contains("изменились"));
+    let next = ai_context::preview(&mut c, "training_plan", None).unwrap();
+    assert!(!next.to_string().contains("PRIVATE_MEDICINE"));
+    assert!(next["date_limits"][today]["forbidden_kinds"]
+        .as_array()
+        .unwrap()
+        .contains(&json!("long")));
+}

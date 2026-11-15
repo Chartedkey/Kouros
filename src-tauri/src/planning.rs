@@ -97,6 +97,9 @@ pub fn install(c: &Connection) -> Result<(), String> {
         "pain_log",
         "habit_log",
         "med_log",
+        "meds",
+        "lab_reports",
+        "exercises",
         "lab_results",
         "plan_days",
         "ai_prescriptions",
@@ -107,7 +110,7 @@ pub fn install(c: &Connection) -> Result<(), String> {
     }
     for op in ["INSERT", "UPDATE", "DELETE"] {
         let row = if op == "DELETE" { "OLD" } else { "NEW" };
-        c.execute_batch(&format!("CREATE TRIGGER IF NOT EXISTS ai_settings_revision_{op} AFTER {op} ON settings WHEN {row}.key IN ('profile','coach_profile','data_sources','device_resets','sleep_schedule','complexes','custom_exercises','bands') BEGIN UPDATE ai_meta SET value=value+1 WHERE key='data_revision'; END;")).map_err(|e|e.to_string())?;
+        c.execute_batch(&format!("CREATE TRIGGER IF NOT EXISTS ai_settings_revision_{op} AFTER {op} ON settings WHEN {row}.key IN ('profile','coach_profile','data_sources','device_resets','sleep_schedule','complexes','custom_exercises','bands','meds_enabled','workout_sources','return_to_run','sleep_tonight','plan_template','habits_custom','lab_vo2') BEGIN UPDATE ai_meta SET value=value+1 WHERE key='data_revision'; END;")).map_err(|e|e.to_string())?;
     }
     c.execute(
         "UPDATE plan_changes SET state='superseded' WHERE state='proposed' AND origin='claude'",
