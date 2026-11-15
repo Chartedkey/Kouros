@@ -1411,6 +1411,8 @@ pub fn run() {
             ai_commands::ai_execute,
             ai_commands::ai_cancel,
             ai_commands::ai_accept,
+            ai_commands::ai_raw,
+            ai_commands::ai_recheck,
             ai_commands::ai_connect,
             ai_commands::ai_balance,
             coach_state,

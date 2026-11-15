@@ -200,3 +200,12 @@ pub async fn ai_balance(st: State<'_, AppState>) -> Result<Value, String> {
     })?;
     Ok(value)
 }
+
+#[tauri::command]
+pub fn ai_raw(job_id: String, st: State<'_, AppState>) -> Result<Value, String> {
+    with_db(&st, |c| ai::raw_response(c, &job_id))
+}
+#[tauri::command]
+pub fn ai_recheck(job_id: String, st: State<'_, AppState>) -> Result<Value, String> {
+    with_db(&st, |c| ai::recheck(c, &job_id))
+}

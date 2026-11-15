@@ -452,7 +452,10 @@ fn extended_strategy_validates_and_applies_only_first_seven_days() {
         let mut r = report(&s, &job);
         r["proposal"] = p.clone();
         ai::take_request(&c, &job).unwrap();
-        assert_eq!(ai::finish(&c, &job, &provider(&r)).unwrap()["status"],"ready");
+        assert_eq!(
+            ai::finish(&c, &job, &provider(&r)).unwrap()["status"],
+            "ready"
+        );
         ai::accept_with_tier(&mut c, &job, Some(3)).unwrap();
         let count: i64 = c
             .query_row("SELECT count(*) FROM ai_prescriptions", [], |r| r.get(0))
@@ -460,5 +463,154 @@ fn extended_strategy_validates_and_applies_only_first_seven_days() {
         assert_eq!(count, 7);
         p["week_outline"].as_array_mut().unwrap().pop();
         assert!(ai::validate_proposal(&s, &p).is_err());
+    }
+}
+
+#[test]
+fn provider_partial_week_is_kept_without_inventing_missing_days() {
+    let c = db();
+    let s = fixture(&c, "deepseek", "training_plan");
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    let mut p = proposal(&s);
+    p["days"].as_array_mut().unwrap().remove(2);
+    r["proposal"] = p;
+    assert_eq!(
+        ai::finish(&c, &j, &provider(&r)).unwrap()["status"],
+        "ready"
+    );
+    let saved = ai::state(&c, s["today"].as_str().unwrap()).unwrap();
+    assert_eq!(
+        saved["jobs"][0]["response"]["proposal"]["days"]
+            .as_array()
+            .unwrap()
+            .len(),
+        6
+    );
+    assert!(saved["jobs"][0]["validationNote"]
+        .as_str()
+        .unwrap()
+        .contains("6 из первых 7"));
+    ai::accept(&c, &j).unwrap();
+    let n: i64 = c
+        .query_row("SELECT count(*) FROM ai_prescriptions", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(n, 6);
+    assert_eq!(ai::raw_response(&c, &j).unwrap()["text"], r.to_string());
+}
+
+#[test]
+fn provider_extra_weeks_are_preserved_raw_but_never_applied_as_detailed_days() {
+    let c = db();
+    let s = fixture(&c, "deepseek", "training_plan");
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    let mut p = proposal(&s);
+    let mut extra = p["days"][0].clone();
+    extra["date"] = json!(engine::add_days(s["period"]["from"].as_str().unwrap(), 10));
+    p["days"].as_array_mut().unwrap().push(extra);
+    r["proposal"] = p;
+    assert_eq!(
+        ai::finish(&c, &j, &provider(&r)).unwrap()["status"],
+        "ready"
+    );
+    ai::accept(&c, &j).unwrap();
+    let n: i64 = c
+        .query_row("SELECT count(*) FROM ai_prescriptions", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(n, 7);
+    let raw = ai::raw_response(&c, &j).unwrap();
+    assert_eq!(raw["text"], r.to_string());
+}
+
+#[test]
+fn rejected_paid_output_can_be_rechecked_offline_without_charging_or_applying() {
+    let c = db();
+    let s = fixture(&c, "deepseek", "training_plan");
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    let mut p = proposal(&s);
+    p["days"] = json!([]);
+    r["proposal"] = p;
+    let result = ai::finish(&c, &j, &provider(&r)).unwrap();
+    assert_eq!(result["status"], "rejected");
+    assert!(result["error"]
+        .as_str()
+        .unwrap()
+        .contains("Получено элементов: 0"));
+    assert_eq!(ai::raw_response(&c, &j).unwrap()["text"], r.to_string());
+    let spent = ai::state(&c, s["today"].as_str().unwrap()).unwrap()["spent"].clone();
+    assert_eq!(ai::recheck(&c, &j).unwrap()["status"], "rejected");
+    assert_eq!(
+        ai::state(&c, s["today"].as_str().unwrap()).unwrap()["spent"],
+        spent
+    );
+    assert!(ai::accept(&c, &j).is_err());
+    planning::switch(&c, "kouros").unwrap();
+    assert!(ai::recheck(&c, &j).is_err());
+}
+
+#[test]
+fn duplicate_dates_and_invalid_exercises_remain_rejected_and_preserved() {
+    for duplicate in [true, false] {
+        let c = db();
+        let s = fixture(&c, "deepseek", "training_plan");
+        let j = prepare(&c, &s);
+        ai::take_request(&c, &j).unwrap();
+        let mut r = report(&s, &j);
+        let mut p = proposal(&s);
+        if duplicate {
+            p["days"][1]["date"] = p["days"][0]["date"].clone();
+        } else {
+            p["days"][0]["sessions"][0]["kind"] = json!("invented_activity");
+        }
+        r["proposal"] = p;
+        assert_eq!(
+            ai::finish(&c, &j, &provider(&r)).unwrap()["status"],
+            "rejected"
+        );
+        assert!(ai::raw_response(&c, &j).is_ok());
+        assert!(ai::accept(&c, &j).is_err());
+    }
+}
+
+#[test]
+fn saved_response_can_become_ready_after_local_parser_update_without_api() {
+    let c = db();
+    let s = fixture(&c, "deepseek", "training_plan");
+    let j = prepare(&c, &s);
+    ai::take_request(&c, &j).unwrap();
+    let mut r = report(&s, &j);
+    let mut p = proposal(&s);
+    p["days"].as_array_mut().unwrap().remove(1);
+    r["proposal"] = p;
+    ai::finish(&c, &j, &provider(&r)).unwrap();
+    c.execute("UPDATE ai_jobs SET status='rejected',response=NULL,error='Legacy exact-seven-days check' WHERE id=?1",[&j]).unwrap();
+    let before = ai::state(&c, s["today"].as_str().unwrap()).unwrap()["spent"].clone();
+    assert_eq!(ai::recheck(&c, &j).unwrap()["status"], "ready");
+    assert_eq!(
+        ai::state(&c, s["today"].as_str().unwrap()).unwrap()["spent"],
+        before
+    );
+    let count: i64 = c
+        .query_row("SELECT count(*) FROM ai_jobs", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(count, 1);
+    assert!(ai::recheck(&c, &j).is_err());
+}
+
+#[test]
+fn malformed_root_is_rejected_without_panicking_and_raw_text_survives() {
+    for text in ["[]", "null", "42", "{\"proposal\":[]}", "{broken"] {
+        let c = db();
+        let s = fixture(&c, "deepseek", "training_plan");
+        let j = prepare(&c, &s);
+        ai::take_request(&c, &j).unwrap();
+        let p = json!({"usage":{"prompt_tokens":100,"completion_tokens":20},"choices":[{"finish_reason":"stop","message":{"content":text}}]});
+        assert_eq!(ai::finish(&c, &j, &p).unwrap()["status"], "rejected");
+        assert_eq!(ai::raw_response(&c, &j).unwrap()["text"], text);
     }
 }

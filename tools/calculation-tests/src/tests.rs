@@ -123,7 +123,7 @@ fn cache_count(c: &Connection) -> i64 { c.query_row("SELECT count(*) FROM activi
     c.execute("INSERT INTO settings(key,value)VALUES('complexes',?1)", [json!([{"id":"mine","items":[{"exId":"Pushups"}]}]).to_string()]).unwrap();
     c.execute("INSERT INTO strength_sets(activity_id,idx,exercise,reps)VALUES('a',0,'Моё упражнение',12)", []).unwrap();
     c.execute("INSERT INTO readiness_log(date,score,level,data)VALUES('2026-11-15',55,'yellow','{}')", []).unwrap();
-    db::migrate_fixture(&c); db::migrate_fixture(&c); assert_eq!(db::schema_version(&c), 26);
+    db::migrate_fixture(&c); db::migrate_fixture(&c); assert_eq!(db::schema_version(&c), 27);
     assert_eq!(c.query_row("SELECT notes FROM activities WHERE id='a'", [], |r| r.get::<_, String>(0)).unwrap(), "сохранить");
     assert_eq!(c.query_row("SELECT reps FROM strength_sets", [], |r| r.get::<_, i64>(0)).unwrap(), 12);
     assert_eq!(c.query_row("SELECT score FROM readiness_log", [], |r| r.get::<_, f64>(0)).unwrap(), 55.0);

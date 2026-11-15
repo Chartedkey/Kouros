@@ -309,8 +309,8 @@ pub fn state(c: &Connection, today: &str) -> Result<Value, String> {
             |r| r.get(0),
         )
         .map_err(err)?;
-    let mut q=c.prepare("SELECT id,kind,model,status,created,reserved,actual,usage,response,error,applied,(SELECT body FROM ai_snapshots WHERE id=ai_jobs.snapshot_id) FROM ai_jobs ORDER BY created DESC,rowid DESC LIMIT 60").map_err(err)?;
-    let jobs:Vec<Value>=q.query_map([],|r|{let context:Option<String>=r.get(11)?;let context=context.and_then(|s|serde_json::from_str::<Value>(&s).ok()).unwrap_or(Value::Null);let resp:Option<String>=r.get(8)?;let usage:Option<String>=r.get(7)?;Ok(json!({"before":context["current_days"],"facts":context["facts"],"id":r.get::<_,String>(0)?,"kind":r.get::<_,String>(1)?,"model":r.get::<_,String>(2)?,"status":r.get::<_,String>(3)?,"created":r.get::<_,i64>(4)?,"reserved":r.get::<_,f64>(5)?,"actual":r.get::<_,Option<f64>>(6)?,"usage":usage.and_then(|s|serde_json::from_str::<Value>(&s).ok()),"response":resp.and_then(|s|serde_json::from_str::<Value>(&s).ok()),"error":r.get::<_,Option<String>>(9)?,"applied":r.get::<_,i64>(10)?==1}))}).map_err(err)?.collect::<Result<_,_>>().map_err(err)?;
+    let mut q=c.prepare("SELECT id,kind,model,status,created,reserved,actual,usage,response,error,applied,(SELECT body FROM ai_snapshots WHERE id=ai_jobs.snapshot_id),raw_response IS NOT NULL,validation_note FROM ai_jobs ORDER BY created DESC,rowid DESC LIMIT 60").map_err(err)?;
+    let jobs:Vec<Value>=q.query_map([],|r|{let context:Option<String>=r.get(11)?;let context=context.and_then(|s|serde_json::from_str::<Value>(&s).ok()).unwrap_or(Value::Null);let resp:Option<String>=r.get(8)?;let usage:Option<String>=r.get(7)?;Ok(json!({"hasRaw":r.get::<_,bool>(12)?,"validationNote":r.get::<_,Option<String>>(13)?,"before":context["current_days"],"facts":context["facts"],"id":r.get::<_,String>(0)?,"kind":r.get::<_,String>(1)?,"model":r.get::<_,String>(2)?,"status":r.get::<_,String>(3)?,"created":r.get::<_,i64>(4)?,"reserved":r.get::<_,f64>(5)?,"actual":r.get::<_,Option<f64>>(6)?,"usage":usage.and_then(|s|serde_json::from_str::<Value>(&s).ok()),"response":resp.and_then(|s|serde_json::from_str::<Value>(&s).ok()),"error":r.get::<_,Option<String>>(9)?,"applied":r.get::<_,i64>(10)?==1}))}).map_err(err)?.collect::<Result<_,_>>().map_err(err)?;
     Ok(
         json!({"config":cfg,"profile":training(c),"planner":planning::state(c),"spent":spent,"month":month,"jobs":jobs}),
     )
@@ -484,7 +484,7 @@ pub fn payload(s: &Value, request_id: &str, model: &str) -> Result<Value, String
                 json!({"type":"array","maxItems":0});
         } else {
             grammar["properties"]["proposal"] = json!({"$ref":"#/$defs/proposal"});
-            grammar["$defs"]["proposal"]["properties"]["days"]["minItems"] = json!(7);
+            grammar["$defs"]["proposal"]["properties"]["days"]["minItems"] = json!(1);
             grammar["$defs"]["proposal"]["properties"]["days"]["maxItems"] = json!(7);
             let weeks = (engine::day_num(s["period"]["to"].as_str().unwrap_or("")).unwrap_or(0)
                 - engine::day_num(s["period"]["from"].as_str().unwrap_or("")).unwrap_or(0)
@@ -527,7 +527,10 @@ pub fn payload(s: &Value, request_id: &str, model: &str) -> Result<Value, String
         compact(&mut grammar);
     }
     let (max_in, max_out) = limits(s["job_type"].as_str().unwrap_or(""));
-    let content = json!({"context":s,"request_id":request_id,"response_schema":grammar,"instructions":"Daily: detailed sleep, nutrition, recovery, existing plan. Weekly: seven completed days and coverage. training_plan: use the exact context.period (selected horizon), 7 consecutive detailed days and one compact week outline per week of that period. Relate strategy to profile.goals, main priority, baseline, target and optional deadline; without a deadline support ongoing consistency. Later weeks are conditional, not committed daily prescriptions. Keep each outline focus and progression_condition concise (under 160 characters each). Include warmup/cooldown in duration. Balance available patterns. external kg requires inventory AND known_loads. Respect date_limits and calm-only/RPE caps. Echo request_id from this context."});
+    let detail_dates: Vec<String> = (0..7)
+        .map(|i| add_days(s["period"]["from"].as_str().unwrap_or(""), i))
+        .collect();
+    let content = json!({"detailed_dates":detail_dates,"context":s,"request_id":request_id,"response_schema":grammar,"instructions":"Daily: detailed sleep, nutrition, recovery, existing plan. Weekly: seven completed days and coverage. training_plan: use the exact context.period (selected horizon), detailed days ONLY for detailed_dates (the first calendar week, including rest days). If a day cannot be specified, omit it rather than inventing a prescription; omitted days remain unchanged. Never put the entire programme into proposal.days. Provide one compact week outline per week of that period. Relate strategy to profile.goals, main priority, baseline, target and optional deadline; without a deadline support ongoing consistency. Later weeks are conditional, not committed daily prescriptions. Keep each outline focus and progression_condition concise (under 160 characters each). Include warmup/cooldown in duration. Balance available patterns. external kg requires inventory AND known_loads. Respect date_limits and calm-only/RPE caps. Echo request_id from this context."});
     let messages =
         json!([{"role":"system","content":system},{"role":"user","content":content.to_string()}]);
     if input_bound(&messages) > max_in {
@@ -679,7 +682,7 @@ fn schema_check(
         if s["minItems"].as_u64().map(|m| n < m).unwrap_or(false)
             || s["maxItems"].as_u64().map(|m| n > m).unwrap_or(false)
         {
-            return Err(bad());
+            return Err(format!("Ответ не соответствует формату: {path}. Получено элементов: {n}; допустимо от {} до {}. Ответ сохранён локально; автоматического повторного запроса нет.",s["minItems"].as_u64().unwrap_or(0),s["maxItems"].as_u64().map(|x|x.to_string()).unwrap_or_else(||"без верхнего ограничения".into())));
         }
         if let Some(child) = s.get("items") {
             for (x, val) in a.iter().enumerate() {
@@ -841,8 +844,11 @@ pub fn validate_proposal(s: &Value, p: &Value) -> Result<(), String> {
         if date < from || date > to || !seen.insert(date) {
             return Err("Даты занятий повторяются или выходят за период".into());
         }
-        if p["scope"] == "four_week_block" && date != add_days(from, i as i64) {
-            return Err("Подробные семь дней должны идти подряд".into());
+        if p["scope"] == "four_week_block"
+            && (date > add_days(from, 6).as_str()
+                || (i > 0 && date <= days[i - 1]["date"].as_str().unwrap_or("")))
+        {
+            return Err("Подробные дни должны идти по порядку в пределах первой недели. Пропущенные даты остаются без нового назначения".into());
         }
         let wd = (engine::day_num(date).unwrap_or(0) + 3).rem_euclid(7);
         let profile = &s["profile"];
@@ -1270,6 +1276,84 @@ pub fn validate_proposal(s: &Value, p: &Value) -> Result<(), String> {
     Ok(())
 }
 
+/// Keep the provider output intact; the executable preview is bounded to the first calendar week.
+fn first_week_projection(s: &Value, response: &mut Value) -> Result<Option<String>, String> {
+    if s["job_type"] != "training_plan" || s["planning_mode"] != "deepseek" {
+        return Ok(None);
+    }
+    let Some(p) = response.get_mut("proposal").filter(|p| p.is_object()) else {
+        return Ok(None);
+    };
+    if p["scope"] != "four_week_block"
+        || p["from"] != s["period"]["from"]
+        || p["to"] != s["period"]["to"]
+    {
+        return Ok(None);
+    }
+    let Some(days) = p["days"].as_array() else {
+        return Ok(None);
+    };
+    let from = s["period"]["from"]
+        .as_str()
+        .ok_or("Нет периода программы")?;
+    let to = s["period"]["to"].as_str().ok_or("Нет периода программы")?;
+    if days.len() > 364 {
+        return Err("Слишком много подробных дней программы. Ответ сохранён локально".into());
+    }
+    let mut seen = BTreeSet::new();
+    for day in days {
+        let date = day["date"]
+            .as_str()
+            .filter(|d| engine::day_num(d).is_some())
+            .ok_or("В ответе день без корректной даты. Ответ сохранён локально")?;
+        if date < from || date > to || !seen.insert(date) {
+            return Err(
+                "Даты программы повторяются или выходят за период. Ответ сохранён локально".into(),
+            );
+        }
+    }
+    let count = days.len();
+    let mut selected: Vec<Value> = days
+        .iter()
+        .filter(|d| d["date"].as_str().unwrap_or("") <= add_days(from, 6).as_str())
+        .cloned()
+        .collect();
+    selected.sort_by(|a, b| a["date"].as_str().cmp(&b["date"].as_str()));
+    let n = selected.len();
+    p["days"] = json!(selected);
+    Ok(Some(format!("В ответе подробных дней: {count}. К принятию показаны {n} из первых 7 календарных дней. Остальные даты не изменятся; отсутствие назначения не означает отдых. Подробности за пределами первой недели сохранены в исходном ответе и не применяются.")))
+}
+
+pub fn raw_response(c: &Connection, job: &str) -> Result<Value, String> {
+    let raw: Option<String> = c
+        .query_row("SELECT raw_response FROM ai_jobs WHERE id=?1", [job], |r| {
+            r.get(0)
+        })
+        .map_err(err)?;
+    raw.map(|text| json!({"text":text})).ok_or(
+        "Исходный ответ не сохранён. Для запросов из 1.10.0 восстановление невозможно".into(),
+    )
+}
+/// An explicit offline check, with the same snapshot freshness and safety guards as a paid response.
+pub fn recheck(c: &Connection, job: &str) -> Result<Value, String> {
+    let (status,sid,raw,reason,usage):(String,String,Option<String>,Option<String>,Option<String>)=c.query_row("SELECT status,snapshot_id,raw_response,raw_finish_reason,usage FROM ai_jobs WHERE id=?1",[job],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).map_err(err)?;
+    if status != "rejected" {
+        return Err("Повторная проверка доступна только для отклонённого ответа".into());
+    }
+    let raw=raw.ok_or("Эта версия не сохранила ответ. Восстановить прежний запрос без нового обращения к API невозможно")?;
+    fresh(c, &snapshot(c, &sid)?)?;
+    let provider = json!({"usage":usage.and_then(|x|serde_json::from_str::<Value>(&x).ok()),"choices":[{"finish_reason":reason,"message":{"content":raw}}]});
+    let tx = c.unchecked_transaction().map_err(err)?;
+    tx.execute(
+        "UPDATE ai_jobs SET status='sending' WHERE id=?1 AND status='rejected'",
+        [job],
+    )
+    .map_err(err)?;
+    let result = finish(&tx, job, &provider)?;
+    tx.commit().map_err(err)?;
+    Ok(result)
+}
+
 pub fn finish(c: &Connection, job: &str, provider: &Value) -> Result<Value, String> {
     let (sid, model, status): (String, String, String) = c
         .query_row(
@@ -1289,6 +1373,14 @@ pub fn finish(c: &Connection, job: &str, provider: &Value) -> Result<Value, Stri
     c.execute(
         "UPDATE ai_jobs SET usage=?2,actual=?3 WHERE id=?1",
         params![job, usage.to_string(), billed],
+    )
+    .map_err(err)?;
+    let raw = provider["choices"][0]["message"]["content"]
+        .as_str()
+        .filter(|t| t.len() <= 512 * 1024);
+    c.execute(
+        "UPDATE ai_jobs SET raw_response=?2,raw_finish_reason=?3 WHERE id=?1",
+        params![job, raw, provider["choices"][0]["finish_reason"].as_str()],
     )
     .map_err(err)?;
     if status == "cancelled" {
@@ -1312,8 +1404,15 @@ pub fn finish(c: &Connection, job: &str, provider: &Value) -> Result<Value, Stri
         if text.len() > 512 * 1024 {
             return Err("Ответ слишком большой".into());
         }
-        let response: Value = serde_json::from_str(text)
-            .map_err(|_| "DeepSeek вернул некорректный JSON".to_string())?;
+        let mut response: Value = serde_json::from_str(text).map_err(|_| {
+            "DeepSeek вернул некорректный JSON. Ответ сохранён локально".to_string()
+        })?;
+        let note = first_week_projection(&s, &mut response)?;
+        c.execute(
+            "UPDATE ai_jobs SET validation_note=?2 WHERE id=?1",
+            params![job, note],
+        )
+        .map_err(err)?;
         validate_response(&s, &response, job)?;
         Ok(response)
     })();

@@ -599,7 +599,7 @@
           "then": {
             "properties": {
               "days": {
-                "minItems": 7,
+                "minItems": 1,
                 "maxItems": 7
               },
               "week_outline": {

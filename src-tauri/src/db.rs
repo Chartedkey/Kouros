@@ -448,6 +448,12 @@ const MIGRATIONS: &[&str] = &[
     CREATE TABLE plan_day_meta(date TEXT PRIMARY KEY REFERENCES plan_days(date) ON DELETE CASCADE,items_hash TEXT NOT NULL,body TEXT NOT NULL);
     CREATE TABLE plan_edits(id TEXT PRIMARY KEY,created INTEGER NOT NULL,body TEXT NOT NULL,applied INTEGER NOT NULL DEFAULT 0);
     "#,
+    // v27: keep paid provider responses locally, including rejected outputs.
+    r#"
+    ALTER TABLE ai_jobs ADD COLUMN raw_response TEXT;
+    ALTER TABLE ai_jobs ADD COLUMN raw_finish_reason TEXT;
+    ALTER TABLE ai_jobs ADD COLUMN validation_note TEXT;
+    "#,
 ];
 
 fn key_pragma(hex: &str) -> String {
